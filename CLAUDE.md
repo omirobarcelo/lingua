@@ -13,7 +13,7 @@ The app language is Catalan (`lang="ca"` in `app.html`).
 - All routes are functional but use **hardcoded mock data** (no real DB queries yet)
 - **Styling**: TailwindCSS v4 with custom design system — `@theme` tokens in `app.css`, semantic aliases (`brand`, `base`, `muted`, `border`, `surface`)
 - All `.svelte` files migrated to **Svelte 5 runes** (`$props()`, `$state()`, `{@render children()}`)
-- Database schema exists in Drizzle but `search_vector` is typed as `text` (should be `tsvector`)
+- Database schema in Drizzle with `tsvector` column, GIN indexes, and custom Catalan FTS config
 - Design system reference pages at `/design-system` (EN) and `/sistema-disseny` (CA)
 - No PWA support, no analytics, no production deployment yet
 
@@ -58,8 +58,11 @@ src/
 ├── lib/
 │   └── server/
 │       └── db/
-│           ├── index.ts  # Drizzle client export (uses DATABASE_URL)
-│           └── schema.ts # Table definitions: categories, phrases, phraseRelations
+│           ├── index.ts          # Drizzle client export (uses DATABASE_URL)
+│           ├── schema.ts         # Table definitions, tsvector customType, GIN indexes
+│           ├── setup-fts.sql     # Phase 1: unaccent ext + catalan FTS config (before db:push)
+│           ├── setup-trigger.sql # Phase 2: trigger + backfill (after db:push)
+│           └── run-setup.ts      # Script to execute setup SQL (accepts 'fts' or 'trigger' arg)
 └── routes/
     ├── +layout.svelte    # App shell: header + nav + main container
     ├── +page.svelte      # Home: search form + about section
@@ -83,7 +86,7 @@ src/
 
 Three tables defined in `src/lib/server/db/schema.ts`:
 - **categories**: `id`, `name`, `slug` (unique), `description`
-- **phrases**: `id`, `category_id` (FK), `phrase_text`, `explanation`, `search_vector` (currently `text`, will become `tsvector`)
+- **phrases**: `id`, `category_id` (FK), `phrase_text`, `explanation`, `search_vector` (`tsvector`, auto-updated by DB trigger — NEVER set manually)
 - **phrase_relations**: `id`, `phrase_id` (FK), `related_phrase_id` (FK)
 
 ## Commands
@@ -95,8 +98,10 @@ Three tables defined in `src/lib/server/db/schema.ts`:
 | `npm run preview` | Preview production build locally |
 | `npm run check` | `svelte-kit sync` + `svelte-check` TypeScript check |
 | `docker compose up -d` | Start local PostgreSQL 16 |
+| `npm run db:setup:fts` | Phase 1: extensions + FTS config (before db:push) |
 | `npm run db:generate` | Generate Drizzle migration SQL files |
 | `npm run db:push` | Apply schema directly to connected DB |
+| `npm run db:setup:trigger` | Phase 2: trigger + backfill (after db:push) |
 | `npm run db:studio` | Open Drizzle Studio GUI |
 
 ## Environment Variables
@@ -104,6 +109,23 @@ Three tables defined in `src/lib/server/db/schema.ts`:
 | Variable | Scope | Description |
 |---|---|---|
 | `DATABASE_URL` | Server (private) | PostgreSQL connection string |
+
+## Database — FTS Architecture
+
+- `search_vector` column stores `to_tsvector('public.catalan', phrase_text)` (weight A)
+- `public.catalan` = copy of built-in `pg_catalog.catalan` + `catalan_unaccent` pre-filter
+- Two GIN indexes:
+  1. On `search_vector` column (catalan-stemmed) — primary search
+  2. Expression: `to_tsvector('simple', phrase_text)` — fallback for archaic/unknown words
+- No stopwords — PostgreSQL has no `catalan.stop` file; negligible overhead at scale
+- `searchVector` is auto-updated by the `phrases_fts_trigger` DB trigger — NEVER set it manually in inserts/updates
+
+### Fresh Database Setup (order matters!)
+
+1. `npm run db:setup:fts`     — Phase 1: extensions + FTS config (no table dependency)
+2. `npm run db:generate`      — generate Drizzle migration SQL
+3. `npm run db:push`          — apply schema (creates tables)
+4. `npm run db:setup:trigger` — Phase 2: trigger + backfill (requires phrases table)
 
 ## Memory & Learnings
 
@@ -126,6 +148,9 @@ After completing all steps of a plan, revise and update `README.md` (and `README
 ```bash
 docker compose up -d                    # Start PostgreSQL
 npm install                             # Install dependencies
+npm run db:setup:fts                    # Phase 1: extensions + FTS config
+npm run db:push                         # Apply schema (creates tables)
+npm run db:setup:trigger                # Phase 2: trigger + backfill
 npm run dev                             # Start dev server at localhost:5173
 ```
 

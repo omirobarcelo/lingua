@@ -114,110 +114,39 @@ This is intentionally a living document — each step will append or update sect
 
 ---
 
-### Step 2 — Database Schema + Catalan FTS Configuration
+### Step 2 — Database Schema + Catalan FTS Configuration ✅
 
-**Install:** `npm install -D tsx dotenv`
-_(tsx needed for running .ts scripts; dotenv to load .env in scripts)_
+**Completed.** All changes implemented and verified.
 
-**2a — Custom SQL Setup File**
+**What was done:**
+- Installed `tsx` and `@types/node` as dev dependencies (scripts use `tsx --env-file .env` instead of dotenv)
+- Split DB setup into two phases to avoid trigger-before-table dependency:
+  - `setup-fts.sql` — Phase 1 (before `db:push`): `unaccent` extension + `public.catalan` FTS config
+  - `setup-trigger.sql` — Phase 2 (after `db:push`): trigger function + trigger + backfill
+  - `run-setup.ts` — Runner script accepting `fts` or `trigger` argument
+- `package.json` — added `db:setup:fts` and `db:setup:trigger` scripts
+- `schema.ts` — `tsvector` customType for `search_vector` column, two GIN indexes:
+  1. `search_vector_idx` — GIN on stored tsvector (catalan stemmed, primary FTS)
+  2. `search_simple_idx` — GIN expression index on `to_tsvector('simple', phrase_text)` (fallback for archaic words)
+- Drizzle's expression GIN index API worked correctly — no need for raw SQL fallback
 
-**New file:** `src/lib/server/db/setup.sql`
+**FTS Architecture Decisions:**
+- Copied from `pg_catalog.catalan` (not `spanish`) for proper Catalan morphology
+- Added `catalan_unaccent` pre-filter for accent-insensitive matching (e.g., `cafè` matches `cafe`)
+- **No stopwords**: PostgreSQL has no `catalan.stop` file. Intentionally skipped — at 500 phrases the overhead is ~15KB (negligible). To add later: place `catalan.stop` file + run `UPDATE phrases SET phrase_text = phrase_text;` to recalculate all vectors
+- Hunspell/ispell dicts would improve accuracy but cannot be used on Neon (requires filesystem access)
+- `unaccent` extension is available on Neon
 
-```sql
--- 1. Unaccent extension (for accent-insensitive matching)
-CREATE EXTENSION IF NOT EXISTS unaccent;
-
--- 2. Unaccent dictionary wrapper
-CREATE TEXT SEARCH DICTIONARY catalan_unaccent (
-  TEMPLATE = unaccent,
-  RULES    = 'unaccent'
-);
-
--- 3. Custom 'public.catalan' config
---    PostgreSQL ships with 'catalan_stem' Snowball dict but NO built-in 'catalan' config.
---    Copy from 'spanish' (closest Romance language base) then override word mappings.
-CREATE TEXT SEARCH CONFIGURATION public.catalan ( COPY = pg_catalog.spanish );
-
-ALTER TEXT SEARCH CONFIGURATION public.catalan
-  ALTER MAPPING FOR hword, hword_part, word
-  WITH catalan_unaccent, catalan_stem;
-
--- 4. Trigger function: auto-update search_vector on phrase insert/update
-CREATE OR REPLACE FUNCTION phrases_fts_update()
-RETURNS trigger LANGUAGE plpgsql AS $$
-BEGIN
-  NEW.search_vector :=
-    setweight(to_tsvector('public.catalan', coalesce(NEW.phrase_text, '')), 'A');
-  RETURN NEW;
-END;
-$$;
-
--- 5. Trigger (safe to re-run)
-DROP TRIGGER IF EXISTS phrases_fts_trigger ON phrases;
-CREATE TRIGGER phrases_fts_trigger
-  BEFORE INSERT OR UPDATE OF phrase_text ON phrases
-  FOR EACH ROW EXECUTE FUNCTION phrases_fts_update();
-
--- 6. Back-fill any existing rows
-UPDATE phrases SET phrase_text = phrase_text;
-```
-
-**New file:** `src/lib/server/db/run-setup.ts`
-
-```ts
-import postgres from 'postgres';
-import { readFileSync } from 'fs';
-import { fileURLToPath } from 'url';
-import { join, dirname } from 'path';
-import 'dotenv/config';
-
-const sql = postgres(process.env.DATABASE_URL!);
-const setupSql = readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'setup.sql'), 'utf8');
-await sql.unsafe(setupSql);
-console.log('DB setup complete');
-await sql.end();
-```
-
-**`package.json`** — add: `"db:setup": "tsx src/lib/server/db/run-setup.ts"`
-
-**2b — Schema Update**
-
-**`src/lib/server/db/schema.ts`** — replace `text` search_vector with tsvector `customType` and add both GIN indexes:
-
-```ts
-import { pgTable, serial, text, integer, index, customType } from 'drizzle-orm/pg-core';
-import { sql } from 'drizzle-orm';
-
-const tsvector = customType<{ data: string }>({
-  dataType() { return 'tsvector'; }
-});
-
-// ...categories unchanged...
-
-export const phrases = pgTable('phrases', {
-  id: serial('id').primaryKey(),
-  categoryId: integer('category_id').notNull().references(() => categories.id),
-  phraseText: text('phrase_text').notNull(),
-  explanation: text('explanation').notNull(),
-  searchVector: tsvector('search_vector')       // auto-updated by trigger
-}, (table) => ({
-  // Index 1: GIN on the stored tsvector (catalan stemmed) — primary FTS
-  searchVectorIdx: index('search_vector_idx').using('gin').on(table.searchVector),
-  // Index 2: GIN expression index on 'simple' config — fallback for archaic words
-  searchSimpleIdx: index('search_simple_idx').using('gin')
-    .on(sql`to_tsvector('simple', ${table.phraseText})`)
-}));
-```
-
-**Run order (CRITICAL):**
+**Run order (CRITICAL — note the split):**
 ```bash
 docker compose up -d
-npm run db:setup     # MUST run before db:push (trigger references the phrases table)
+npm run db:setup:fts      # Phase 1: extensions + FTS config (no table dependency)
 npm run db:generate
-npm run db:push
+npm run db:push           # Creates tables
+npm run db:setup:trigger  # Phase 2: trigger + backfill (requires phrases table)
 ```
 
-**Verification:** `npm run db:studio` → `search_vector` column shows type `tsvector`, two GIN indexes exist. `npm run check` passes.
+**Verification:** `search_vector` column is `tsvector` type, both GIN indexes exist, FTS config `public.catalan` uses `catalan_unaccent` + `catalan_stem` for word/hword tokens, trigger active on `phrases` table, `npm run check` passes with 0 errors and 0 warnings.
 
 ---
 
@@ -428,8 +357,9 @@ src/
 ├── lib/server/db/
 │   ├── index.ts          # Drizzle client export
 │   ├── schema.ts         # Table definitions, tsvector customType, GIN indexes
-│   ├── setup.sql         # One-time: unaccent ext, catalan FTS config, trigger
-│   ├── run-setup.ts      # Script to execute setup.sql
+│   ├── setup-fts.sql     # Phase 1: unaccent ext + catalan FTS config (before db:push)
+│   ├── setup-trigger.sql # Phase 2: trigger + backfill (after db:push)
+│   ├── run-setup.ts      # Script to execute setup SQL (accepts 'fts' or 'trigger' arg)
 │   └── seed.ts           # Dev seed: 5 categories, 25 phrases
 ├── routes/
 │   ├── +layout.ts        # PostHog init (browser-only, NOT .server.ts)
@@ -445,18 +375,21 @@ src/
 
 ## Database — FTS Architecture
 - `search_vector` column stores `to_tsvector('public.catalan', phrase_text)` (weight A)
-- `public.catalan` = Spanish base config + catalan_stem + catalan_unaccent (via unaccent ext)
-- PostgreSQL has `catalan_stem` Snowball dict but NO built-in `catalan` text search config
+- `public.catalan` = copy of built-in `pg_catalog.catalan` + catalan_unaccent pre-filter
+- PostgreSQL ships with `catalan_stem` Snowball dict AND `pg_catalog.catalan` config (no stopwords file though)
+- **No stopwords** — intentionally skipped; negligible overhead at 500 phrases (~15KB). Add a `catalan.stop` later + `UPDATE phrases SET phrase_text = phrase_text;` to recalculate
+- Hunspell/ispell dicts would improve accuracy but cannot be used on Neon (requires filesystem access)
 - Two GIN indexes:
   1. On `search_vector` column (catalan-stemmed) — primary search
   2. Expression: `to_tsvector('simple', phrase_text)` — fallback for archaic/unknown words
 - Search strategy in `/cerca`: try catalan first → if 0 results → try simple
 
 ## Fresh Database Setup (order matters!)
-1. `npm run db:setup`    — FIRST: creates extension, FTS config, trigger function
-2. `npm run db:generate` — generate Drizzle migration SQL
-3. `npm run db:push`     — apply schema (creates tables)
-4. `npm run db:seed`     — insert categories + phrases + relations
+1. `npm run db:setup:fts`     — Phase 1: extensions + FTS config (no table dependency)
+2. `npm run db:generate`      — generate Drizzle migration SQL
+3. `npm run db:push`          — apply schema (creates tables)
+4. `npm run db:setup:trigger` — Phase 2: trigger + backfill (requires phrases table)
+5. `npm run db:seed`          — insert categories + phrases + relations
 
 ## Commands
 | Command | Description |
@@ -466,7 +399,8 @@ src/
 | `npm run preview` | Preview production build |
 | `npm run check` | TypeScript + Svelte typecheck |
 | `docker compose up -d` | Start local PostgreSQL 16 |
-| `npm run db:setup` | Run setup.sql (FTS config + trigger) |
+| `npm run db:setup:fts` | Phase 1: extensions + FTS config |
+| `npm run db:setup:trigger` | Phase 2: trigger + backfill (after db:push) |
 | `npm run db:generate` | Generate Drizzle migration files |
 | `npm run db:push` | Apply schema to DB |
 | `npm run db:seed` | Seed with 5 categories + 25 phrases |
@@ -509,10 +443,11 @@ Brand color: `#fb542b` (primary-500). To retheme: update `--color-primary-*` val
    # Point all DB scripts at Neon for this session
    export DATABASE_URL="postgres://user:password@ep-xxx...neon.tech/neondb?sslmode=require"
 
-   npm run db:setup     # creates extension, FTS config, trigger on Neon
-   npm run db:generate  # generates migration files locally
-   npm run db:push      # applies schema to Neon
-   npm run db:seed      # seeds Neon with 5 categories + 25 phrases
+   npm run db:setup:fts     # Phase 1: extensions + FTS config on Neon
+   npm run db:generate      # generates migration files locally
+   npm run db:push          # applies schema to Neon
+   npm run db:setup:trigger # Phase 2: trigger + backfill on Neon
+   npm run db:seed          # seeds Neon with 5 categories + 25 phrases
    ```
 4. Verify in Neon dashboard: Tables tab should show `categories` (5 rows), `phrases` (25 rows), `phrase_relations` (6 rows)
 
@@ -560,7 +495,7 @@ Neon supports database branches (like git branches). Create a `dev` branch for l
 
 ```bash
 # Dev dependencies
-npm install -D tailwindcss @tailwindcss/vite tsx dotenv @vite-pwa/sveltekit
+npm install -D tailwindcss @tailwindcss/vite tsx @vite-pwa/sveltekit
 
 # Runtime dependencies
 npm install posthog-js
@@ -570,7 +505,7 @@ npm install posthog-js
 
 ## Gotchas
 
-1. **`db:setup` before `db:push`**: `setup.sql` creates FTS config + trigger referencing the `phrases` table. Run setup first, then Drizzle creates the table. If reversed, trigger `CREATE` fails.
+1. **Split `db:setup` into two phases**: `setup-fts.sql` (extensions + FTS config) runs before `db:push`; `setup-trigger.sql` (trigger + backfill) runs after `db:push` once the `phrases` table exists.
 
 2. **Tailwind v4 utility names**: `@theme` custom properties automatically become Tailwind classes. `--color-brand` → `bg-brand`, `text-brand`, `border-brand`. No `extend` config needed.
 

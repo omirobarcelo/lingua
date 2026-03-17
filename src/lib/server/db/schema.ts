@@ -1,5 +1,11 @@
-import { pgTable, serial, text, integer, index } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, integer, index, customType } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
+
+const tsvector = customType<{ data: string }>({
+	dataType() {
+		return 'tsvector';
+	}
+});
 
 export const categories = pgTable('categories', {
 	id: serial('id').primaryKey(),
@@ -17,11 +23,14 @@ export const phrases = pgTable(
 			.references(() => categories.id),
 		phraseText: text('phrase_text').notNull(),
 		explanation: text('explanation').notNull(),
-		searchVector: text('search_vector')
+		searchVector: tsvector('search_vector') // auto-updated by DB trigger
 	},
-	(table) => ({
-		searchVectorIdx: index('search_vector_idx').on(table.searchVector)
-	})
+	(table) => [
+		// GIN on stored tsvector (catalan stemmed) — primary FTS
+		index('search_vector_idx').using('gin', table.searchVector),
+		// GIN expression index on 'simple' config — fallback for archaic words
+		index('search_simple_idx').using('gin', sql`to_tsvector('simple', ${table.phraseText})`)
+	]
 );
 
 export const phraseRelations = pgTable('phrase_relations', {
