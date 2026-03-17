@@ -70,7 +70,7 @@ No routing changes are needed. No authentication. No admin panel. This is purely
 
 ## Steps
 
-### Step 0 — Generate Initial CLAUDE.md
+### Step 0 — Generate Initial CLAUDE.md ✅
 
 **Goal:** Create a baseline `CLAUDE.md` at the project root so it's available from the very start. It captures the current state of the project and the target architecture. We'll update it incrementally as each subsequent step is completed, adding learnings, gotchas, and decisions we discover along the way.
 
