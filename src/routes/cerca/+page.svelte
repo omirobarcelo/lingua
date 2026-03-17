@@ -1,40 +1,42 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 
-	export let data: PageData;
+	let { data }: { data: PageData } = $props();
 </script>
 
 <svelte:head>
 	<title>Cerca: {data.paraula} - Lingua</title>
 </svelte:head>
 
-<a href="/" class="back-link">← Tornar a l'inici</a>
+<a href="/" class="inline-block mb-5 text-brand hover:text-brand-hover transition-colors font-medium">&larr; Tornar a l'inici</a>
 
-<div class="card">
-	<h2>Definició: {data.paraula}</h2>
-	<div class="iframe-container">
+<div class="rounded-xl bg-surface-card border border-border p-8 shadow-sm mb-6">
+	<h2 class="text-2xl text-primary-800 mb-4">Definici&oacute;: {data.paraula}</h2>
+	<div class="w-full rounded-lg overflow-hidden border border-border">
 		<iframe
 			src="https://dcvb.iec.cat/results.asp?Word={encodeURIComponent(data.paraula)}"
-			title="Definició de {data.paraula}"
+			title="Definici&oacute; de {data.paraula}"
+			class="w-full h-[600px] border-none"
 		></iframe>
 	</div>
 </div>
 
 {#if data.phrases.length > 0}
-	<div class="card">
-		<h3>Expressions que contenen "{data.paraula}"</h3>
-		<ul class="related-phrases">
+	<div class="rounded-xl bg-surface-card border border-border p-8 shadow-sm">
+		<h3 class="text-xl text-primary-800 mb-4">Expressions que contenen &ldquo;{data.paraula}&rdquo;</h3>
+		<ul class="space-y-3">
 			{#each data.phrases as phrase}
 				<li>
-					<a href="/expressions/{phrase.id}">
-						<strong>{phrase.text}</strong> - {phrase.explanation}
+					<a href="/expressions/{phrase.id}" class="text-brand hover:text-brand-hover transition-colors">
+						<strong>{phrase.text}</strong>
+						<span class="text-muted"> &mdash; {phrase.explanation}</span>
 					</a>
 				</li>
 			{/each}
 		</ul>
 	</div>
 {:else}
-	<div class="card">
-		<p>No s'han trobat expressions que continguin aquesta paraula.</p>
+	<div class="rounded-xl bg-surface-card border border-border p-8 shadow-sm">
+		<p class="text-muted">No s'han trobat expressions que continguin aquesta paraula.</p>
 	</div>
 {/if}

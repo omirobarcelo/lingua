@@ -11,8 +11,10 @@ The app language is Catalan (`lang="ca"` in `app.html`).
 ## Current State
 
 - All routes are functional but use **hardcoded mock data** (no real DB queries yet)
-- Styling is plain CSS in `src/app.css` with CSS custom properties (no framework)
+- **Styling**: TailwindCSS v4 with custom design system — `@theme` tokens in `app.css`, semantic aliases (`brand`, `base`, `muted`, `border`, `surface`)
+- All `.svelte` files migrated to **Svelte 5 runes** (`$props()`, `$state()`, `{@render children()}`)
 - Database schema exists in Drizzle but `search_vector` is typed as `text` (should be `tsvector`)
+- Design system reference pages at `/design-system` (EN) and `/sistema-disseny` (CA)
 - No PWA support, no analytics, no production deployment yet
 
 ## Target Architecture (in progress)
@@ -40,13 +42,17 @@ The app language is Catalan (`lang="ca"` in `app.html`).
 - **Server data loading**: All DB queries go in `+page.server.ts` files (never expose `db` to client).
 - **Route params**: Custom matchers live in `src/params/` (e.g., `integer.ts`).
 - **Environment variables**: Private vars via `$env/static/private`, public via `$env/static/public`.
+- **Tailwind v4**: `@import "tailwindcss"` + `@theme {}` in `app.css`. No config file.
+  Use semantic aliases (`bg-brand`, `text-muted`, `text-base`) not raw palette (`bg-primary-500`).
+  `text-base` is both a font-size utility (1rem) AND our base text color — both resolve correctly in v4.
+- **Design system pages**: `/design-system` (English), `/sistema-disseny` (Catalan). Keep both in sync.
 
 ## File Structure
 
 ```
 src/
 ├── app.html              # Shell HTML, lang="ca"
-├── app.css               # Global styles (plain CSS, will become Tailwind v4)
+├── app.css               # Tailwind v4 @import + @theme design tokens + base styles
 ├── params/
 │   └── integer.ts        # Route param matcher for numeric IDs
 ├── lib/
@@ -60,6 +66,8 @@ src/
     ├── cerca/
     │   ├── +page.server.ts   # Search logic (mock, will become FTS)
     │   └── +page.svelte      # Search results: DCVB iframe + phrase list
+    ├── design-system/        # Design system reference (English)
+    ├── sistema-disseny/      # Design system reference (Catalan)
     ├── expressions/
     │   ├── +page.server.ts   # Categories list (mock)
     │   ├── +page.svelte      # Category grid

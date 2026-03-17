@@ -1,25 +1,28 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 
-	export let data: PageData;
+	let { data }: { data: PageData } = $props();
 </script>
 
 <svelte:head>
 	<title>{data.category.name} - Lingua</title>
 </svelte:head>
 
-<a href="/expressions" class="back-link">← Tornar a categories</a>
+<a href="/expressions" class="inline-block mb-5 text-brand hover:text-brand-hover transition-colors font-medium">&larr; Tornar a categories</a>
 
-<h2 style="margin-bottom: 10px; color: var(--primary-color);">{data.category.name}</h2>
+<h2 class="text-3xl text-primary-900 mb-2">{data.category.name}</h2>
 {#if data.category.description}
-	<p style="margin-bottom: 20px; color: #666;">{data.category.description}</p>
+	<p class="text-muted mb-8">{data.category.description}</p>
 {/if}
 
-<div class="phrase-list">
+<div class="grid gap-5 sm:grid-cols-2">
 	{#each data.phrases as phrase}
-		<a href="/expressions/{phrase.id}" class="phrase-card">
-			<h3>{phrase.text}</h3>
-			<p>{phrase.explanation}</p>
+		<a
+			href="/expressions/{phrase.id}"
+			class="group rounded-xl bg-surface-card border border-border p-6 shadow-sm no-underline transition-all hover:shadow-md hover:-translate-y-0.5"
+		>
+			<h3 class="text-lg font-semibold text-primary-800 group-hover:text-brand transition-colors mb-2">{phrase.text}</h3>
+			<p class="text-sm text-muted leading-relaxed">{phrase.explanation}</p>
 		</a>
 	{/each}
 </div>

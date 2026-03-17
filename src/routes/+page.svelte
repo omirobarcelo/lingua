@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 
-	let searchWord = '';
+	let searchWord = $state('');
 
 	function handleSearch(event: Event) {
 		event.preventDefault();
@@ -15,42 +15,48 @@
 	<title>Lingua - Diccionari d'Expressions Catalanes</title>
 </svelte:head>
 
-<div class="search-box">
-	<h2>Cerca de Paraules</h2>
-	<p style="margin-bottom: 15px;">
-		Cerca paraules per veure la seva definició i expressions relacionades.
+<div class="rounded-xl bg-surface-card border border-border p-8 shadow-sm mb-8">
+	<h2 class="text-2xl text-primary-800 mb-3">Cerca de Paraules</h2>
+	<p class="text-muted mb-5">
+		Cerca paraules per veure la seva definici&oacute; i expressions relacionades.
 	</p>
-	<form class="search-form" on:submit={handleSearch}>
+	<form class="flex gap-3" onsubmit={handleSearch}>
 		<input
 			type="text"
 			bind:value={searchWord}
 			placeholder="Introdueix una paraula..."
 			required
+			class="flex-1 rounded-lg border-2 border-border px-4 py-3 text-base transition-colors focus:border-brand focus:outline-none"
 		/>
-		<button type="submit">Cercar</button>
+		<button
+			type="submit"
+			class="rounded-lg bg-brand px-6 py-3 font-medium text-white transition-colors hover:bg-brand-hover cursor-pointer"
+		>
+			Cercar
+		</button>
 	</form>
 </div>
 
-<div class="card">
-	<h2>Sobre Lingua</h2>
-	<p style="margin-bottom: 15px;">
+<div class="rounded-xl bg-surface-card border border-border p-8 shadow-sm">
+	<h2 class="text-2xl text-primary-800 mb-4">Sobre Lingua</h2>
+	<p class="text-muted mb-4 leading-relaxed">
 		Benvingut a Lingua, el teu diccionari d'expressions catalanes. Aquesta plataforma t'ofereix
-		dues maneres d'explorar el ric patrimoni lingüístic català:
+		dues maneres d'explorar el ric patrimoni ling&uuml;&iacute;stic catal&agrave;:
 	</p>
-	<ul style="margin-left: 20px; margin-bottom: 15px;">
-		<li style="margin-bottom: 8px;">
-			<strong>Cerca de Paraules:</strong> Introdueix qualsevol paraula per veure la seva definició
+	<ul class="ml-5 mb-4 list-disc space-y-2 text-muted">
+		<li>
+			<strong class="text-base">Cerca de Paraules:</strong> Introdueix qualsevol paraula per veure la seva definici&oacute;
 			i descobreix expressions que la contenen.
 		</li>
-		<li style="margin-bottom: 8px;">
-			<strong>Consulta d'Expressions:</strong> Explora expressions catalanes organitzades per categories,
+		<li>
+			<strong class="text-base">Consulta d'Expressions:</strong> Explora expressions catalanes organitzades per categories,
 			amb explicacions detallades i expressions relacionades.
 		</li>
 	</ul>
-	<p>
-		Comença la teva cerca utilitzant el cercador de dalt o <a
+	<p class="text-muted">
+		Comen&ccedil;a la teva cerca utilitzant el cercador de dalt o <a
 			href="/expressions"
-			style="color: var(--primary-color);">explora les expressions per categories</a
+			class="text-brand font-medium hover:text-brand-hover transition-colors">explora les expressions per categories</a
 		>.
 	</p>
 </div>

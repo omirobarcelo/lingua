@@ -91,71 +91,26 @@ This is intentionally a living document — each step will append or update sect
 
 ---
 
-### Step 1 — TailwindCSS v4 + Design System
+### Step 1 — TailwindCSS v4 + Design System ✅
 
-**Install:** `npm install -D tailwindcss @tailwindcss/vite`
+**Completed.** All changes implemented and verified.
 
-**Files to modify:**
-- `vite.config.ts` — add `tailwindcss()` plugin **before** `sveltekit()`:
-  ```ts
-  import tailwindcss from '@tailwindcss/vite';
-  plugins: [tailwindcss(), sveltekit()]
-  ```
-- `src/app.css` — replace entirely:
-  ```css
-  @import "tailwindcss";
-  @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600&display=swap');
+**What was done:**
+- Installed `tailwindcss` + `@tailwindcss/vite` as dev dependencies
+- `vite.config.ts` — added `tailwindcss()` plugin before `sveltekit()`
+- `src/app.css` — replaced entirely with Tailwind v4 `@import "tailwindcss"`, `@theme` block with primary/neutral palettes + semantic aliases (`brand`, `brand-hover`, `brand-light`, `surface`, `surface-card`, `base`, `muted`, `border`), Google Fonts import, and base body/heading styles
+- `src/app.html` — added `<link rel="preconnect">` for Google Fonts
+- `src/routes/+layout.svelte` — migrated to Svelte 5 (`$props()` + `{@render children()}`) with Tailwind header/nav
+- All `+page.svelte` files — replaced inline styles with Tailwind utilities, migrated to Svelte 5 runes (`$props()`, `$state()`)
+- Created `/design-system` (English) and `/sistema-disseny` (Catalan) — full design system reference pages with 6 sections: Colors, Typography, Buttons, Cards, Badges, Forms. Tab-style anchor navigation.
 
-  @theme {
-    --color-primary-50: #fff4f0;
-    --color-primary-100: #ffe4d9;
-    --color-primary-200: #ffc5ad;
-    --color-primary-300: #ff9e7a;
-    --color-primary-400: #fd7347;
-    --color-primary-500: #fb542b;
-    --color-primary-600: #e03a12;
-    --color-primary-700: #ba2d0e;
-    --color-primary-800: #992714;
-    --color-primary-900: #7e2416;
+**Deviations from original plan:**
+- Semantic alias `--color-text` renamed to `--color-base`, `--color-text-muted` renamed to `--color-muted` (user request)
+- Added `--color-surface-card` alias (white) not in original plan
+- Design system page created in two languages: `/design-system` (EN) + `/sistema-disseny` (CA) instead of single route
+- Tab-style section nav instead of pill links (user preference)
 
-    --color-neutral-50: #fafaf9;
-    --color-neutral-100: #f4f4f3;
-    --color-neutral-200: #e6e6e4;
-    --color-neutral-300: #d0d0cd;
-    --color-neutral-400: #a6a6a2;
-    --color-neutral-500: #75756f;
-    --color-neutral-600: #56564f;
-    --color-neutral-700: #3d3d37;
-    --color-neutral-800: #272722;
-    --color-neutral-900: #141410;
-
-    /* Semantic aliases — change these to retheme the whole app */
-    --color-brand:        var(--color-primary-500);
-    --color-brand-hover:  var(--color-primary-600);
-    --color-brand-light:  var(--color-primary-100);
-    --color-surface:      var(--color-neutral-50);
-    --color-text:         var(--color-neutral-800);
-    --color-text-muted:   var(--color-neutral-500);
-    --color-border:       var(--color-neutral-200);
-
-    --font-sans: 'Inter', system-ui, sans-serif;
-    --font-serif: 'Lora', Georgia, serif;
-  }
-
-  *, *::before, *::after { box-sizing: border-box; }
-  body { font-family: var(--font-sans); color: var(--color-text); background-color: var(--color-surface); line-height: 1.6; }
-  ```
-- `src/routes/+layout.svelte` — migrate to Svelte 5 `{@render children()}` AND apply Tailwind layout classes (header, nav, max-width container)
-- `src/routes/+page.svelte` — replace inline styles with Tailwind utilities
-- All other `+page.svelte` files — replace inline styles (style="margin-bottom: 15px;" etc.) with Tailwind utilities
-- `src/app.html` — add `<link rel="preconnect">` for Google Fonts
-
-**New file:** `src/routes/design-system/+page.svelte` — no server file needed; static page showing:
-  - Color swatches grid (all primary-50→900 and neutral-50→900)
-  - Typography scale (h1–h4, body, small, caption, with both fonts)
-  - All component variants (buttons, card, badge, input)
-
-**Verification:** `npm run dev` → header is terracotta, visit `/design-system` to see swatches, `npm run check` passes.
+**Verification:** `npm run dev` → terracotta header renders, `/design-system` and `/sistema-disseny` show all swatches/components, `npm run check` passes with 0 errors and 0 warnings.
 
 ---
 
