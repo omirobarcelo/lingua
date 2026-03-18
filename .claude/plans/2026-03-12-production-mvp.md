@@ -150,24 +150,19 @@ npm run db:setup:trigger  # Phase 2: trigger + backfill (requires phrases table)
 
 ---
 
-### Step 3 — Seed Script
+### Step 3 — Seed Script ✅
 
-**New file:** `src/lib/server/db/seed.ts` — inserts 5 categories and 25 Catalan idiomatic phrases (5 per category), plus 6 bidirectional phrase relations. Categories:
-- Amor i Sentiments (`amor-i-sentiments`)
-- Animals (`animals`)
-- Menjar i Beguda (`menjar-i-beguda`)
-- Meteorologia (`meteorologia`)
-- Cos i Salut (`cos-i-salut`)
+**Completed.** All changes implemented and verified.
 
-The seed script must **omit `searchVector`** from inserts — the DB trigger fills it automatically on INSERT.
+**What was done:**
+- Created `src/lib/server/db/seed.ts` — inserts 5 categories and 25 Catalan idiomatic phrases (5 per category), plus 6 bidirectional phrase relations (12 rows total — both directions)
+- Categories: Amor i Sentiments, Animals, Menjar i Beguda, Meteorologia, Cos i Salut
+- `searchVector` omitted from inserts — the DB trigger fills it automatically on INSERT
+- Script structure: delete relations → delete phrases → delete categories → insert categories (capture IDs) → insert phrases using captured IDs → insert relations
+- `package.json` — added `"db:seed": "tsx --env-file .env src/lib/server/db/seed.ts"`
+- DB connection uses `postgres(process.env.DATABASE_URL!)` (same pattern as `run-setup.ts`)
 
-Script structure: delete relations → delete phrases → delete categories → insert categories (capture IDs) → insert phrases using captured IDs → insert relations.
-
-**`package.json`** — add: `"db:seed": "tsx src/lib/server/db/seed.ts"`
-
-**Run:** `npm run db:seed`
-
-**Verification:** `npm run db:studio` → 5 categories, 25 phrases with non-null `search_vector` values (should look like `'algú':3 'colat':2 'estar':1`), 6 relation rows.
+**Verification:** `npm run db:seed` → 5 categories, 25 phrases with non-null `search_vector` values (e.g., `'cor':3A 'el':2A 'ten':1A 'trenc':4A`), 12 relation rows. `npm run check` passes with 0 errors and 0 warnings.
 
 ---
 
@@ -374,7 +369,7 @@ src/
 └── app.css               # Tailwind @import + @theme design tokens
 
 ## Database — FTS Architecture
-- `search_vector` column stores `to_tsvector('public.catalan', phrase_text)` (weight A)
+- `search_vector` column stores `setweight(to_tsvector('public.catalan', phrase_text), 'A')` — weight A is the highest of 4 FTS ranking levels (A > B > C > D). Currently only `phrase_text` is indexed so the weight has no practical effect, but it's set up so that if `explanation` is later added at weight B, `ts_rank` will automatically prioritize phrase-text matches over explanation matches
 - `public.catalan` = copy of built-in `pg_catalog.catalan` + catalan_unaccent pre-filter
 - PostgreSQL ships with `catalan_stem` Snowball dict AND `pg_catalog.catalan` config (no stopwords file though)
 - **No stopwords** — intentionally skipped; negligible overhead at 500 phrases (~15KB). Add a `catalan.stop` later + `UPDATE phrases SET phrase_text = phrase_text;` to recalculate

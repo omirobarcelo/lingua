@@ -12,7 +12,8 @@
     "db:studio": "drizzle-kit studio",
     "db:generate": "drizzle-kit generate",
     "db:setup:fts": "tsx --env-file .env src/lib/server/db/run-setup.ts fts",
-    "db:setup:trigger": "tsx --env-file .env src/lib/server/db/run-setup.ts trigger"
+    "db:setup:trigger": "tsx --env-file .env src/lib/server/db/run-setup.ts trigger",
+    "db:seed": "tsx --env-file .env src/lib/server/db/seed.ts"
   },
   "devDependencies": {
     "@sveltejs/adapter-vercel": "^6.3.1",
