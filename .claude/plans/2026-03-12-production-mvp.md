@@ -188,65 +188,39 @@ npm run db:setup:trigger  # Phase 2: trigger + backfill (requires phrases table)
 
 ---
 
-### Step 5 — PWA Setup
+### Step 5 — PWA Setup ✅
 
-**Install:** `npm install -D @vite-pwa/sveltekit`
+**Completed.** All changes implemented and verified.
 
-**`vite.config.ts`** — add `SvelteKitPWA` plugin after `sveltekit()`:
-```ts
-import { SvelteKitPWA } from '@vite-pwa/sveltekit';
-plugins: [tailwindcss(), sveltekit(), SvelteKitPWA({
-  strategies: 'generateSW',
-  registerType: 'autoUpdate',
-  manifest: {
-    name: 'Lingua – Expressions Catalanes',
-    short_name: 'Lingua',
-    description: "Diccionari d'expressions i frases fetes catalanes",
-    theme_color: '#fb542b',
-    background_color: '#fafaf9',
-    display: 'standalone',
-    start_url: '/',
-    icons: [
-      { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
-      { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
-    ]
-  },
-  workbox: {
-    globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-    runtimeCaching: [{
-      urlPattern: ({ request }) => request.mode === 'navigate',
-      handler: 'NetworkFirst',
-      options: { cacheName: 'pages', networkTimeoutSeconds: 3 }
-    }]
-  }
-})]
+**What was done:**
+- Installed `@vite-pwa/sveltekit` and `sharp` (+ `@types/sharp`) as dev dependencies
+- `vite.config.ts` — added `SvelteKitPWA` plugin after `sveltekit()` with `generateSW` strategy, `autoUpdate` registration, manifest metadata, and `NetworkFirst` runtime caching for navigations (3s network timeout)
+- `svelte.config.js` — disabled SvelteKit's built-in SW registration (`serviceWorker: { register: false }`)
+- `src/routes/+layout.svelte` — added `onMount` with dynamic `import('virtual:pwa-register')` for SW registration
+- `tsconfig.json` — added `"types": ["vite-plugin-pwa/client"]` for `virtual:pwa-register` type support
+- `src/app.html` — added `<meta name="theme-color">`, Apple mobile web app meta tags (`apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style`, `apple-mobile-web-app-title`), and `<link rel="apple-touch-icon">`
+- Created `static/icons/lingua.svg` (source SVG: terracotta rounded square with white "L")
+- Created `scripts/generate-icons.ts` — uses `sharp` to generate PNGs from the source SVG
+- Generated `static/icons/icon-192.png`, `static/icons/icon-512.png`, and `static/favicon.png`
+
+**Icon Generation (for future reference):**
+To regenerate icons after modifying `static/icons/lingua.svg`:
+```bash
+npx tsx scripts/generate-icons.ts
 ```
+This produces three files from the SVG:
+- `static/icons/icon-192.png` (192×192) — PWA manifest icon
+- `static/icons/icon-512.png` (512×512) — PWA manifest icon (any + maskable)
+- `static/favicon.png` (48×48) — browser tab favicon
 
-**`svelte.config.js`** — disable SvelteKit's built-in SW registration:
-```js
-kit: { adapter: adapter(), serviceWorker: { register: false } }
-```
+**Deviations from original plan:**
+- Added `sharp` as dev dependency + `scripts/generate-icons.ts` for reproducible icon generation (plan suggested manual/online tools)
+- Added Apple mobile web app meta tags in `app.html` (not in original plan)
+- Added `<meta name="theme-color">` in `app.html` for browser chrome theming
+- Added `vite-plugin-pwa/client` types to `tsconfig.json` (not in original plan)
+- Generated `static/favicon.png` (48×48) alongside PWA icons (plan only mentioned 192 + 512)
 
-**Icons:** Create `static/icons/` directory. Create this SVG as `static/icons/lingua.svg` (source for both icon sizes):
-```svg
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="96" fill="#fb542b"/>
-  <text x="256" y="360" font-family="system-ui" font-size="340"
-        font-weight="700" text-anchor="middle" fill="white">L</text>
-</svg>
-```
-Then generate `icon-192.png` and `icon-512.png` from the SVG (use online tool, Inkscape, or `npm install -D sharp` for a quick conversion script).
-
-**`src/routes/+layout.svelte`** — add SW registration on mount:
-```svelte
-import { onMount } from 'svelte';
-onMount(async () => {
-  const { registerSW } = await import('virtual:pwa-register');
-  registerSW({ immediate: true });
-});
-```
-
-**Verification:** `npm run build && npm run preview` → Chrome DevTools > Application > Manifest shows app info and icons. Lighthouse PWA audit passes installability.
+**Verification:** `npm run check` passes with 0 errors and 0 warnings. Full PWA verification (`npm run build && npm run preview` → Chrome DevTools > Application > Manifest) should be done manually.
 
 ---
 

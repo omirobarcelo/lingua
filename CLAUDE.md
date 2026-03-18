@@ -17,13 +17,15 @@ The app language is Catalan (`lang="ca"` in `app.html`).
 - **Search** (`/cerca`): two-stage FTS — catalan-stemmed first, simple fallback; AND logic with prefix on last token
 - Design system reference pages at `/design-system` (EN) and `/sistema-disseny` (CA)
 - Seed script with 5 categories, 25 phrases, and 12 relation rows
-- No PWA support, no analytics, no production deployment yet
+- **PWA**: installable via `@vite-pwa/sveltekit` (`generateSW` strategy, `autoUpdate`, `NetworkFirst` for navigations)
+- **Prerendered routes**: `/`, `/design-system`, `/sistema-disseny` (static pages with no DB dependency)
+- No analytics, no production deployment yet
 
 ## Target Architecture (in progress)
 
 - **Styling**: TailwindCSS v4 with custom design system (vermillion `#fb542b` palette)
 - **Database**: PostgreSQL FTS with custom Catalan configuration (`catalan_stem` + `unaccent`)
-- **PWA**: `@vite-pwa/sveltekit` for installability
+- **PWA**: `@vite-pwa/sveltekit` for installability ✅
 - **Analytics**: PostHog (`posthog-js`) for pageviews and feature flags
 - **Deployment**: Vercel + Neon (serverless PostgreSQL)
 
@@ -33,6 +35,7 @@ The app language is Catalan (`lang="ca"` in `app.html`).
 - **Build**: Vite 6
 - **ORM**: Drizzle ORM (`drizzle-orm` + `postgres` driver, NOT `pg`/`node-postgres`)
 - **Database**: PostgreSQL 16 (Docker for local dev)
+- **PWA**: `@vite-pwa/sveltekit` (generateSW, autoUpdate)
 - **Deployment adapter**: `@sveltejs/adapter-vercel`
 
 ## Conventions
@@ -48,6 +51,9 @@ The app language is Catalan (`lang="ca"` in `app.html`).
   Use semantic aliases (`bg-brand`, `text-muted`, `text-base`) not raw palette (`bg-primary-500`).
   `text-base` is both a font-size utility (1rem) AND our base text color — both resolve correctly in v4.
 - **Design system pages**: `/design-system` (English), `/sistema-disseny` (Catalan). Keep both in sync.
+- **Prerendering**: Static pages (no DB dependency) use `export const prerender = true` in `+page.ts`.
+- **PWA**: SW registered via `virtual:pwa-register` in `+layout.svelte` `onMount`. Manifest link is manual in `app.html` (not auto-injected by plugin with adapter-vercel).
+- **Icons**: Source SVG at `static/icons/lingua.svg`. Regenerate all PNGs + favicon.ico via `npx tsx scripts/generate-icons.ts`.
 
 ## File Structure
 
@@ -67,13 +73,14 @@ src/
 │           ├── run-setup.ts      # Script to execute setup SQL (accepts 'fts' or 'trigger' arg)
 │           └── seed.ts           # Dev seed: 5 categories, 25 phrases, 12 relations
 └── routes/
-    ├── +layout.svelte    # App shell: header + nav + main container
+    ├── +layout.svelte    # App shell: header + nav + SW registration
+    ├── +page.ts          # prerender = true
     ├── +page.svelte      # Home: search form + about section
     ├── cerca/
     │   ├── +page.server.ts   # Two-stage FTS: catalan-stemmed → simple fallback
     │   └── +page.svelte      # Search results: DCVB iframe + phrase list
-    ├── design-system/        # Design system reference (English)
-    ├── sistema-disseny/      # Design system reference (Catalan)
+    ├── design-system/        # Design system reference (English, prerendered)
+    ├── sistema-disseny/      # Design system reference (Catalan, prerendered)
     ├── expressions/
     │   ├── +page.server.ts   # Categories list (Drizzle query)
     │   ├── +page.svelte      # Category grid
