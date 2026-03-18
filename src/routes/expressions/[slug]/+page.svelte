@@ -21,7 +21,7 @@
 			href="/expressions/{phrase.id}"
 			class="group rounded-xl bg-surface-card border border-border p-6 shadow-sm no-underline transition-all hover:shadow-md hover:-translate-y-0.5"
 		>
-			<h3 class="text-lg font-semibold text-primary-800 group-hover:text-brand transition-colors mb-2">{phrase.text}</h3>
+			<h3 class="text-lg font-semibold text-primary-800 group-hover:text-brand transition-colors mb-2">{phrase.phraseText}</h3>
 			<p class="text-sm text-muted leading-relaxed">{phrase.explanation}</p>
 		</a>
 	{/each}

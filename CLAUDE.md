@@ -10,11 +10,13 @@ The app language is Catalan (`lang="ca"` in `app.html`).
 
 ## Current State
 
-- All routes are functional but use **hardcoded mock data** (no real DB queries yet)
+- All routes wired to **live PostgreSQL** via Drizzle queries (no mock data)
 - **Styling**: TailwindCSS v4 with custom design system — `@theme` tokens in `app.css`, semantic aliases (`brand`, `base`, `muted`, `border`, `surface`)
 - All `.svelte` files migrated to **Svelte 5 runes** (`$props()`, `$state()`, `{@render children()}`)
 - Database schema in Drizzle with `tsvector` column, GIN indexes, and custom Catalan FTS config
+- **Search** (`/cerca`): two-stage FTS — catalan-stemmed first, simple fallback; AND logic with prefix on last token
 - Design system reference pages at `/design-system` (EN) and `/sistema-disseny` (CA)
+- Seed script with 5 categories, 25 phrases, and 12 relation rows
 - No PWA support, no analytics, no production deployment yet
 
 ## Target Architecture (in progress)
@@ -62,23 +64,24 @@ src/
 │           ├── schema.ts         # Table definitions, tsvector customType, GIN indexes
 │           ├── setup-fts.sql     # Phase 1: unaccent ext + catalan FTS config (before db:push)
 │           ├── setup-trigger.sql # Phase 2: trigger + backfill (after db:push)
-│           └── run-setup.ts      # Script to execute setup SQL (accepts 'fts' or 'trigger' arg)
+│           ├── run-setup.ts      # Script to execute setup SQL (accepts 'fts' or 'trigger' arg)
+│           └── seed.ts           # Dev seed: 5 categories, 25 phrases, 12 relations
 └── routes/
     ├── +layout.svelte    # App shell: header + nav + main container
     ├── +page.svelte      # Home: search form + about section
     ├── cerca/
-    │   ├── +page.server.ts   # Search logic (mock, will become FTS)
+    │   ├── +page.server.ts   # Two-stage FTS: catalan-stemmed → simple fallback
     │   └── +page.svelte      # Search results: DCVB iframe + phrase list
     ├── design-system/        # Design system reference (English)
     ├── sistema-disseny/      # Design system reference (Catalan)
     ├── expressions/
-    │   ├── +page.server.ts   # Categories list (mock)
+    │   ├── +page.server.ts   # Categories list (Drizzle query)
     │   ├── +page.svelte      # Category grid
     │   ├── [slug]/
-    │   │   ├── +page.server.ts  # Phrases in category (mock)
+    │   │   ├── +page.server.ts  # Phrases in category (Drizzle query)
     │   │   └── +page.svelte     # Phrase list for a category
     │   └── [id=integer]/
-    │       ├── +page.server.ts  # Single phrase + relations (mock)
+    │       ├── +page.server.ts  # Phrase + category + related phrases (Drizzle query)
     │       └── +page.svelte     # Phrase detail page
 ```
 
@@ -102,6 +105,7 @@ Three tables defined in `src/lib/server/db/schema.ts`:
 | `npm run db:generate` | Generate Drizzle migration SQL files |
 | `npm run db:push` | Apply schema directly to connected DB |
 | `npm run db:setup:trigger` | Phase 2: trigger + backfill (after db:push) |
+| `npm run db:seed` | Seed with 5 categories + 25 phrases + relations |
 | `npm run db:studio` | Open Drizzle Studio GUI |
 
 ## Environment Variables
@@ -119,6 +123,7 @@ Three tables defined in `src/lib/server/db/schema.ts`:
   2. Expression: `to_tsvector('simple', phrase_text)` — fallback for archaic/unknown words
 - No stopwords — PostgreSQL has no `catalan.stop` file; negligible overhead at scale
 - `searchVector` is auto-updated by the `phrases_fts_trigger` DB trigger — NEVER set it manually in inserts/updates
+- **Search query strategy**: input split on whitespace, joined with `&` (AND), last token gets `:*` prefix (e.g., `"bots i"` → `bots & i:*`). Two-stage: catalan-stemmed first, simple fallback if 0 results
 
 ### Fresh Database Setup (order matters!)
 
@@ -151,6 +156,7 @@ npm install                             # Install dependencies
 npm run db:setup:fts                    # Phase 1: extensions + FTS config
 npm run db:push                         # Apply schema (creates tables)
 npm run db:setup:trigger                # Phase 2: trigger + backfill
+npm run db:seed                         # Seed with sample data
 npm run dev                             # Start dev server at localhost:5173
 ```
 

@@ -5,13 +5,13 @@
 </script>
 
 <svelte:head>
-	<title>{data.phrase.text} - Lingua</title>
+	<title>{data.phrase.phraseText} - Lingua</title>
 </svelte:head>
 
 <a href="/expressions/{data.categorySlug}" class="inline-block mb-5 text-brand hover:text-brand-hover transition-colors font-medium">&larr; Tornar a {data.categoryName}</a>
 
 <div class="rounded-xl bg-surface-card border border-border p-8 shadow-sm mb-6">
-	<h2 class="text-2xl text-primary-900">{data.phrase.text}</h2>
+	<h2 class="text-2xl text-primary-900">{data.phrase.phraseText}</h2>
 	<p class="mt-2 text-sm text-muted italic">Categoria: {data.categoryName}</p>
 </div>
 
@@ -27,7 +27,7 @@
 			{#each data.relatedPhrases as related}
 				<li>
 					<a href="/expressions/{related.id}" class="text-brand hover:text-brand-hover transition-colors">
-						<strong>{related.text}</strong>
+						<strong>{related.phraseText}</strong>
 						<span class="text-muted"> &mdash; {related.explanation}</span>
 					</a>
 				</li>

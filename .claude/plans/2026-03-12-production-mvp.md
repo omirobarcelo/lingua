@@ -166,46 +166,25 @@ npm run db:setup:trigger  # Phase 2: trigger + backfill (requires phrases table)
 
 ---
 
-### Step 4 — Wire Routes to Real Database Queries
+### Step 4 — Wire Routes to Real Database Queries ✅
 
-Replace ALL `MOCK_*` constants in every `+page.server.ts` with Drizzle queries against the live DB.
+**Completed.** All mock data replaced with live Drizzle queries.
 
-**`src/routes/expressions/+page.server.ts`:**
-```ts
-import { db } from '$lib/server/db';
-import { categories } from '$lib/server/db/schema';
-export const load = async () => ({
-  categories: await db.select().from(categories).orderBy(categories.name)
-});
-```
+**What was done:**
+- `src/routes/expressions/+page.server.ts` — `db.select().from(categories).orderBy(categories.name)`
+- `src/routes/expressions/[slug]/+page.server.ts` — category lookup by slug (404 if not found), phrases by categoryId ordered by phraseText
+- `src/routes/expressions/[id=integer]/+page.server.ts` — phrase by ID (404 if missing), category lookup for name/slug, related phrases via `phraseRelations` + `inArray` query
+- `src/routes/cerca/+page.server.ts` — two-stage FTS with AND logic:
+  - `buildTsquery()` splits input on whitespace, joins with `&`, adds `:*` prefix on last token (e.g., `"bots i"` → `bots & i:*`)
+  - Stage 1: `to_tsquery('public.catalan', ...)` against `searchVector` column
+  - Stage 2 (fallback if 0 results): `to_tsquery('simple', ...)` against expression index
+- Updated 3 `.svelte` templates: `phrase.text` → `phrase.phraseText` in `[slug]/+page.svelte`, `[id=integer]/+page.svelte`, `cerca/+page.svelte`
 
-**`src/routes/expressions/[slug]/+page.server.ts`:**
-- `eq(categories.slug, params.slug)` → 404 if not found
-- `eq(phrases.categoryId, category.id)` → ordered by phraseText
+**Deviations from original plan:**
+- FTS uses AND logic with prefix on last token instead of single-token prefix — better for multi-word searches like "cor trencat" or "bots i barrals"
+- Empty/whitespace search queries short-circuit to empty results (no DB hit)
 
-**`src/routes/expressions/[id=integer]/+page.server.ts`:**
-- Query phrase by ID → 404 if missing
-- Join to get category (name + slug)
-- Query phraseRelations where phraseId = id → collect relatedPhraseIds → query those phrases
-
-**`src/routes/cerca/+page.server.ts`** — two-stage FTS:
-```ts
-// Stage 1: catalan-stemmed (catches inflected forms)
-const catalanQ = sql`to_tsquery('public.catalan', ${paraula + ':*'})`;
-const results = await db.select(...).from(phrases)
-  .where(sql`${phrases.searchVector} @@ ${catalanQ}`).limit(20);
-
-// Stage 2 (fallback if 0 results): simple tokenization (archaic/unknown words)
-if (results.length === 0) {
-  const simpleQ = sql`to_tsquery('simple', ${paraula + ':*'})`;
-  return db.select(...).from(phrases)
-    .where(sql`to_tsvector('simple', ${phrases.phraseText}) @@ ${simpleQ}`).limit(20);
-}
-```
-
-**Also update `.svelte` files:** mock data used `phrase.text` but schema uses `phrase.phraseText` — update template bindings in `[slug]/+page.svelte`, `[id=integer]/+page.svelte`, `cerca/+page.svelte`.
-
-**Verification:** All 5 routes show live data. Search `/cerca?paraula=ploure` returns "Ploure a bots i barrals". Search `/cerca?paraula=cor` returns "Tenir el cor trencat".
+**Verification:** `npm run check` passes with 0 errors and 0 warnings. All 5 routes verified in browser with live DB data: `/expressions` shows 5 categories, `/expressions/animals` shows 5 phrases, `/expressions/26` shows phrase detail with related phrases, `/cerca?paraula=ploure` returns "Ploure a bots i barrals", `/cerca?paraula=cor` returns "Tenir el cor trencat".
 
 ---
 

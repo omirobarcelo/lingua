@@ -1,26 +1,52 @@
 import type { PageServerLoad } from './$types';
+import { sql } from 'drizzle-orm';
+import { db } from '$lib/server/db';
+import { phrases } from '$lib/server/db/schema';
 
-// Hardcoded phrases for initial implementation
-const MOCK_PHRASES = [
-	{ id: 1, text: 'Caure dels núvols', explanation: "Sorprendre's molt per alguna cosa inesperada", stem: 'caure' },
-	{ id: 2, text: "Estar en un núvol", explanation: 'Estar distret o absent mentalment', stem: 'estar' },
-	{ id: 3, text: 'Posar els peus a terra', explanation: 'Ser realista i pràctic', stem: 'posar' },
-	{ id: 4, text: 'Caure bé', explanation: 'Agradar una persona', stem: 'caure' },
-	{ id: 5, text: 'Fer la guitza', explanation: 'Fer enfadar o molestar algú', stem: 'fer' }
-];
+function buildTsquery(input: string): string | null {
+	const tokens = input.trim().split(/\s+/).filter(Boolean);
+	if (tokens.length === 0) return null;
+	// All tokens joined with & (AND), last token gets :* for prefix matching
+	return tokens
+		.map((t, i) => (i === tokens.length - 1 ? `${t}:*` : t))
+		.join(' & ');
+}
 
 export const load: PageServerLoad = async ({ url }) => {
 	const paraula = url.searchParams.get('paraula') || '';
+	const tsquery = buildTsquery(paraula);
 
-	// For now, return mock phrases that contain the word or its stem
-	// In production, this would query the database using tsvector
-	const filteredPhrases = MOCK_PHRASES.filter(phrase =>
-		phrase.text.toLowerCase().includes(paraula.toLowerCase()) ||
-		phrase.stem.toLowerCase().includes(paraula.toLowerCase())
-	);
+	if (!tsquery) {
+		return { paraula, phrases: [] };
+	}
 
-	return {
-		paraula,
-		phrases: filteredPhrases
-	};
+	// Stage 1: catalan-stemmed (catches inflected forms)
+	const catalanQ = sql`to_tsquery('public.catalan', ${tsquery})`;
+	const results = await db
+		.select({
+			id: phrases.id,
+			phraseText: phrases.phraseText,
+			explanation: phrases.explanation
+		})
+		.from(phrases)
+		.where(sql`${phrases.searchVector} @@ ${catalanQ}`)
+		.limit(20);
+
+	if (results.length > 0) {
+		return { paraula, phrases: results };
+	}
+
+	// Stage 2 (fallback): simple tokenization (archaic/unknown words)
+	const simpleQ = sql`to_tsquery('simple', ${tsquery})`;
+	const fallbackResults = await db
+		.select({
+			id: phrases.id,
+			phraseText: phrases.phraseText,
+			explanation: phrases.explanation
+		})
+		.from(phrases)
+		.where(sql`to_tsvector('simple', ${phrases.phraseText}) @@ ${simpleQ}`)
+		.limit(20);
+
+	return { paraula, phrases: fallbackResults };
 };

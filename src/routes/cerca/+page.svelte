@@ -28,7 +28,7 @@
 			{#each data.phrases as phrase}
 				<li>
 					<a href="/expressions/{phrase.id}" class="text-brand hover:text-brand-hover transition-colors">
-						<strong>{phrase.text}</strong>
+						<strong>{phrase.phraseText}</strong>
 						<span class="text-muted"> &mdash; {phrase.explanation}</span>
 					</a>
 				</li>
