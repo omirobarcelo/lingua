@@ -1,7 +1,17 @@
 <script lang="ts">
+	import posthog from 'posthog-js';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
+
+	function handleRelatedPhraseClick(relatedId: number, relatedText: string) {
+		posthog.capture('related_phrase_clicked', {
+			related_phrase_id: relatedId,
+			related_phrase_text: relatedText,
+			source_phrase_id: data.phrase.id,
+			source_phrase_text: data.phrase.phraseText
+		});
+	}
 </script>
 
 <svelte:head>
@@ -26,7 +36,7 @@
 		<ul class="space-y-3">
 			{#each data.relatedPhrases as related}
 				<li>
-					<a href="/expressions/{related.id}" class="text-brand hover:text-brand-hover transition-colors">
+					<a href="/expressions/{related.id}" class="text-brand hover:text-brand-hover transition-colors" onclick={() => handleRelatedPhraseClick(related.id, related.phraseText)}>
 						<strong>{related.phraseText}</strong>
 						<span class="text-muted"> &mdash; {related.explanation}</span>
 					</a>

@@ -1,12 +1,15 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import posthog from 'posthog-js';
 
 	let searchWord = $state('');
 
 	function handleSearch(event: Event) {
 		event.preventDefault();
-		if (searchWord.trim()) {
-			goto(`/cerca?paraula=${encodeURIComponent(searchWord.trim())}`);
+		const trimmedWord = searchWord.trim();
+		if (trimmedWord) {
+			posthog.capture('word_searched', { word: trimmedWord });
+			goto(`/cerca?paraula=${encodeURIComponent(trimmedWord)}`);
 		}
 	}
 </script>
@@ -22,7 +25,7 @@
 	</p>
 	<form class="flex gap-3" onsubmit={handleSearch}>
 		<input
-			type="text"
+			type="search"
 			bind:value={searchWord}
 			placeholder="Introdueix una paraula..."
 			required

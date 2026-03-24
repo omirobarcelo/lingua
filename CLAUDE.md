@@ -19,14 +19,15 @@ The app language is Catalan (`lang="ca"` in `app.html`).
 - Seed script with 5 categories, 25 phrases, and 12 relation rows
 - **PWA**: installable via `@vite-pwa/sveltekit` (`generateSW` strategy, `autoUpdate`, `NetworkFirst` for navigations)
 - **Prerendered routes**: `/`, `/design-system`, `/sistema-disseny` (static pages with no DB dependency)
-- No analytics, no production deployment yet
+- **Analytics**: PostHog (`posthog-js` + `posthog-node`) with reverse proxy, custom events, session recording, and enable/disable toggle
+- No production deployment yet
 
 ## Target Architecture (in progress)
 
 - **Styling**: TailwindCSS v4 with custom design system (vermillion `#fb542b` palette)
 - **Database**: PostgreSQL FTS with custom Catalan configuration (`catalan_stem` + `unaccent`)
 - **PWA**: `@vite-pwa/sveltekit` for installability ✅
-- **Analytics**: PostHog (`posthog-js`) for pageviews and feature flags
+- **Analytics**: PostHog (`posthog-js` + `posthog-node`) — pageviews, custom events, session recording, error tracking ✅
 - **Deployment**: Vercel + Neon (serverless PostgreSQL)
 
 ## Tech Stack
@@ -36,6 +37,7 @@ The app language is Catalan (`lang="ca"` in `app.html`).
 - **ORM**: Drizzle ORM (`drizzle-orm` + `postgres` driver, NOT `pg`/`node-postgres`)
 - **Database**: PostgreSQL 16 (Docker for local dev)
 - **PWA**: `@vite-pwa/sveltekit` (generateSW, autoUpdate)
+- **Analytics**: PostHog — `posthog-js` (client), `posthog-node` (server)
 - **Deployment adapter**: `@sveltejs/adapter-vercel`
 
 ## Conventions
@@ -54,6 +56,7 @@ The app language is Catalan (`lang="ca"` in `app.html`).
 - **Prerendering**: Static pages (no DB dependency) use `export const prerender = true` in `+page.ts`.
 - **PWA**: SW registered via `virtual:pwa-register` in `+layout.svelte` `onMount`. Manifest link is manual in `app.html` (not auto-injected by plugin with adapter-vercel).
 - **Icons**: Source SVG at `static/icons/lingua.svg`. Regenerate all PNGs + favicon.ico via `npx tsx scripts/generate-icons.ts`.
+- **PostHog**: Initialized in `src/hooks.client.ts` via `init()` hook (NOT `+layout.ts`). Toggle with `PUBLIC_POSTHOG_ENABLED` env var. Client uses `opt_out_capturing_by_default` — no per-call guards needed in route files. Server-side (`posthog-node`) needs explicit guards. Reverse proxy at `/ingest` in `hooks.server.ts` for ad-blocker resilience.
 
 ## File Structure
 
@@ -61,10 +64,13 @@ The app language is Catalan (`lang="ca"` in `app.html`).
 src/
 ├── app.html              # Shell HTML, lang="ca"
 ├── app.css               # Tailwind v4 @import + @theme design tokens + base styles
+├── hooks.client.ts       # PostHog client init + error capture
+├── hooks.server.ts       # /ingest reverse proxy + server error capture
 ├── params/
 │   └── integer.ts        # Route param matcher for numeric IDs
 ├── lib/
 │   └── server/
+│       ├── posthog.ts            # posthog-node singleton factory
 │       └── db/
 │           ├── index.ts          # Drizzle client export (uses DATABASE_URL)
 │           ├── schema.ts         # Table definitions, tsvector customType, GIN indexes
@@ -120,6 +126,9 @@ Three tables defined in `src/lib/server/db/schema.ts`:
 | Variable | Scope | Description |
 |---|---|---|
 | `DATABASE_URL` | Server (private) | PostgreSQL connection string |
+| `PUBLIC_POSTHOG_ENABLED` | Client (public) | `true`/`false` — toggle all PostHog |
+| `PUBLIC_POSTHOG_PROJECT_TOKEN` | Client (public) | PostHog project API key |
+| `PUBLIC_POSTHOG_HOST` | Client (public) | `https://eu.i.posthog.com` |
 
 ## Database — FTS Architecture
 

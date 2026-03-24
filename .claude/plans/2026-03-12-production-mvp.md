@@ -224,162 +224,52 @@ This produces three files from the SVG:
 
 ---
 
-### Step 6 — PostHog Integration
+### Step 6 — PostHog Integration ✅
 
-**Install:** `npm install posthog-js`
+**Completed.** Initial setup via PostHog AI Wizard (`npx @posthog/wizard --region eu`), then refined manually.
 
-**`.env` and `.env.example`** — add:
-```
-PUBLIC_POSTHOG_KEY=phc_YOUR_KEY_HERE
-PUBLIC_POSTHOG_HOST=https://eu.i.posthog.com
-```
+**What was done:**
+- Installed `posthog-js` (client) and `posthog-node` (server) as runtime dependencies
+- `src/hooks.client.ts` (new) — initializes `posthog-js` via SvelteKit `init` hook with `/ingest` reverse proxy, `defaults: '2026-01-30'` for automatic SPA pageview tracking, `capture_exceptions: true` for client-side error tracking, and `session_recording` config to unmask search inputs while masking all other inputs
+- `src/hooks.server.ts` (new) — reverse proxy at `/ingest` routing to `eu.i.posthog.com` / `eu-assets.i.posthog.com` (ad-blocker resilience), plus server-side error capture via `posthog-node`. Both proxy and error capture are guarded by `PUBLIC_POSTHOG_ENABLED`
+- `src/lib/server/posthog.ts` (new) — singleton `posthog-node` client factory (`flushAt: 1`, `flushInterval: 0` for serverless)
+- `svelte.config.js` — added `paths: { relative: false }` (required for session replay)
+- `.env` — added `PUBLIC_POSTHOG_ENABLED`, `PUBLIC_POSTHOG_PROJECT_TOKEN`, and `PUBLIC_POSTHOG_HOST`
+- Custom events instrumented on all routes: `word_searched`, `search_results_viewed`, `phrase_clicked_from_search`, `category_clicked`, `phrase_clicked_from_category`, `related_phrase_clicked`
+- Home page search input changed to `type="search"` so session replay shows search queries (unmasked via `maskInputOptions`)
+- PostHog dashboards and insights auto-created in EU project
 
-**New file `src/routes/+layout.ts`** (NOT `.server.ts` — must run in browser):
-```ts
-import { browser } from '$app/environment';
-import { PUBLIC_POSTHOG_KEY, PUBLIC_POSTHOG_HOST } from '$env/static/public';
+**Enable/disable toggle:**
+- `PUBLIC_POSTHOG_ENABLED=true|false` in `.env` controls all PostHog behavior
+- Client-side: uses `opt_out_capturing_by_default` — PostHog initializes but silently drops all events when disabled. No per-call guards needed in route files
+- Server-side: explicit `enabled` guard on `/ingest` proxy and error capture (posthog-node lacks `opt_out_capturing_by_default`)
 
-export const load = async () => {
-  if (browser && PUBLIC_POSTHOG_KEY) {
-    const { default: posthog } = await import('posthog-js');
-    posthog.init(PUBLIC_POSTHOG_KEY, {
-      api_host: PUBLIC_POSTHOG_HOST,
-      person_profiles: 'identified_only',
-      capture_pageview: false  // manual via afterNavigate
-    });
-  }
-  return {};
-};
-```
+**Deviations from original plan:**
+- Used `hooks.client.ts` `init()` instead of `+layout.ts` load function (more modern SvelteKit pattern)
+- `defaults: '2026-01-30'` enables automatic SPA pageview tracking — no manual `afterNavigate` needed
+- Added `/ingest` reverse proxy for ad-blocker avoidance (not in original plan)
+- Added server-side error tracking with `posthog-node` (not in original plan)
+- Env var named `PUBLIC_POSTHOG_PROJECT_TOKEN` instead of `PUBLIC_POSTHOG_KEY`
+- Added `PUBLIC_POSTHOG_ENABLED` toggle for dev/prod flexibility
+- Added session recording config: all inputs masked except `type="search"`
 
-**`src/routes/+layout.svelte`** — add pageview tracking:
-```svelte
-import { afterNavigate } from '$app/navigation';
-import { browser } from '$app/environment';
+**PostHog dashboards (EU project 144826):**
+- Analytics basics: https://eu.posthog.com/project/144826/dashboard/584716
+- Word searches over time: https://eu.posthog.com/project/144826/insights/hllh5qLw
+- Search-to-phrase click funnel: https://eu.posthog.com/project/144826/insights/RfCJ1X8i
+- Category engagement over time: https://eu.posthog.com/project/144826/insights/ADIQcBgb
+- Search quality (results vs. no results): https://eu.posthog.com/project/144826/insights/tU2tcJqT
+- Related phrase clicks over time: https://eu.posthog.com/project/144826/insights/smqHU0w6
 
-afterNavigate(() => {
-  if (browser) import('posthog-js').then(({ default: ph }) => ph.capture('$pageview'));
-});
-```
-
-**Verification:** Set real PostHog key, `npm run dev`, navigate pages → PostHog Dashboard > Live Events shows `$pageview` events. With empty key, app works without errors.
-
----
-
-### Step 7 — Finalize CLAUDE.md
-
-**Goal:** Update the `CLAUDE.md` (created in Step 0 and incrementally updated throughout) to reflect the final complete state of the project after all steps.
-
-**Update existing file:** `CLAUDE.md`
-
-```markdown
-# Lingua – CLAUDE.md
-
-## Project Overview
-Catalan phrase/idiom dictionary. Two core features:
-1. **Word Search** (`/cerca?paraula=X`): FTS against phrases, shows DCVB iframe + matching phrases
-2. **Phrase Browse** (`/expressions`): Categories → Phrases → Detail + related phrases
-
-## Architecture
-- **Framework**: SvelteKit 2, Svelte 5 (runes API)
-- **Styling**: TailwindCSS v4, CSS-first config (`@theme` in `app.css`), no `tailwind.config.js`
-- **Database**: PostgreSQL 16, Drizzle ORM (postgres-js driver), custom Catalan FTS
-- **Deployment**: Vercel (adapter-vercel) + Neon (production DB)
-- **PWA**: @vite-pwa/sveltekit, generateSW strategy, autoUpdate
-- **Analytics**: PostHog (browser-only, `posthog-js`)
-
-## Tech Stack Decisions
-- **Svelte 5 runes**: Use `$props()`, `$state()`, `$derived()`. NOT `export let` or `$:` reactive labels.
-  Layouts: `let { children } = $props()` → `{@render children()}`. NOT `<slot />`.
-- **Tailwind v4**: `@import "tailwindcss"` + `@theme {}` in `app.css`. No config file.
-  Use semantic aliases (`bg-brand`, `text-text-muted`) not raw palette (`bg-primary-500`).
-- **Drizzle**: SQL-like API. `db.select().from(table).where(eq(col, val))`.
-  For raw SQL: `sql` tag from `'drizzle-orm'`. Never use Prisma patterns.
-- **tsvector**: `searchVector` column is type `tsvector` (via `customType`).
-  NEVER set `searchVector` manually — the DB trigger `phrases_fts_trigger` handles it.
-- **Public env vars** (`PUBLIC_*`): import from `$env/static/public`. Safe for browser.
-  **Private env vars**: import from `$env/static/private`. Server-only.
-
-## File Structure
-src/
-├── lib/server/db/
-│   ├── index.ts          # Drizzle client export
-│   ├── schema.ts         # Table definitions, tsvector customType, GIN indexes
-│   ├── setup-fts.sql     # Phase 1: unaccent ext + catalan FTS config (before db:push)
-│   ├── setup-trigger.sql # Phase 2: trigger + backfill (after db:push)
-│   ├── run-setup.ts      # Script to execute setup SQL (accepts 'fts' or 'trigger' arg)
-│   └── seed.ts           # Dev seed: 5 categories, 25 phrases
-├── routes/
-│   ├── +layout.ts        # PostHog init (browser-only, NOT .server.ts)
-│   ├── +layout.svelte    # App shell, app.css import, afterNavigate tracking
-│   ├── +page.svelte      # Home: search form
-│   ├── cerca/            # /cerca?paraula=X
-│   ├── expressions/      # Category list
-│   ├── expressions/[slug]/       # Phrases in a category
-│   ├── expressions/[id=integer]/ # Phrase detail + related phrases
-│   └── design-system/    # Dev reference: colors, typography, components
-├── params/integer.ts     # Route param matcher
-└── app.css               # Tailwind @import + @theme design tokens
-
-## Database — FTS Architecture
-- `search_vector` column stores `setweight(to_tsvector('public.catalan', phrase_text), 'A')` — weight A is the highest of 4 FTS ranking levels (A > B > C > D). Currently only `phrase_text` is indexed so the weight has no practical effect, but it's set up so that if `explanation` is later added at weight B, `ts_rank` will automatically prioritize phrase-text matches over explanation matches
-- `public.catalan` = copy of built-in `pg_catalog.catalan` + catalan_unaccent pre-filter
-- PostgreSQL ships with `catalan_stem` Snowball dict AND `pg_catalog.catalan` config (no stopwords file though)
-- **No stopwords** — intentionally skipped; negligible overhead at 500 phrases (~15KB). Add a `catalan.stop` later + `UPDATE phrases SET phrase_text = phrase_text;` to recalculate
-- Hunspell/ispell dicts would improve accuracy but cannot be used on Neon (requires filesystem access)
-- Two GIN indexes:
-  1. On `search_vector` column (catalan-stemmed) — primary search
-  2. Expression: `to_tsvector('simple', phrase_text)` — fallback for archaic/unknown words
-- Search strategy in `/cerca`: try catalan first → if 0 results → try simple
-
-## Fresh Database Setup (order matters!)
-1. `npm run db:setup:fts`     — Phase 1: extensions + FTS config (no table dependency)
-2. `npm run db:generate`      — generate Drizzle migration SQL
-3. `npm run db:push`          — apply schema (creates tables)
-4. `npm run db:setup:trigger` — Phase 2: trigger + backfill (requires phrases table)
-5. `npm run db:seed`          — insert categories + phrases + relations
-
-## Commands
-| Command | Description |
-|---|---|
-| `npm run dev` | Dev server on port 5173 |
-| `npm run build` | Production build |
-| `npm run preview` | Preview production build |
-| `npm run check` | TypeScript + Svelte typecheck |
-| `docker compose up -d` | Start local PostgreSQL 16 |
-| `npm run db:setup:fts` | Phase 1: extensions + FTS config |
-| `npm run db:setup:trigger` | Phase 2: trigger + backfill (after db:push) |
-| `npm run db:generate` | Generate Drizzle migration files |
-| `npm run db:push` | Apply schema to DB |
-| `npm run db:seed` | Seed with 5 categories + 25 phrases |
-| `npm run db:studio` | Open Drizzle Studio GUI |
-
-## Environment Variables
-| Variable | Scope | Description |
-|---|---|---|
-| `DATABASE_URL` | Server (private) | postgres:// connection string |
-| `PUBLIC_POSTHOG_KEY` | Client (public) | PostHog project API key |
-| `PUBLIC_POSTHOG_HOST` | Client (public) | e.g. https://eu.i.posthog.com |
-
-## Deployment (Vercel + Neon)
-1. Create Neon project → copy pooled connection URL
-2. Set env vars in Vercel dashboard (DATABASE_URL, PUBLIC_POSTHOG_*)
-3. `DATABASE_URL=<neon_url> npm run db:setup` then `npm run db:push`
-4. `DATABASE_URL=<neon_url> npm run db:seed` for initial content
-5. Push to GitHub → Vercel auto-deploys
-
-## Design System
-See `/design-system` route for live reference of all colors, typography, and components.
-Brand color: `#fb542b` (primary-500). To retheme: update `--color-primary-*` values in `@theme`.
-```
+**Verification:** `npm run dev` with `PUBLIC_POSTHOG_ENABLED=true`, navigate pages → PostHog Dashboard > Live Events shows `$pageview` and custom events. Session recordings capture search input text. With `PUBLIC_POSTHOG_ENABLED=false`, no events are sent.
 
 ---
 
-### Step 8 — Vercel + Neon: Deploy and Verify Production
+### Step 7 — Vercel + Neon: Deploy and Verify Production
 
 **Goal:** Get the app running live on Vercel connected to a real Neon PostgreSQL database.
 
-**8a — Neon Database Setup**
+**7a — Neon Database Setup**
 
 1. Create a Neon account at [neon.tech](https://neon.tech) and create a new project (region: closest to Vercel's default, e.g. `us-east-1` or `eu-west-1`)
 2. In the Neon dashboard, go to the project's **Connection Details** and copy the **pooled** connection string (it uses `pgbouncer=true` — required for serverless Vercel functions):
@@ -399,7 +289,7 @@ Brand color: `#fb542b` (primary-500). To retheme: update `--color-primary-*` val
    ```
 4. Verify in Neon dashboard: Tables tab should show `categories` (5 rows), `phrases` (25 rows), `phrase_relations` (6 rows)
 
-**8b — Vercel Project Setup**
+**7b — Vercel Project Setup**
 
 Prerequisite: push the project to a GitHub repository first.
 
@@ -409,11 +299,11 @@ Prerequisite: push the project to a GitHub repository first.
    | Key | Value |
    |---|---|
    | `DATABASE_URL` | Neon pooled connection string |
-   | `PUBLIC_POSTHOG_KEY` | PostHog project API key |
-   | `PUBLIC_POSTHOG_HOST` | `https://eu.i.posthog.com` (or `us`) |
+   | `PUBLIC_POSTHOG_PROJECT_TOKEN` | PostHog project API key |
+   | `PUBLIC_POSTHOG_HOST` | `https://eu.i.posthog.com` |
 4. Click **Deploy** — Vercel builds and deploys the app
 
-**8c — Post-Deploy Verification Checklist**
+**7c — Post-Deploy Verification Checklist**
 
 After deploy succeeds, visit the Vercel-assigned URL (e.g. `https://lingua-xxx.vercel.app`) and test:
 
@@ -426,7 +316,7 @@ After deploy succeeds, visit the Vercel-assigned URL (e.g. `https://lingua-xxx.v
 - [ ] Install PWA: Chrome address bar shows install icon; installed app opens in standalone window
 - [ ] PostHog: navigate a few pages → Dashboard > Live Events shows `$pageview` events
 
-**8d — Neon Branching for Future Development** _(optional but recommended)_
+**7d — Neon Branching for Future Development** _(optional but recommended)_
 
 Neon supports database branches (like git branches). Create a `dev` branch for local/staging work:
 ```bash
@@ -439,6 +329,21 @@ Neon supports database branches (like git branches). Create a `dev` branch for l
 
 ---
 
+### Step 8 — Finalize
+
+**Goal:** Final review and cleanup of the entire project after all implementation steps are complete.
+
+**Tasks:**
+1. **Update `CLAUDE.md`** — reflect the final complete state (PostHog integration details, updated file structure, environment variables, deployment info)
+2. **Update `README.md`** — updated setup instructions, new commands, architecture overview, deployment guide
+3. **Update `README_CAT.md`** (if it exists) — keep in sync with README.md
+4. **Create `.env.example`** — template with all required env vars and placeholder values (no real keys)
+5. **Project review** — verify all files are clean, no dead code or leftover artifacts, `npm run check` passes
+
+**Verification:** All documentation is accurate and up-to-date. `.env.example` contains all required variables. `npm run check` passes.
+
+---
+
 ## Package Changes Summary
 
 ```bash
@@ -446,7 +351,7 @@ Neon supports database branches (like git branches). Create a `dev` branch for l
 npm install -D tailwindcss @tailwindcss/vite tsx @vite-pwa/sveltekit
 
 # Runtime dependencies
-npm install posthog-js
+npm install posthog-js posthog-node
 ```
 
 ---

@@ -1,7 +1,25 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+	import posthog from 'posthog-js';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
+
+	onMount(() => {
+		posthog.capture('search_results_viewed', {
+			word: data.paraula,
+			result_count: data.phrases.length,
+			has_results: data.phrases.length > 0
+		});
+	});
+
+	function handlePhraseClick(phraseId: number, phraseText: string) {
+		posthog.capture('phrase_clicked_from_search', {
+			phrase_id: phraseId,
+			phrase_text: phraseText,
+			search_word: data.paraula
+		});
+	}
 </script>
 
 <svelte:head>
@@ -27,7 +45,7 @@
 		<ul class="space-y-3">
 			{#each data.phrases as phrase}
 				<li>
-					<a href="/expressions/{phrase.id}" class="text-brand hover:text-brand-hover transition-colors">
+					<a href="/expressions/{phrase.id}" class="text-brand hover:text-brand-hover transition-colors" onclick={() => handlePhraseClick(phrase.id, phrase.phraseText)}>
 						<strong>{phrase.phraseText}</strong>
 						<span class="text-muted"> &mdash; {phrase.explanation}</span>
 					</a>
