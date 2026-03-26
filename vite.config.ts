@@ -20,7 +20,12 @@ export default defineConfig({
 				start_url: '/',
 				icons: [
 					{ src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
-					{ src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+					{ src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+					{ src: '/icons/icon-512-maskable.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' }
+				],
+				screenshots: [
+					{ src: '/screenshots/desktop.png', sizes: '1280x720', type: 'image/png', form_factor: 'wide', label: 'Lingua — Pàgina principal (escriptori)' },
+					{ src: '/screenshots/mobile.png', sizes: '780x1688', type: 'image/png', form_factor: 'narrow', label: 'Lingua — Pàgina principal (mòbil)' }
 				]
 			},
 			workbox: {

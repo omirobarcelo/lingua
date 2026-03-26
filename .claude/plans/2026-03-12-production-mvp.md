@@ -310,7 +310,35 @@ This produces three files from the SVG:
 
 ---
 
-### Step 8 — Finalize
+### Step 8 — Vite 8 Upgrade + PWA Fixes ✅
+
+**Completed.** Upgraded from Vite 6 to Vite 8 and fixed PWA manifest warnings.
+
+**What was done:**
+
+**8a — Vite 6 → 8 Upgrade**
+- Upgraded `vite` from `^6.4.1` to `^8.0.0` (Rolldown replaces esbuild + Rollup under the hood)
+- Upgraded `@sveltejs/kit` from `^2.50.1` to `^2.55.0` (Vite 8 support added in 2.53.0)
+- Upgraded `@sveltejs/vite-plugin-svelte` from `^6.2.4` to `^7.0.0` (required for Vite 8, drops Vite 7)
+- Upgraded `@tailwindcss/vite` from `^4.2.1` to `^4.2.2` (adds Vite 8 to peer dep range)
+- `vite-plugin-pwa@1.2.0` declares peer dep up to `^7.0.0` only — Vite 8 works via compatibility layer but shows a peer dep warning. No `vite-plugin-pwa` update available yet.
+
+**8b — PWA Manifest Fixes**
+- Split `icon-512.png` `purpose: 'any maskable'` into two separate entries: `icon-512.png` (purpose: any, default) and `icon-512-maskable.png` (purpose: maskable) — mixed purpose causes padding issues on some platforms
+- Generated `icon-512-maskable.png` via `scripts/generate-icons.ts` — 512x512 with 80% inner icon centered on `#fb542b` brand background (safe zone padding)
+- Added `screenshots` array to manifest for richer PWA install UI:
+  - Desktop: `static/screenshots/desktop.png` (1280x720, `form_factor: 'wide'`)
+  - Mobile: `static/screenshots/mobile.png` (780x1688 — 390x844 viewport at 2x DPR, `form_factor: 'narrow'`)
+- Created `static/.well-known/appspecific/com.chrome.devtools.json` — silences Chrome DevTools config request message
+
+**8c — Skill: `/refresh-pwa-assets`**
+- Created `.claude/skills/refresh-pwa-assets/SKILL.md` — regenerates all icons (via `scripts/generate-icons.ts`) and takes desktop/mobile screenshots (via Puppeteer MCP) from the preview server
+
+**Verification:** `npm run build && npm run preview` succeeds. Chrome DevTools > Application > Manifest shows no errors or warnings. PWA install prompt appears with richer UI (screenshots visible).
+
+---
+
+### Step 9 — Finalize
 
 **Goal:** Final review and cleanup of the entire project after all implementation steps are complete.
 
@@ -360,3 +388,7 @@ npm install posthog-js posthog-node @neondatabase/serverless
 8. **Vercel Managed Integration for Neon**: When using the Vercel integration, Neon is accessed through the Vercel dashboard. The integration auto-provisions `DATABASE_URL` and related env vars in Vercel. No separate Neon account login needed.
 
 9. **Conditional DB driver for dev vs prod**: `src/lib/server/db/index.ts` uses dynamic `await import()` to load `postgres` (dev) or `@neondatabase/serverless` (prod). Top-level `await` works because the file is an ES module in a server-only path.
+
+10. **Vite 8 + vite-plugin-pwa peer dep**: `vite-plugin-pwa@1.2.0` only declares `vite ^3–^7` in peer deps. Vite 8 works via Rolldown's compatibility layer but npm shows a peer dep warning. Monitor for a `vite-plugin-pwa` release that adds `^8`.
+
+11. **PWA icon purpose split**: Don't use `purpose: 'any maskable'` on a single icon — it causes incorrect padding on some platforms. Use separate icon entries: one default (any) and one dedicated maskable icon with safe-zone padding.

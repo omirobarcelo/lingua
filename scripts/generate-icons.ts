@@ -36,6 +36,20 @@ for (const { size, output } of pngSizes) {
 	console.log(`Generated ${output} (${size}x${size})`);
 }
 
+// Generate maskable icon (512x512 with safe-zone padding — icon at 80% centered on brand bg)
+const maskableSize = 512;
+const innerSize = Math.round(maskableSize * 0.8);
+const offset = Math.round((maskableSize - innerSize) / 2);
+const innerIcon = await sharp(svgBuffer).resize(innerSize, innerSize).png().toBuffer();
+const maskablePath = resolve(root, 'static/icons/icon-512-maskable.png');
+await sharp({
+	create: { width: maskableSize, height: maskableSize, channels: 4, background: '#fb542b' }
+})
+	.composite([{ input: innerIcon, left: offset, top: offset }])
+	.png()
+	.toFile(maskablePath);
+console.log(`Generated ${maskablePath} (${maskableSize}x${maskableSize} maskable)`);
+
 // Generate favicon.ico (32x32 PNG wrapped as ICO — browsers accept PNG-in-ICO)
 const ico32 = await sharp(svgBuffer).resize(32, 32).png().toBuffer();
 // ICO header for a single 32x32 PNG image
