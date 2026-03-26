@@ -265,67 +265,48 @@ This produces three files from the SVG:
 
 ---
 
-### Step 7 — Vercel + Neon: Deploy and Verify Production
+### Step 7 — Vercel + Neon: Deploy and Verify Production ✅
 
-**Goal:** Get the app running live on Vercel connected to a real Neon PostgreSQL database.
+**Completed.** App deployed on Vercel with Neon PostgreSQL via the Vercel Managed Integration.
 
-**7a — Neon Database Setup**
+**What was done:**
 
-1. Create a Neon account at [neon.tech](https://neon.tech) and create a new project (region: closest to Vercel's default, e.g. `us-east-1` or `eu-west-1`)
-2. In the Neon dashboard, go to the project's **Connection Details** and copy the **pooled** connection string (it uses `pgbouncer=true` — required for serverless Vercel functions):
-   ```
-   postgres://user:password@ep-xxx.eu-west-2.aws.neon.tech/neondb?sslmode=require
-   ```
-3. Run schema setup and seed against Neon from your local machine:
-   ```bash
-   # Point all DB scripts at Neon for this session
-   export DATABASE_URL="postgres://user:password@ep-xxx...neon.tech/neondb?sslmode=require"
+**7a — Vercel + Neon Setup (Managed Integration)**
+- Created Vercel account and project linked to the GitHub repository
+- Installed the **Neon Managed Integration** for Vercel (https://neon.com/docs/guides/vercel-managed-integration) — Neon is accessed through the Vercel dashboard, not a separate Neon account
+- The integration automatically provisions the Neon database and sets `DATABASE_URL` (+ other Neon env vars) in the Vercel project environment
+- Manually added PostHog env vars (`PUBLIC_POSTHOG_PROJECT_TOKEN`, `PUBLIC_POSTHOG_HOST`, `PUBLIC_POSTHOG_ENABLED`) in Vercel project settings
 
-   npm run db:setup:fts     # Phase 1: extensions + FTS config on Neon
-   npm run db:generate      # generates migration files locally
-   npm run db:push          # applies schema to Neon
-   npm run db:setup:trigger # Phase 2: trigger + backfill on Neon
-   npm run db:seed          # seeds Neon with 5 categories + 25 phrases
-   ```
-4. Verify in Neon dashboard: Tables tab should show `categories` (5 rows), `phrases` (25 rows), `phrase_relations` (6 rows)
+**7b — Database Initialization on Neon**
+- Ran schema setup and seed against Neon from local machine using the Neon connection string:
+  ```bash
+  DATABASE_URL="<neon-connection-string>" npm run db:setup:fts
+  DATABASE_URL="<neon-connection-string>" npm run db:push
+  DATABASE_URL="<neon-connection-string>" npm run db:setup:trigger
+  DATABASE_URL="<neon-connection-string>" npm run db:seed
+  ```
 
-**7b — Vercel Project Setup**
+**7c — Conditional DB Driver**
+- `src/lib/server/db/index.ts` — now uses dynamic imports to select the DB driver at runtime:
+  - **Development** (`dev === true`): `postgres` (postgres-js) for local Docker PostgreSQL
+  - **Production**: `@neondatabase/serverless` (`neon-http` driver) for Vercel serverless functions
+- Installed `@neondatabase/serverless` as a runtime dependency
 
-Prerequisite: push the project to a GitHub repository first.
+**7d — Neon-to-Local Sync Script**
+- Created `scripts/pull-neon.ts` — pulls data from Neon and loads it into local Docker PostgreSQL
+- Uses `@neondatabase/serverless` (tagged template queries) to read from Neon and `postgres` to write locally
+- Two modes:
+  - `npm run db:pull` — **replace**: truncates local tables, inserts all Neon data
+  - `npm run db:pull -- --merge` — **merge**: inserts Neon data, skips conflicts by id
+- Resets sequences after insert so future local inserts get correct IDs
+- Requires `NEON_DATABASE_URL` in `.env`
 
-1. Go to [vercel.com](https://vercel.com) → New Project → Import the GitHub repository
-2. Framework preset should auto-detect **SvelteKit**; no changes needed to build settings
-3. In the **Environment Variables** section, add:
-   | Key | Value |
-   |---|---|
-   | `DATABASE_URL` | Neon pooled connection string |
-   | `PUBLIC_POSTHOG_PROJECT_TOKEN` | PostHog project API key |
-   | `PUBLIC_POSTHOG_HOST` | `https://eu.i.posthog.com` |
-4. Click **Deploy** — Vercel builds and deploys the app
+**New environment variable:**
+| Variable | Scope | Description |
+|---|---|---|
+| `NEON_DATABASE_URL` | Local only (`.env`) | Neon pooled connection string for `db:pull` script |
 
-**7c — Post-Deploy Verification Checklist**
-
-After deploy succeeds, visit the Vercel-assigned URL (e.g. `https://lingua-xxx.vercel.app`) and test:
-
-- [ ] `/` — home page loads, search form renders with brand color header
-- [ ] `/expressions` — shows 5 real categories from Neon DB
-- [ ] `/expressions/animals` — shows 5 phrases for Animals category
-- [ ] `/expressions/[id]` — phrase detail with related phrases (test any seeded phrase ID)
-- [ ] `/cerca?paraula=ploure` — FTS returns "Ploure a bots i barrals"
-- [ ] `/cerca?paraula=cor` — FTS returns "Tenir el cor trencat"
-- [ ] Install PWA: Chrome address bar shows install icon; installed app opens in standalone window
-- [ ] PostHog: navigate a few pages → Dashboard > Live Events shows `$pageview` events
-
-**7d — Neon Branching for Future Development** _(optional but recommended)_
-
-Neon supports database branches (like git branches). Create a `dev` branch for local/staging work:
-```bash
-# In Neon dashboard: Branches → Create Branch → name: "dev"
-# Use the dev branch connection string in local .env
-# Use the main branch connection string in Vercel production
-```
-
-**Verification:** All checklist items above pass. No 500 errors in Vercel Function logs.
+**Verification:** App deployed and accessible on Vercel. All routes work with live Neon data. Local dev uses Docker PostgreSQL, production uses Neon serverless driver.
 
 ---
 
@@ -351,7 +332,7 @@ Neon supports database branches (like git branches). Create a `dev` branch for l
 npm install -D tailwindcss @tailwindcss/vite tsx @vite-pwa/sveltekit
 
 # Runtime dependencies
-npm install posthog-js posthog-node
+npm install posthog-js posthog-node @neondatabase/serverless
 ```
 
 ---
@@ -373,3 +354,9 @@ npm install posthog-js posthog-node
    ```
 
 6. **PWA icons must be real PNGs**: Manifest validation fails if icon files are missing or malformed. Create both `icon-192.png` and `icon-512.png` before running `npm run build`.
+
+7. **Neon serverless driver uses tagged templates**: `neon(url)` returns a tagged template function, not a regular function. Use `` sql`SELECT ...` `` not `sql('SELECT ...')` — the latter throws `This function can now be called only as a tagged-template function`.
+
+8. **Vercel Managed Integration for Neon**: When using the Vercel integration, Neon is accessed through the Vercel dashboard. The integration auto-provisions `DATABASE_URL` and related env vars in Vercel. No separate Neon account login needed.
+
+9. **Conditional DB driver for dev vs prod**: `src/lib/server/db/index.ts` uses dynamic `await import()` to load `postgres` (dev) or `@neondatabase/serverless` (prod). Top-level `await` works because the file is an ES module in a server-only path.
