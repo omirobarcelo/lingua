@@ -1,42 +1,37 @@
 # Lingua
 
-Catalan phrase dictionary with word search and phrase consultation by categories.
+Catalan phrase/idiom dictionary web application with full-text search and phrase browsing by categories.
 
 ## Features
 
-- **Word Search**: Search for words to view their definition (DCVB integration) and phrases that contain them
-- **Phrase Consultation**: Browse Catalan phrases organized by categories
-- **Postgres Database**: Uses Drizzle ORM with tsvector columns for stemmed search
-- **Vercel Deployment**: Configured with Vercel adapter for easy deployment
+- **Word Search** (`/cerca?paraula=X`): Search for a word, see its definition (via embedded DCVB iframe) and related phrases
+- **Phrase Browse** (`/expressions`): Browse Catalan phrases organized by categories, with detailed explanations and related phrases
+- **Catalan Full-Text Search**: PostgreSQL FTS with custom Catalan stemming configuration and accent-insensitive matching
+- **PWA**: Installable progressive web app with offline-first navigation caching
+- **Analytics**: PostHog integration with reverse proxy, custom events, and session recording
 
-## Project Structure
+## Tech Stack
 
-```
-src/
-├── lib/
-│   └── server/
-│       └── db/
-│           ├── schema.ts      # Drizzle database schema
-│           └── index.ts       # Database connection
-├── params/
-│   └── integer.ts            # Parameter validator for IDs
-├── routes/
-│   ├── +layout.svelte        # Main layout
-│   ├── +page.svelte          # Home page
-│   ├── cerca/
-│   │   ├── +page.svelte      # Word search results
-│   │   └── +page.server.ts
-│   └── expressions/
-│       ├── +page.svelte      # Category list
-│       ├── +page.server.ts
-│       ├── [slug]/           # Category detail
-│       │   ├── +page.svelte
-│       │   └── +page.server.ts
-│       └── [id=integer]/     # Phrase detail
-│           ├── +page.svelte
-│           └── +page.server.ts
-└── app.css                   # Global styles
-```
+- **Framework**: SvelteKit 2 + Svelte 5 + TypeScript
+- **Build**: Vite 8
+- **Styling**: TailwindCSS v4 with custom design system (vermillion `#fb542b` palette)
+- **ORM**: Drizzle ORM (`drizzle-orm` + `postgres` driver)
+- **Database**: PostgreSQL 16 (Docker locally, Neon serverless in production)
+- **PWA**: `@vite-pwa/sveltekit` (generateSW, autoUpdate)
+- **Analytics**: PostHog (`posthog-js` client + `posthog-node` server)
+- **Deployment**: Vercel + Neon (via Vercel Managed Integration)
+
+## Routes
+
+| Route | Description |
+|---|---|
+| `/` | Home page with word search |
+| `/cerca?paraula=<word>` | Word search results with DCVB definition |
+| `/expressions` | Category list |
+| `/expressions/<slug>` | Phrases in a category |
+| `/expressions/<id>` | Phrase detail with related phrases |
+| `/design-system` | Design system reference (English) |
+| `/sistema-disseny` | Design system reference (Catalan) |
 
 ## Local Development
 
@@ -44,174 +39,122 @@ src/
 
 - Node.js 18+
 - Docker and Docker Compose
-- npm or pnpm
 
 ### Setup
 
-1. Clone the repository:
 ```bash
 git clone <repository-url>
 cd lingua
-```
-
-2. Install dependencies:
-```bash
 npm install
+cp .env.example .env              # Configure environment variables
+docker compose up -d               # Start local PostgreSQL
+npm run db:setup:fts               # Phase 1: extensions + FTS config
+npm run db:push                    # Apply schema (creates tables)
+npm run db:setup:trigger           # Phase 2: trigger + backfill
+npm run db:seed                    # Seed with sample data
+npm run dev                        # Start dev server at localhost:5173
 ```
-
-3. Start the Postgres database with Docker:
-```bash
-docker-compose up -d
-```
-
-4. Set up environment variables:
-```bash
-cp .env.example .env
-```
-
-The `.env` file is already configured for local development with:
-```
-DATABASE_URL=postgres://lingua:lingua_dev_password@localhost:5432/lingua
-```
-
-5. (Optional) Generate and apply database migrations:
-```bash
-npm run db:generate
-npm run db:push
-```
-
-6. Start the development server:
-```bash
-npm run dev
-```
-
-The application will be available at `http://localhost:5173`
 
 ### Available Scripts
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run check` - Check TypeScript types
-- `npm run db:generate` - Generate Drizzle migrations
-- `npm run db:push` - Apply schema to database
-- `npm run db:studio` - Open Drizzle Studio for database management
+| Command | Description |
+|---|---|
+| `npm run dev` | Start dev server (Vite, port 5173) |
+| `npm run build` | Production build |
+| `npm run preview` | Preview production build locally |
+| `npm run check` | TypeScript type checking (`svelte-kit sync` + `svelte-check`) |
+| `docker compose up -d` | Start local PostgreSQL 16 |
+| `npm run db:setup:fts` | Phase 1: extensions + FTS config (before `db:push`) |
+| `npm run db:generate` | Generate Drizzle migration SQL files |
+| `npm run db:push` | Apply schema directly to connected DB |
+| `npm run db:setup:trigger` | Phase 2: trigger + backfill (after `db:push`) |
+| `npm run db:seed` | Seed with 5 categories + 25 phrases + relations |
+| `npm run db:studio` | Open Drizzle Studio GUI |
+| `npm run db:pull` | Pull data from Neon into local Docker DB |
+| `npm run db:pull -- --merge` | Merge Neon data into local DB (skip conflicts) |
 
-## Database Structure
+## Database
 
-### Tables
+### Schema
 
-#### `categories`
-- `id` (serial, primary key)
-- `name` (text) - Category name
-- `slug` (text, unique) - Slug for URLs
-- `description` (text) - Category description
+Three tables defined in `src/lib/server/db/schema.ts`:
 
-#### `phrases`
-- `id` (serial, primary key)
-- `category_id` (integer, foreign key) - Reference to categories
-- `phrase_text` (text) - Phrase text
-- `explanation` (text) - Phrase explanation
-- `search_vector` (text) - tsvector column for stemmed search
+- **categories**: `id`, `name`, `slug` (unique), `description`
+- **phrases**: `id`, `category_id` (FK), `phrase_text`, `explanation`, `search_vector` (tsvector, auto-updated by DB trigger)
+- **phrase_relations**: `id`, `phrase_id` (FK), `related_phrase_id` (FK)
 
-#### `phrase_relations`
-- `id` (serial, primary key)
-- `phrase_id` (integer, foreign key) - Reference to phrases
-- `related_phrase_id` (integer, foreign key) - Reference to related phrase
+### Full-Text Search Architecture
 
-## Current Implementation
+- Custom `public.catalan` FTS config with `catalan_unaccent` pre-filter for accent-insensitive matching
+- Two GIN indexes: catalan-stemmed (primary) and simple (fallback for archaic words)
+- Two-stage search: catalan-stemmed first, simple fallback if 0 results
+- AND logic with prefix on last token (e.g., `"bots i"` → `bots & i:*`)
 
-Currently, the application uses hardcoded mock data for demonstration. Real data will be added to the database in future iterations.
+### Fresh Database Setup (order matters!)
 
-## Deployment to Vercel
-
-1. Create a project at [Vercel](https://vercel.com)
-
-2. Create a Postgres database at [Neon](https://neon.tech)
-
-3. Configure environment variables in Vercel:
-```
-DATABASE_URL=<your-neon-connection-string>
-```
-
-4. Deploy:
 ```bash
-vercel deploy
+npm run db:setup:fts       # Phase 1: extensions + FTS config (no table dependency)
+npm run db:push            # Apply schema (creates tables)
+npm run db:setup:trigger   # Phase 2: trigger + backfill (requires phrases table)
+npm run db:seed            # Optional: seed with sample data
 ```
 
-or connect your GitHub repository for automatic deployment.
+## Environment Variables
 
-## Routes
+| Variable | Scope | Description |
+|---|---|---|
+| `DATABASE_URL` | Server (private) | PostgreSQL connection string |
+| `NEON_DATABASE_URL` | Local only (`.env`) | Neon pooled connection string for `db:pull` script |
+| `PUBLIC_POSTHOG_ENABLED` | Client (public) | `true`/`false` — toggle all PostHog |
+| `PUBLIC_POSTHOG_PROJECT_TOKEN` | Client (public) | PostHog project API key |
+| `PUBLIC_POSTHOG_HOST` | Client (public) | PostHog ingestion host (e.g., `https://eu.i.posthog.com`) |
 
-- `/` - Home page with word search
-- `/cerca?paraula=<word>` - Word search results
-- `/expressions` - List of phrase categories
-- `/expressions/<category-slug>` - Phrases in a category
-- `/expressions/<phrase-id>` - Phrase detail
+## Deployment
 
-## Technologies
+The app is deployed on **Vercel** with **Neon** (serverless PostgreSQL) via the Vercel Managed Integration.
 
-- **SvelteKit** - Fullstack framework
-- **TypeScript** - Static typing
-- **Drizzle ORM** - ORM for PostgreSQL
-- **PostgreSQL** - Database with tsvector support
-- **Docker** - Containerization for local development
-- **Vercel** - Deployment platform
-- **Neon** - Serverless Postgres database for production
+- The integration auto-provisions `DATABASE_URL` in the Vercel project environment
+- PostHog env vars must be added manually in Vercel project settings
+- `src/lib/server/db/index.ts` uses the `postgres` driver locally and `@neondatabase/serverless` in production
 
-## Future Improvements
+To initialize the Neon database:
 
-- [ ] Populate database with real phrases
-- [ ] Implement full-text search with tsvector
-- [ ] Add authentication for phrase management
-- [ ] Admin interface to add/edit phrases
-- [ ] Public API for third parties
-- [ ] Unit and integration tests
-- [ ] Accessibility improvements
-- [ ] Multi-language support (Catalan, Spanish, English)
+```bash
+DATABASE_URL="<neon-connection-string>" npm run db:setup:fts
+DATABASE_URL="<neon-connection-string>" npm run db:push
+DATABASE_URL="<neon-connection-string>" npm run db:setup:trigger
+DATABASE_URL="<neon-connection-string>" npm run db:seed
+```
 
-## Development Plan
+## Project Structure
 
-### Phase 1: Foundation (Completed)
-- [x] Initialize SvelteKit project with TypeScript
-- [x] Configure Vercel adapter
-- [x] Set up Docker Compose for local Postgres
-- [x] Configure Drizzle ORM with database schema
-- [x] Create basic routes and pages
-- [x] Implement basic CSS styling
-- [x] Create hardcoded mock data for testing
-
-### Phase 2: Database Population (Next)
-- [ ] Design data import pipeline
-- [ ] Create seed data script
-- [ ] Populate categories table
-- [ ] Populate phrases table with real Catalan expressions
-- [ ] Set up phrase relationships
-- [ ] Implement tsvector search functionality
-
-### Phase 3: Search Enhancement
-- [ ] Implement full-text search with PostgreSQL tsvector
-- [ ] Add stemming support for Catalan language
-- [ ] Optimize search queries with indexes
-- [ ] Add search filters (by category, relevance)
-- [ ] Implement autocomplete for search
-
-### Phase 4: Content Management
-- [ ] Design admin authentication system
-- [ ] Create admin dashboard
-- [ ] Build CRUD interface for categories
-- [ ] Build CRUD interface for phrases
-- [ ] Add phrase relationship management
-- [ ] Implement content validation
-
-### Phase 5: Polish & Deploy
-- [ ] Add loading states and error handling
-- [ ] Implement proper SEO metadata
-- [ ] Add analytics
-- [ ] Performance optimization
-- [ ] Deploy to Vercel with Neon database
-- [ ] Set up CI/CD pipeline
+```
+src/
+├── app.html              # Shell HTML (lang="ca")
+├── app.css               # TailwindCSS v4 @import + @theme design tokens
+├── hooks.client.ts       # PostHog client init + error capture
+├── hooks.server.ts       # /ingest reverse proxy + server error capture
+├── params/
+│   └── integer.ts        # Route param matcher for numeric IDs
+├── lib/
+│   └── server/
+│       ├── posthog.ts            # posthog-node singleton factory
+│       └── db/
+│           ├── index.ts          # Drizzle client (postgres locally, Neon in prod)
+│           ├── schema.ts         # Table definitions + tsvector + GIN indexes
+│           ├── setup-fts.sql     # Phase 1: unaccent ext + catalan FTS config
+│           ├── setup-trigger.sql # Phase 2: trigger + backfill
+│           ├── run-setup.ts      # Script to execute setup SQL
+│           └── seed.ts           # Dev seed data
+└── routes/
+    ├── +layout.svelte    # App shell: header + nav + SW registration
+    ├── +page.svelte      # Home: search form + about section
+    ├── cerca/            # Word search (FTS)
+    ├── expressions/      # Phrase browsing by category
+    ├── design-system/    # Design system reference (EN)
+    └── sistema-disseny/  # Design system reference (CA)
+```
 
 ---
 
-For the Catalan version of this README, see [README_CAT.md](README_CAT.md).
+Per la versió en català d'aquest README, vegeu [README_CAT.md](README_CAT.md).

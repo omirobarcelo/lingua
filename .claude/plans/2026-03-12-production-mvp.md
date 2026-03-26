@@ -338,18 +338,23 @@ This produces three files from the SVG:
 
 ---
 
-### Step 9 — Finalize
+### Step 9 — Finalize ✅
 
-**Goal:** Final review and cleanup of the entire project after all implementation steps are complete.
+**Completed.** Final review and cleanup of the entire project.
 
-**Tasks:**
-1. **Update `CLAUDE.md`** — reflect the final complete state (PostHog integration details, updated file structure, environment variables, deployment info)
-2. **Update `README.md`** — updated setup instructions, new commands, architecture overview, deployment guide
-3. **Update `README_CAT.md`** (if it exists) — keep in sync with README.md
-4. **Create `.env.example`** — template with all required env vars and placeholder values (no real keys)
-5. **Project review** — verify all files are clean, no dead code or leftover artifacts, `npm run check` passes
+**What was done:**
 
-**Verification:** All documentation is accurate and up-to-date. `.env.example` contains all required variables. `npm run check` passes.
+1. **`README.md`** — fully rewritten: accurate tech stack (Vite 8, TailwindCSS v4, Svelte 5, Neon, PWA, PostHog), complete setup instructions with two-phase FTS setup, all available scripts, database schema + FTS architecture, env vars table, deployment guide, and updated project structure
+2. **`README_CAT.md`** — rewritten in Catalan, matching the English version
+3. **`.env.example`** — updated with all 6 environment variables (`NODE_ENV`, `DATABASE_URL`, `NEON_DATABASE_URL`, `PUBLIC_POSTHOG_ENABLED`, `PUBLIC_POSTHOG_PROJECT_TOKEN`, `PUBLIC_POSTHOG_HOST`) and sensible defaults
+4. **Project review** — codebase is clean: no mock data remnants, no TODO/FIXME comments, no unused imports, no dead files, no orphaned static assets, `npm run check` passes with 0 errors
+5. **`CLAUDE.md` audit and cleanup** — trimmed from ~180 to ~85 lines:
+   - Removed sections that duplicated README or were derivable from code (Current State, Target Architecture, Local Development, File Structure, Database Schema, FTS Architecture internals)
+   - Fixed stale data: Vite 6 → 8, added `NEON_DATABASE_URL`, added `db:pull`/`staging` commands, updated `db/index.ts` description
+   - Moved two workflow rules to a concise "Workflows" section (from 12 lines to 3)
+   - Removed stale "Memory & Learnings" reference to nonexistent project-root MEMORY.md
+
+**Verification:** All documentation is accurate and up-to-date. `.env.example` contains all required variables. `npm run check` passes with 0 errors and 0 warnings.
 
 ---
 

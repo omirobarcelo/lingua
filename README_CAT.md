@@ -1,42 +1,37 @@
 # Lingua
 
-Diccionari d'expressions catalanes amb cerca de paraules i consulta d'expressions per categories.
+Diccionari d'expressions i frases fetes catalanes amb cerca de text complet i navegació per categories.
 
 ## Característiques
 
-- **Cerca de Paraules**: Cerca paraules per veure la seva definició (integració amb DCVB) i expressions que les contenen
-- **Consulta d'Expressions**: Explora expressions catalanes organitzades per categories
-- **Base de dades Postgres**: Utilitza Drizzle ORM amb columnes tsvector per a cerca amb stemming
-- **Desplegament a Vercel**: Configurat amb l'adaptador de Vercel per a desplegament fàcil
+- **Cerca de Paraules** (`/cerca?paraula=X`): Cerca una paraula, consulta la seva definició (via iframe del DCVB) i les expressions que la contenen
+- **Consulta d'Expressions** (`/expressions`): Explora expressions catalanes organitzades per categories, amb explicacions detallades i expressions relacionades
+- **Cerca de Text Complet en Català**: PostgreSQL FTS amb configuració de stemming català i concordança insensible als accents
+- **PWA**: Aplicació web progressiva instal·lable amb navegació amb memòria cau
+- **Analítica**: Integració amb PostHog amb proxy invers, esdeveniments personalitzats i enregistrament de sessions
 
-## Estructura del Projecte
+## Stack Tecnològic
 
-```
-src/
-├── lib/
-│   └── server/
-│       └── db/
-│           ├── schema.ts      # Esquema de base de dades Drizzle
-│           └── index.ts       # Connexió a la base de dades
-├── params/
-│   └── integer.ts            # Validador de paràmetres per a IDs
-├── routes/
-│   ├── +layout.svelte        # Layout principal
-│   ├── +page.svelte          # Pàgina d'inici
-│   ├── cerca/
-│   │   ├── +page.svelte      # Resultats de cerca de paraules
-│   │   └── +page.server.ts
-│   └── expressions/
-│       ├── +page.svelte      # Llista de categories
-│       ├── +page.server.ts
-│       ├── [slug]/           # Detall de categoria
-│       │   ├── +page.svelte
-│       │   └── +page.server.ts
-│       └── [id=integer]/     # Detall d'expressió
-│           ├── +page.svelte
-│           └── +page.server.ts
-└── app.css                   # Estils globals
-```
+- **Framework**: SvelteKit 2 + Svelte 5 + TypeScript
+- **Build**: Vite 8
+- **Estils**: TailwindCSS v4 amb sistema de disseny personalitzat (paleta vermellosa `#fb542b`)
+- **ORM**: Drizzle ORM (`drizzle-orm` + driver `postgres`)
+- **Base de dades**: PostgreSQL 16 (Docker localment, Neon serverless en producció)
+- **PWA**: `@vite-pwa/sveltekit` (generateSW, autoUpdate)
+- **Analítica**: PostHog (`posthog-js` client + `posthog-node` servidor)
+- **Desplegament**: Vercel + Neon (via Vercel Managed Integration)
+
+## Rutes
+
+| Ruta | Descripció |
+|---|---|
+| `/` | Pàgina d'inici amb cerca de paraules |
+| `/cerca?paraula=<paraula>` | Resultats de cerca amb definició del DCVB |
+| `/expressions` | Llista de categories |
+| `/expressions/<slug>` | Expressions d'una categoria |
+| `/expressions/<id>` | Detall d'una expressió amb expressions relacionades |
+| `/design-system` | Referència del sistema de disseny (anglès) |
+| `/sistema-disseny` | Referència del sistema de disseny (català) |
 
 ## Desenvolupament Local
 
@@ -44,128 +39,122 @@ src/
 
 - Node.js 18+
 - Docker i Docker Compose
-- npm o pnpm
 
 ### Configuració
 
-1. Clona el repositori:
 ```bash
 git clone <repository-url>
 cd lingua
-```
-
-2. Instal·la les dependències:
-```bash
 npm install
+cp .env.example .env              # Configura les variables d'entorn
+docker compose up -d               # Inicia PostgreSQL local
+npm run db:setup:fts               # Fase 1: extensions + configuració FTS
+npm run db:push                    # Aplica l'esquema (crea les taules)
+npm run db:setup:trigger           # Fase 2: trigger + backfill
+npm run db:seed                    # Insereix dades de mostra
+npm run dev                        # Inicia el servidor a localhost:5173
 ```
-
-3. Inicia la base de dades Postgres amb Docker:
-```bash
-docker-compose up -d
-```
-
-4. Configura les variables d'entorn:
-```bash
-cp .env.example .env
-```
-
-L'arxiu `.env` ja està configurat per a desenvolupament local amb:
-```
-DATABASE_URL=postgres://lingua:lingua_dev_password@localhost:5432/lingua
-```
-
-5. (Opcional) Genera i aplica migracions de la base de dades:
-```bash
-npm run db:generate
-npm run db:push
-```
-
-6. Inicia el servidor de desenvolupament:
-```bash
-npm run dev
-```
-
-L'aplicació estarà disponible a `http://localhost:5173`
 
 ### Scripts Disponibles
 
-- `npm run dev` - Inicia el servidor de desenvolupament
-- `npm run build` - Construeix l'aplicació per a producció
-- `npm run preview` - Previsualitza la construcció de producció
-- `npm run check` - Comprova el tipus TypeScript
-- `npm run db:generate` - Genera migracions de Drizzle
-- `npm run db:push` - Aplica l'esquema a la base de dades
-- `npm run db:studio` - Obre Drizzle Studio per a gestió de base de dades
+| Comanda | Descripció |
+|---|---|
+| `npm run dev` | Inicia el servidor de desenvolupament (Vite, port 5173) |
+| `npm run build` | Build de producció |
+| `npm run preview` | Previsualitza el build de producció |
+| `npm run check` | Comprovació de tipus TypeScript (`svelte-kit sync` + `svelte-check`) |
+| `docker compose up -d` | Inicia PostgreSQL 16 local |
+| `npm run db:setup:fts` | Fase 1: extensions + config FTS (abans de `db:push`) |
+| `npm run db:generate` | Genera fitxers SQL de migració Drizzle |
+| `npm run db:push` | Aplica l'esquema directament a la BD |
+| `npm run db:setup:trigger` | Fase 2: trigger + backfill (després de `db:push`) |
+| `npm run db:seed` | Insereix 5 categories + 25 expressions + relacions |
+| `npm run db:studio` | Obre la GUI de Drizzle Studio |
+| `npm run db:pull` | Descarrega dades de Neon a la BD local |
+| `npm run db:pull -- --merge` | Fusiona dades de Neon a la BD local (omet conflictes) |
 
-## Estructura de la Base de Dades
+## Base de Dades
 
-### Taules
+### Esquema
 
-#### `categories`
-- `id` (serial, primary key)
-- `name` (text) - Nom de la categoria
-- `slug` (text, unique) - Slug per a URLs
-- `description` (text) - Descripció de la categoria
+Tres taules definides a `src/lib/server/db/schema.ts`:
 
-#### `phrases`
-- `id` (serial, primary key)
-- `category_id` (integer, foreign key) - Referència a categories
-- `phrase_text` (text) - Text de l'expressió
-- `explanation` (text) - Explicació de l'expressió
-- `search_vector` (text) - Columna tsvector per a cerca amb stemming
+- **categories**: `id`, `name`, `slug` (únic), `description`
+- **phrases**: `id`, `category_id` (FK), `phrase_text`, `explanation`, `search_vector` (tsvector, actualitzat automàticament per trigger)
+- **phrase_relations**: `id`, `phrase_id` (FK), `related_phrase_id` (FK)
 
-#### `phrase_relations`
-- `id` (serial, primary key)
-- `phrase_id` (integer, foreign key) - Referència a phrases
-- `related_phrase_id` (integer, foreign key) - Referència a l'expressió relacionada
+### Arquitectura de Cerca de Text Complet
 
-## Implementació Actual
+- Configuració FTS `public.catalan` personalitzada amb pre-filtre `catalan_unaccent` per a concordança insensible als accents
+- Dos índexs GIN: stemming català (primari) i simple (fallback per a paraules arcaiques)
+- Cerca en dues fases: stemming català primer, fallback simple si 0 resultats
+- Lògica AND amb prefix a l'últim token (p. ex., `"bots i"` → `bots & i:*`)
 
-Actualment, l'aplicació utilitza dades mock hardcoded per a demostració. Les dades reals s'afegiran a la base de dades en futures iteracions.
+### Configuració de BD des de zero (l'ordre importa!)
 
-## Desplegament a Vercel
-
-1. Crea un projecte a [Vercel](https://vercel.com)
-
-2. Crea una base de dades Postgres a [Neon](https://neon.tech)
-
-3. Configura les variables d'entorn a Vercel:
-```
-DATABASE_URL=<your-neon-connection-string>
-```
-
-4. Desplega:
 ```bash
-vercel deploy
+npm run db:setup:fts       # Fase 1: extensions + config FTS (sense dependència de taules)
+npm run db:push            # Aplica l'esquema (crea les taules)
+npm run db:setup:trigger   # Fase 2: trigger + backfill (requereix la taula phrases)
+npm run db:seed            # Opcional: insereix dades de mostra
 ```
 
-o connecta el repositori de GitHub per a desplegament automàtic.
+## Variables d'Entorn
 
-## Rutes
+| Variable | Àmbit | Descripció |
+|---|---|---|
+| `DATABASE_URL` | Servidor (privada) | Cadena de connexió PostgreSQL |
+| `NEON_DATABASE_URL` | Només local (`.env`) | Cadena de connexió Neon per a l'script `db:pull` |
+| `PUBLIC_POSTHOG_ENABLED` | Client (pública) | `true`/`false` — activa/desactiva PostHog |
+| `PUBLIC_POSTHOG_PROJECT_TOKEN` | Client (pública) | Clau API del projecte PostHog |
+| `PUBLIC_POSTHOG_HOST` | Client (pública) | Host d'ingestió PostHog (p. ex., `https://eu.i.posthog.com`) |
 
-- `/` - Pàgina d'inici amb cerca de paraules
-- `/cerca?paraula=<paraula>` - Resultats de cerca de paraules
-- `/expressions` - Llista de categories d'expressions
-- `/expressions/<category-slug>` - Expressions d'una categoria
-- `/expressions/<phrase-id>` - Detall d'una expressió
+## Desplegament
 
-## Tecnologies
+L'aplicació està desplegada a **Vercel** amb **Neon** (PostgreSQL serverless) via la Vercel Managed Integration.
 
-- **SvelteKit** - Framework fullstack
-- **TypeScript** - Tipus estàtics
-- **Drizzle ORM** - ORM per a PostgreSQL
-- **PostgreSQL** - Base de dades amb suport per a tsvector
-- **Docker** - Contenidorització per a desenvolupament local
-- **Vercel** - Plataforma de desplegament
-- **Neon** - Base de dades Postgres serverless per a producció
+- La integració aprovisiona automàticament `DATABASE_URL` a l'entorn del projecte Vercel
+- Les variables de PostHog s'han d'afegir manualment a la configuració del projecte Vercel
+- `src/lib/server/db/index.ts` utilitza el driver `postgres` localment i `@neondatabase/serverless` en producció
 
-## Futures Millores
+Per inicialitzar la base de dades Neon:
 
-- [ ] Poblar la base de dades amb expressions reals
-- [ ] Implementar cerca full-text amb tsvector
-- [ ] Afegir autenticació per a gestió d'expressions
-- [ ] Interfície d'administració per a afegir/editar expressions
-- [ ] API pública per a tercers
-- [ ] Tests unitaris i d'integració
-- [ ] Millores d'accessibilitat
-- [ ] Suport per a múltiples idiomes (català, castellà, anglès)
+```bash
+DATABASE_URL="<cadena-connexió-neon>" npm run db:setup:fts
+DATABASE_URL="<cadena-connexió-neon>" npm run db:push
+DATABASE_URL="<cadena-connexió-neon>" npm run db:setup:trigger
+DATABASE_URL="<cadena-connexió-neon>" npm run db:seed
+```
+
+## Estructura del Projecte
+
+```
+src/
+├── app.html              # HTML shell (lang="ca")
+├── app.css               # TailwindCSS v4 @import + @theme tokens de disseny
+├── hooks.client.ts       # Inicialització PostHog client + captura d'errors
+├── hooks.server.ts       # Proxy invers /ingest + captura d'errors servidor
+├── params/
+│   └── integer.ts        # Matcher de paràmetres de ruta per a IDs numèrics
+├── lib/
+│   └── server/
+│       ├── posthog.ts            # Singleton posthog-node
+│       └── db/
+│           ├── index.ts          # Client Drizzle (postgres local, Neon en prod)
+│           ├── schema.ts         # Definicions de taules + tsvector + índexs GIN
+│           ├── setup-fts.sql     # Fase 1: extensió unaccent + config FTS català
+│           ├── setup-trigger.sql # Fase 2: trigger + backfill
+│           ├── run-setup.ts      # Script per executar SQL de configuració
+│           └── seed.ts           # Dades de mostra per a desenvolupament
+└── routes/
+    ├── +layout.svelte    # Shell: capçalera + navegació + registre SW
+    ├── +page.svelte      # Inici: formulari de cerca + secció sobre
+    ├── cerca/            # Cerca de paraules (FTS)
+    ├── expressions/      # Navegació d'expressions per categoria
+    ├── design-system/    # Referència del sistema de disseny (EN)
+    └── sistema-disseny/  # Referència del sistema de disseny (CA)
+```
+
+---
+
+For the English version of this README, see [README.md](README.md).

@@ -8,37 +8,16 @@ Lingua is a Catalan phrase/idiom dictionary web application. Two core features:
 
 The app language is Catalan (`lang="ca"` in `app.html`).
 
-## Current State
-
-- All routes wired to **live PostgreSQL** via Drizzle queries (no mock data)
-- **Styling**: TailwindCSS v4 with custom design system — `@theme` tokens in `app.css`, semantic aliases (`brand`, `base`, `muted`, `border`, `surface`)
-- All `.svelte` files migrated to **Svelte 5 runes** (`$props()`, `$state()`, `{@render children()}`)
-- Database schema in Drizzle with `tsvector` column, GIN indexes, and custom Catalan FTS config
-- **Search** (`/cerca`): two-stage FTS — catalan-stemmed first, simple fallback; AND logic with prefix on last token
-- Design system reference pages at `/design-system` (EN) and `/sistema-disseny` (CA)
-- Seed script with 5 categories, 25 phrases, and 12 relation rows
-- **PWA**: installable via `@vite-pwa/sveltekit` (`generateSW` strategy, `autoUpdate`, `NetworkFirst` for navigations)
-- **Prerendered routes**: `/`, `/design-system`, `/sistema-disseny` (static pages with no DB dependency)
-- **Analytics**: PostHog (`posthog-js` + `posthog-node`) with reverse proxy, custom events, session recording, and enable/disable toggle
-- No production deployment yet
-
-## Target Architecture (in progress)
-
-- **Styling**: TailwindCSS v4 with custom design system (vermillion `#fb542b` palette)
-- **Database**: PostgreSQL FTS with custom Catalan configuration (`catalan_stem` + `unaccent`)
-- **PWA**: `@vite-pwa/sveltekit` for installability ✅
-- **Analytics**: PostHog (`posthog-js` + `posthog-node`) — pageviews, custom events, session recording, error tracking ✅
-- **Deployment**: Vercel + Neon (serverless PostgreSQL)
-
 ## Tech Stack
 
 - **Framework**: SvelteKit 2 + Svelte 5 + TypeScript
-- **Build**: Vite 6
+- **Build**: Vite 8
 - **ORM**: Drizzle ORM (`drizzle-orm` + `postgres` driver, NOT `pg`/`node-postgres`)
-- **Database**: PostgreSQL 16 (Docker for local dev)
+- **Database**: PostgreSQL 16 (Docker locally, Neon serverless in production)
+- **Styling**: TailwindCSS v4 with custom design system (vermillion `#fb542b` palette)
 - **PWA**: `@vite-pwa/sveltekit` (generateSW, autoUpdate)
 - **Analytics**: PostHog — `posthog-js` (client), `posthog-node` (server)
-- **Deployment adapter**: `@sveltejs/adapter-vercel`
+- **Deployment**: Vercel + Neon (via Vercel Managed Integration)
 
 ## Conventions
 
@@ -57,59 +36,15 @@ The app language is Catalan (`lang="ca"` in `app.html`).
 - **PWA**: SW registered via `virtual:pwa-register` in `+layout.svelte` `onMount`. Manifest link is manual in `app.html` (not auto-injected by plugin with adapter-vercel).
 - **Icons**: Source SVG at `static/icons/lingua.svg`. Regenerate all PNGs + favicon.ico via `npx tsx scripts/generate-icons.ts`.
 - **PostHog**: Initialized in `src/hooks.client.ts` via `init()` hook (NOT `+layout.ts`). Toggle with `PUBLIC_POSTHOG_ENABLED` env var. Client uses `opt_out_capturing_by_default` — no per-call guards needed in route files. Server-side (`posthog-node`) needs explicit guards. Reverse proxy at `/ingest` in `hooks.server.ts` for ad-blocker resilience.
-
-## File Structure
-
-```
-src/
-├── app.html              # Shell HTML, lang="ca"
-├── app.css               # Tailwind v4 @import + @theme design tokens + base styles
-├── hooks.client.ts       # PostHog client init + error capture
-├── hooks.server.ts       # /ingest reverse proxy + server error capture
-├── params/
-│   └── integer.ts        # Route param matcher for numeric IDs
-├── lib/
-│   └── server/
-│       ├── posthog.ts            # posthog-node singleton factory
-│       └── db/
-│           ├── index.ts          # Drizzle client export (uses DATABASE_URL)
-│           ├── schema.ts         # Table definitions, tsvector customType, GIN indexes
-│           ├── setup-fts.sql     # Phase 1: unaccent ext + catalan FTS config (before db:push)
-│           ├── setup-trigger.sql # Phase 2: trigger + backfill (after db:push)
-│           ├── run-setup.ts      # Script to execute setup SQL (accepts 'fts' or 'trigger' arg)
-│           └── seed.ts           # Dev seed: 5 categories, 25 phrases, 12 relations
-└── routes/
-    ├── +layout.svelte    # App shell: header + nav + SW registration
-    ├── +page.ts          # prerender = true
-    ├── +page.svelte      # Home: search form + about section
-    ├── cerca/
-    │   ├── +page.server.ts   # Two-stage FTS: catalan-stemmed → simple fallback
-    │   └── +page.svelte      # Search results: DCVB iframe + phrase list
-    ├── design-system/        # Design system reference (English, prerendered)
-    ├── sistema-disseny/      # Design system reference (Catalan, prerendered)
-    ├── expressions/
-    │   ├── +page.server.ts   # Categories list (Drizzle query)
-    │   ├── +page.svelte      # Category grid
-    │   ├── [slug]/
-    │   │   ├── +page.server.ts  # Phrases in category (Drizzle query)
-    │   │   └── +page.svelte     # Phrase list for a category
-    │   └── [id=integer]/
-    │       ├── +page.server.ts  # Phrase + category + related phrases (Drizzle query)
-    │       └── +page.svelte     # Phrase detail page
-```
-
-## Database Schema
-
-Three tables defined in `src/lib/server/db/schema.ts`:
-- **categories**: `id`, `name`, `slug` (unique), `description`
-- **phrases**: `id`, `category_id` (FK), `phrase_text`, `explanation`, `search_vector` (`tsvector`, auto-updated by DB trigger — NEVER set manually)
-- **phrase_relations**: `id`, `phrase_id` (FK), `related_phrase_id` (FK)
+- **DB driver**: `src/lib/server/db/index.ts` uses `postgres` (postgres-js) in dev and `@neondatabase/serverless` (neon-http) in production, selected at runtime via `dev` flag.
+- **search_vector**: Auto-updated by the `phrases_fts_trigger` DB trigger — NEVER set it manually in inserts/updates.
 
 ## Commands
 
 | Command | Description |
 |---|---|
 | `npm run dev` | Start dev server (Vite, port 5173) |
+| `npm run staging` | Start dev server in staging mode |
 | `npm run build` | Production build |
 | `npm run preview` | Preview production build locally |
 | `npm run check` | `svelte-kit sync` + `svelte-check` TypeScript check |
@@ -120,60 +55,29 @@ Three tables defined in `src/lib/server/db/schema.ts`:
 | `npm run db:setup:trigger` | Phase 2: trigger + backfill (after db:push) |
 | `npm run db:seed` | Seed with 5 categories + 25 phrases + relations |
 | `npm run db:studio` | Open Drizzle Studio GUI |
+| `npm run db:pull` | Pull data from Neon into local Docker DB |
+| `npm run db:pull -- --merge` | Merge Neon data into local DB (skip conflicts) |
 
 ## Environment Variables
 
 | Variable | Scope | Description |
 |---|---|---|
 | `DATABASE_URL` | Server (private) | PostgreSQL connection string |
+| `NEON_DATABASE_URL` | Local only (`.env`) | Neon pooled connection string for `db:pull` script |
 | `PUBLIC_POSTHOG_ENABLED` | Client (public) | `true`/`false` — toggle all PostHog |
 | `PUBLIC_POSTHOG_PROJECT_TOKEN` | Client (public) | PostHog project API key |
 | `PUBLIC_POSTHOG_HOST` | Client (public) | `https://eu.i.posthog.com` |
 
-## Database — FTS Architecture
-
-- `search_vector` column stores `to_tsvector('public.catalan', phrase_text)` (weight A)
-- `public.catalan` = copy of built-in `pg_catalog.catalan` + `catalan_unaccent` pre-filter
-- Two GIN indexes:
-  1. On `search_vector` column (catalan-stemmed) — primary search
-  2. Expression: `to_tsvector('simple', phrase_text)` — fallback for archaic/unknown words
-- No stopwords — PostgreSQL has no `catalan.stop` file; negligible overhead at scale
-- `searchVector` is auto-updated by the `phrases_fts_trigger` DB trigger — NEVER set it manually in inserts/updates
-- **Search query strategy**: input split on whitespace, joined with `&` (AND), last token gets `:*` prefix (e.g., `"bots i"` → `bots & i:*`). Two-stage: catalan-stemmed first, simple fallback if 0 results
-
-### Fresh Database Setup (order matters!)
+## Database Setup (order matters!)
 
 1. `npm run db:setup:fts`     — Phase 1: extensions + FTS config (no table dependency)
-2. `npm run db:generate`      — generate Drizzle migration SQL
-3. `npm run db:push`          — apply schema (creates tables)
-4. `npm run db:setup:trigger` — Phase 2: trigger + backfill (requires phrases table)
+2. `npm run db:push`          — apply schema (creates tables)
+3. `npm run db:setup:trigger` — Phase 2: trigger + backfill (requires phrases table)
+4. `npm run db:seed`          — optional: seed with sample data
 
-## Memory & Learnings
+FTS uses a two-stage search strategy: catalan-stemmed first, simple fallback if 0 results. Input is split on whitespace, joined with `&` (AND), last token gets `:*` prefix.
 
-`MEMORY.md` (in the project root) contains insights, tips, and best practices discovered during previous tasks. **Read this file before running new tasks** to benefit from prior knowledge and avoid repeating past mistakes.
+## Workflows
 
-## Workflow: Learning from Corrections
-
-When the user corrects a mistake, follow this process:
-1. Acknowledge the correction
-2. Propose a concise MEMORY.md update (show the exact text)
-3. Ask the user: **add**, **tweak**, or **skip**
-4. Only write to MEMORY.md after explicit approval
-
-## Workflow: Post-Plan README Update
-
-After completing all steps of a plan, revise and update `README.md` (and `README_CAT.md` if it exists) to reflect the new state of the project — updated setup instructions, new commands, changed architecture, added dependencies, etc. Ask the user to review before committing.
-
-## Local Development
-
-```bash
-docker compose up -d                    # Start PostgreSQL
-npm install                             # Install dependencies
-npm run db:setup:fts                    # Phase 1: extensions + FTS config
-npm run db:push                         # Apply schema (creates tables)
-npm run db:setup:trigger                # Phase 2: trigger + backfill
-npm run db:seed                         # Seed with sample data
-npm run dev                             # Start dev server at localhost:5173
-```
-
-Docker PostgreSQL credentials: user `lingua`, password `lingua_dev_password`, database `lingua`, port `5432`.
+- **Corrections**: When the user corrects a mistake — acknowledge, propose a concise CLAUDE.md or memory update (show exact text), ask **add/tweak/skip**, only write after approval.
+- **Post-plan README**: After completing all steps of a plan, update `README.md` (and `README_CAT.md`) to reflect new state. Ask user to review before committing.
