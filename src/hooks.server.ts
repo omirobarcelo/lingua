@@ -1,10 +1,27 @@
 import type { Handle, HandleServerError } from '@sveltejs/kit';
+import { sequence } from '@sveltejs/kit/hooks';
+import { redirect } from '@sveltejs/kit';
 import { PUBLIC_POSTHOG_ENABLED } from '$env/static/public';
 import { getPostHogClient } from '$lib/server/posthog';
+import { isAuthenticated } from '$lib/server/admin/auth';
 
 const enabled = PUBLIC_POSTHOG_ENABLED === 'true';
 
-export const handle: Handle = async ({ event, resolve }) => {
+const adminAuthHandle: Handle = async ({ event, resolve }) => {
+	const { pathname } = event.url;
+
+	if (pathname.startsWith('/admin')) {
+		const authenticated = isAuthenticated(event.cookies);
+		if (pathname !== '/admin/login' && !authenticated) {
+			throw redirect(303, '/admin/login');
+		}
+		event.locals.isAdminAuthenticated = authenticated;
+	}
+
+	return resolve(event);
+};
+
+const posthogHandle: Handle = async ({ event, resolve }) => {
 	const { pathname } = event.url;
 
 	if (enabled && pathname.startsWith('/ingest')) {
@@ -40,6 +57,8 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 	return resolve(event);
 };
+
+export const handle = sequence(adminAuthHandle, posthogHandle);
 
 export const handleError: HandleServerError = async ({ error, status, message }) => {
 	if (!enabled) return { message, status };

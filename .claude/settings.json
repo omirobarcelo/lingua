@@ -4,7 +4,13 @@
       "mcp__puppeteer-mcp-claude__puppeteer_wait_for_selector",
       "WebFetch(domain:v7.vite.dev)",
       "WebFetch(domain:vite.dev)",
-      "WebFetch(domain:dev.to)"
+      "WebFetch(domain:dev.to)",
+      "mcp__puppeteer-mcp-claude__puppeteer_type",
+      "mcp__puppeteer-mcp-claude__puppeteer_get_cookies"
+    ],
+    "additionalDirectories": [
+      "/Users/omb/repos/omirobarcelo/lingua/src/routes/admin/categories",
+      "/Users/omb/repos/omirobarcelo/lingua/src/routes/admin/frases"
     ]
   },
   "enabledPlugins": {
