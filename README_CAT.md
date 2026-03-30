@@ -4,7 +4,7 @@ Diccionari d'expressions i frases fetes catalanes amb cerca de text complet i na
 
 ## Característiques
 
-- **Cerca de Paraules** (`/cerca?paraula=X`): Cerca una paraula, consulta la seva definició (via iframe del DCVB) i les expressions que la contenen
+- **Cerca de Paraules** (`/cerca?paraula=X`): Cerca una paraula, consulta les definicions del DCVB i GDLC en paral·lel, i les expressions que la contenen
 - **Consulta d'Expressions** (`/expressions`): Explora expressions catalanes organitzades per categories, amb explicacions detallades i expressions relacionades
 - **Cerca de Text Complet en Català**: PostgreSQL FTS amb configuració de stemming català i concordança insensible als accents
 - **PWA**: Aplicació web progressiva instal·lable amb navegació amb memòria cau
@@ -27,7 +27,7 @@ Diccionari d'expressions i frases fetes catalanes amb cerca de text complet i na
 | Ruta | Descripció |
 |---|---|
 | `/` | Pàgina d'inici amb cerca de paraules |
-| `/cerca?paraula=<paraula>` | Resultats de cerca amb definició del DCVB |
+| `/cerca?paraula=<paraula>` | Resultats de cerca amb definicions del DCVB + GDLC |
 | `/expressions` | Llista de categories |
 | `/expressions/<slug>` | Expressions d'una categoria |
 | `/expressions/<id>` | Detall d'una expressió amb expressions relacionades |
@@ -150,6 +150,9 @@ src/
 │   └── server/
 │       ├── admin/auth.ts         # Auth de sessió HMAC (login, logout, guarda)
 │       ├── posthog.ts            # Singleton posthog-node
+│       ├── definitions/
+│       │   ├── dcvb.ts           # Obtenció/parsing de definicions del DCVB
+│       │   └── gdlc.ts           # Obtenció/parsing de definicions del GDLC
 │       └── db/
 │           ├── index.ts          # Client Drizzle (postgres local, Neon en prod)
 │           ├── schema.ts         # Definicions de taules + tsvector + índexs GIN
@@ -162,6 +165,7 @@ src/
     ├── +page.svelte      # Inici: formulari de cerca + secció sobre
     ├── cerca/            # Cerca de paraules (FTS)
     ├── expressions/      # Navegació d'expressions per categoria
+    ├── api/definitions/  # Endpoint API per recarregar definicions
     ├── admin/            # Panell d'admin (CRUD de categories, expressions, relacions)
     ├── design-system/    # Referència del sistema de disseny (EN)
     └── sistema-disseny/  # Referència del sistema de disseny (CA)

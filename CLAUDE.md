@@ -3,7 +3,7 @@
 ## Project Overview
 
 Lingua is a Catalan phrase/idiom dictionary web application. Two core features:
-1. **Word Search** (`/cerca?paraula=X`): Search for a word, see its definition (via embedded DCVB iframe) and related phrases
+1. **Word Search** (`/cerca?paraula=X`): Search for a word, see definitions from DCVB and GDLC side by side, and related phrases
 2. **Phrase Browse** (`/expressions`): Browse Catalan phrases organized by categories, with detailed explanations and related phrases
 
 The app language is Catalan (`lang="ca"` in `app.html`).
@@ -41,6 +41,7 @@ The app language is Catalan (`lang="ca"` in `app.html`).
 - **search_vector**: Auto-updated by the `phrases_fts_trigger` DB trigger — NEVER set it manually in inserts/updates.
 - **Admin panel**: Password-protected at `/admin`. Auth via HMAC session cookie (`src/lib/server/admin/auth.ts`). Guard in `hooks.server.ts` via `sequence()`. Admin env vars: `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`.
 - **Admin routes**: `/admin/categories` and `/admin/frases` for CRUD. Phrase relations are always bidirectional (insert/delete both A→B and B→A).
+- **External definitions**: Fetched server-side via `src/lib/server/definitions/` (`dcvb.ts`, `gdlc.ts`). Parsed with `node-html-parser`. Both sources have malformed HTML requiring pre-processing (self-closing spans, broken nesting). Client-side reload via `/api/definitions/[source]?word=X`.
 
 ## Commands
 

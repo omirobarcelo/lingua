@@ -4,7 +4,7 @@ Catalan phrase/idiom dictionary web application with full-text search and phrase
 
 ## Features
 
-- **Word Search** (`/cerca?paraula=X`): Search for a word, see its definition (via embedded DCVB iframe) and related phrases
+- **Word Search** (`/cerca?paraula=X`): Search for a word, see definitions from DCVB and GDLC side by side, and related phrases
 - **Phrase Browse** (`/expressions`): Browse Catalan phrases organized by categories, with detailed explanations and related phrases
 - **Catalan Full-Text Search**: PostgreSQL FTS with custom Catalan stemming configuration and accent-insensitive matching
 - **PWA**: Installable progressive web app with offline-first navigation caching
@@ -27,7 +27,7 @@ Catalan phrase/idiom dictionary web application with full-text search and phrase
 | Route | Description |
 |---|---|
 | `/` | Home page with word search |
-| `/cerca?paraula=<word>` | Word search results with DCVB definition |
+| `/cerca?paraula=<word>` | Word search results with DCVB + GDLC definitions |
 | `/expressions` | Category list |
 | `/expressions/<slug>` | Phrases in a category |
 | `/expressions/<id>` | Phrase detail with related phrases |
@@ -150,6 +150,9 @@ src/
 │   └── server/
 │       ├── admin/auth.ts         # HMAC session auth (login, logout, guard)
 │       ├── posthog.ts            # posthog-node singleton factory
+│       ├── definitions/
+│       │   ├── dcvb.ts           # DCVB dictionary definition fetcher/parser
+│       │   └── gdlc.ts           # GDLC dictionary definition fetcher/parser
 │       └── db/
 │           ├── index.ts          # Drizzle client (postgres locally, Neon in prod)
 │           ├── schema.ts         # Table definitions + tsvector + GIN indexes
@@ -162,6 +165,7 @@ src/
     ├── +page.svelte      # Home: search form + about section
     ├── cerca/            # Word search (FTS)
     ├── expressions/      # Phrase browsing by category
+    ├── api/definitions/  # Definition reload API endpoint
     ├── admin/            # Admin panel (CRUD for categories, phrases, relations)
     ├── design-system/    # Design system reference (EN)
     └── sistema-disseny/  # Design system reference (CA)
