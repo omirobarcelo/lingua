@@ -3,6 +3,7 @@ import { sql } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { phrases } from '$lib/server/db/schema';
 import { fetchDcvbDefinition } from '$lib/server/definitions/dcvb';
+import { fetchGdlcDefinition } from '$lib/server/definitions/gdlc';
 
 function buildTsquery(input: string): string | null {
 	const tokens = input.trim().split(/\s+/).filter(Boolean);
@@ -18,10 +19,11 @@ export const load: PageServerLoad = async ({ url }) => {
 	const tsquery = buildTsquery(paraula);
 
 	if (!tsquery) {
-		return { paraula, phrases: [], definition: null };
+		return { paraula, phrases: [], dcvbDefinition: null, gdlcDefinition: null };
 	}
 
-	const definitionPromise = fetchDcvbDefinition(paraula);
+	const dcvbPromise = fetchDcvbDefinition(paraula);
+	const gdlcPromise = fetchGdlcDefinition(paraula);
 
 	// Stage 1: catalan-stemmed (catches inflected forms)
 	const catalanQ = sql`to_tsquery('public.catalan', ${tsquery})`;
@@ -36,7 +38,7 @@ export const load: PageServerLoad = async ({ url }) => {
 		.limit(20);
 
 	if (results.length > 0) {
-		return { paraula, phrases: results, definition: await definitionPromise };
+		return { paraula, phrases: results, dcvbDefinition: await dcvbPromise, gdlcDefinition: await gdlcPromise };
 	}
 
 	// Stage 2 (fallback): simple tokenization (archaic/unknown words)
@@ -51,5 +53,5 @@ export const load: PageServerLoad = async ({ url }) => {
 		.where(sql`to_tsvector('simple', ${phrases.phraseText}) @@ ${simpleQ}`)
 		.limit(20);
 
-	return { paraula, phrases: fallbackResults, definition: await definitionPromise };
+	return { paraula, phrases: fallbackResults, dcvbDefinition: await dcvbPromise, gdlcDefinition: await gdlcPromise };
 };

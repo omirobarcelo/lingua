@@ -6,7 +6,10 @@
       "WebFetch(domain:vite.dev)",
       "WebFetch(domain:dev.to)",
       "mcp__puppeteer-mcp-claude__puppeteer_type",
-      "mcp__puppeteer-mcp-claude__puppeteer_get_cookies"
+      "mcp__puppeteer-mcp-claude__puppeteer_get_cookies",
+      "Bash(npx svelte-kit:*)",
+      "Bash(npx svelte-check:*)",
+      "Bash(time curl:*)"
     ],
     "additionalDirectories": [
       "/Users/omb/repos/omirobarcelo/lingua/src/routes/admin/categories",
