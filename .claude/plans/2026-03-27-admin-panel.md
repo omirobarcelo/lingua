@@ -30,54 +30,56 @@ When individual accounts are needed:
 
 ```
 src/
-  app.d.ts                                    MODIFY — add App.Locals type
-  hooks.server.ts                             MODIFY — add admin auth guard via sequence()
+  app.d.ts                                    MODIFIED ✅
+  hooks.server.ts                             MODIFIED ✅
 
   lib/
     server/admin/
-      auth.ts                                 NEW — getValidToken, setSession, clearSession, isAuthenticated
+      auth.ts                                 DONE ✅
     utils/
-      slug.ts                                 NEW — generateSlug (NFD normalize, strip diacritics, l·l→ll)
+      slug.ts                                 DONE ✅
     stores/
-      adminToast.svelte.ts                    NEW — $state-based toast store (addToast, getToasts)
-      adminDialog.svelte.ts                   NEW — $state-based confirm dialog (confirm() → Promise<boolean>)
+      adminToast.svelte.ts                    DONE ✅
+      adminDialog.svelte.ts                   DONE ✅
     components/admin/
-      AdminSidebar.svelte                     NEW — nav links: Tauler, Categories, Frases
-      AdminField.svelte                       NEW — label + input/textarea/select + error message
-      AdminFormError.svelte                   NEW — global form error banner
-      Toast.svelte                            NEW — single toast pill
-      ToastContainer.svelte                   NEW — renders active toasts (fixed position)
-      ConfirmDialog.svelte                    NEW — modal with Confirma/Cancel·la buttons
+      AdminField.svelte                       DONE ✅
+      AdminFormError.svelte                   DONE ✅
+      ToastContainer.svelte                   DONE ✅
+      ConfirmDialog.svelte                    DONE ✅
 
   routes/admin/
-    +layout.server.ts                         NEW — load: pass isAdmin flag (for layout rendering)
-    +layout.svelte                            NEW — admin shell: sidebar + content + toast + dialog + logout
+    +layout.server.ts                         DONE ✅
+    +layout.svelte                            DONE ✅ (sidebar inlined here, no separate AdminSidebar)
 
     login/
-      +page.server.ts                         NEW — load (redirect if authed) + default action (login)
-      +page.svelte                            NEW — password form in Catalan
+      +page.server.ts                         DONE ✅
+      +page.svelte                            DONE ✅
 
-    +page.server.ts                           NEW — dashboard: load category/phrase/relation counts
-    +page.svelte                              NEW — dashboard with count cards + quick links
+    +page.server.ts                           DONE ✅ (dashboard)
+    +page.svelte                              DONE ✅
 
     categories/
-      +page.server.ts                         NEW — load all + create + createBulk + delete actions
-      +page.svelte                            NEW — table + single create form + bulk create form
+      +page.server.ts                         DONE ✅
+      +page.svelte                            DONE ✅
 
       [id]/
-        +page.server.ts                       NEW — load one + update + delete actions
-        +page.svelte                          NEW — edit form (name, auto-slug preview, description)
+        +page.server.ts                       DONE ✅
+        +page.svelte                          DONE ✅
 
     frases/
-      +page.server.ts                         NEW — load all (with category name) + delete action
-      +page.svelte                            NEW — table + single create form + bulk create form
+      +page.server.ts                         DONE ✅
+      +page.svelte                            DONE ✅
 
       [id]/
-        +page.server.ts                       NEW — load + update + delete + addRelation + removeRelation
-        +page.svelte                          NEW — edit form + relation manager (list + add/remove)
+        +page.server.ts                       DONE ✅
+        +page.svelte                          DONE ✅
 ```
 
-**Total: ~20 new files, 2 modified files**
+**Deviations from original plan:**
+- `AdminSidebar.svelte` — not created as a separate component; sidebar is inlined in `+layout.svelte`
+- `Toast.svelte` — not created; `ToastContainer.svelte` handles all toast rendering directly
+
+**Total: ~18 new files, 2 modified files (all complete)**
 
 ## Environment Variables
 
@@ -88,86 +90,87 @@ src/
 
 ## Implementation Phases
 
-### Phase 1: Auth Infrastructure
+### Phase 1: Auth Infrastructure ✅ COMPLETE
 Files: `app.d.ts`, `src/lib/server/admin/auth.ts`, `src/hooks.server.ts`
 
-1. Create `src/lib/server/admin/auth.ts`:
+1. ✅ Created `src/lib/server/admin/auth.ts`:
    - `getValidToken()`: HMAC-SHA256 of `ADMIN_PASSWORD` with `ADMIN_SESSION_SECRET`
    - `setSessionCookie(cookies)`: set HttpOnly, SameSite=strict, Secure (prod), path=/admin, no maxAge
    - `clearSessionCookie(cookies)`: delete cookie
    - `isAuthenticated(cookies)`: compare cookie value to `getValidToken()` using `timingSafeEqual`
 
-2. Modify `src/hooks.server.ts`:
-   - Import `sequence` from `@sveltejs/kit/hooks`
+2. ✅ Modified `src/hooks.server.ts`:
+   - Imported `sequence` from `@sveltejs/kit/hooks`
    - Split existing handle into `posthogHandle`
-   - Add `adminAuthHandle`: guard `/admin/*` except `/admin/login`, set `event.locals.isAdminAuthenticated`
-   - Export `handle = sequence(adminAuthHandle, posthogHandle)` (admin guard runs first)
+   - Added `adminAuthHandle`: guards `/admin/*` except `/admin/login`, sets `event.locals.isAdminAuthenticated`
+   - Exports `handle = sequence(adminAuthHandle, posthogHandle)` (admin guard runs first)
 
-3. Create/modify `src/app.d.ts`:
-   - Add `isAdminAuthenticated: boolean` to `App.Locals`
+3. ✅ Modified `src/app.d.ts`:
+   - Added `isAdminAuthenticated: boolean` to `App.Locals`
 
-### Phase 2: Login + Admin Layout
+### Phase 2: Login + Admin Layout ✅ COMPLETE
 Files: `login/+page.server.ts`, `login/+page.svelte`, `+layout.server.ts`, `+layout.svelte`
 
-1. Login page (`/admin/login`):
+1. ✅ Login page (`/admin/login`):
    - `load`: if already authenticated, `redirect(303, '/admin')`
-   - `default` action: compare password with `ADMIN_PASSWORD`, on success `setSessionCookie` + `redirect(303, '/admin')`, on fail `return fail(401, { error: 'Contrasenya incorrecta' })`
+   - `default` action: timing-safe password comparison, on success `setSessionCookie` + `redirect(303, '/admin')`, on fail `return fail(401, { error: 'Contrasenya incorrecta' })`
    - Simple centered card form with password input + submit button. Catalan labels.
 
-2. Admin layout:
-   - `+layout.server.ts`: reads `locals.isAdminAuthenticated`, exports `logout` named action (clear cookie + redirect)
-   - `+layout.svelte`: sidebar nav (AdminSidebar) + content area + ToastContainer + ConfirmDialog
-   - Separate visual identity from public site: neutral sidebar with `bg-neutral-100` sidebar, white content area
+2. ✅ Admin layout:
+   - `+layout.server.ts`: reads `locals.isAdminAuthenticated`, passes to layout
+   - `+layout.svelte`: sidebar nav (inlined, not separate component) + content area + ToastContainer + ConfirmDialog
+   - Separate visual identity from public site
+   - Layout effect auto-shows toasts on form success/error
 
-### Phase 3: Shared Components + Utilities
+### Phase 3: Shared Components + Utilities ✅ COMPLETE
 Files: all `src/lib/components/admin/*.svelte`, `src/lib/stores/*.svelte.ts`, `src/lib/utils/slug.ts`
 
-1. `slug.ts`: `generateSlug(text)` — handles Catalan diacritics via NFD normalize, special `l·l`→`ll` replacement
-2. `AdminSidebar.svelte`: props `currentPath`, renders nav links with active state highlighting
-3. `AdminField.svelte`: props `label, name, value, type, required, error, placeholder, options (for select), rows (for textarea)`
-4. `AdminFormError.svelte`: props `message` — red alert banner
-5. Toast store + components: `$state`-based, auto-dismiss after 4s
-6. Dialog store + component: `confirm(message)` returns `Promise<boolean>`, modal overlay
+1. ✅ `slug.ts`: `generateSlug(text)` — handles Catalan diacritics via NFD normalize, special `l·l`→`ll` replacement
+2. ✅ Sidebar implemented inline in `+layout.svelte` with active state highlighting (plan had separate `AdminSidebar.svelte`)
+3. ✅ `AdminField.svelte`: supports text, textarea, select with error display + readonly state
+4. ✅ `AdminFormError.svelte`: error message banner
+5. ✅ Toast store + ToastContainer: `$state`-based, auto-dismiss after 4s
+6. ✅ Dialog store + ConfirmDialog: `confirm(message)` returns `Promise<boolean>`, Escape key support
 
-### Phase 4: Dashboard
+### Phase 4: Dashboard ✅ COMPLETE
 Files: `admin/+page.server.ts`, `admin/+page.svelte`
 
-- Load: count queries for categories, phrases, relations
-- Display: 3 count cards + quick-action links to create category/phrase
+- ✅ Load: count queries for categories, phrases, relations
+- ✅ Display: 3 count cards + quick-action links to create category/phrase
 
-### Phase 5: Categories CRUD
+### Phase 5: Categories CRUD ✅ COMPLETE
 Files: `admin/categories/+page.server.ts`, `admin/categories/+page.svelte`, `admin/categories/[id]/+page.server.ts`, `admin/categories/[id]/+page.svelte`
 
 **List + Create page** (`/admin/categories`):
-- `load`: `db.select().from(categories).orderBy(categories.name)` + phrase count per category via subquery
-- `create` action: validate name (required), auto-generate slug, check slug uniqueness, insert
-- `createBulk` action: textarea, one per line format `Nom | Descripció` (pipe-separated), auto-generate slugs, single `db.insert().values([...])`
-- `delete` action: check no phrases reference this category (FK guard), delete or return error
-- Table with columns: Nom, Slug, Descripció, Frases (count), Accions (Edita link + Elimina button)
+- ✅ `load`: categories ordered by name + phrase count per category
+- ✅ `create` action: validate name, auto-generate slug, check uniqueness, insert
+- ✅ `createBulk` action: one per line `Nom | Descripció`, auto-generate slugs, single insert with transaction
+- ✅ `delete` action: checks no phrases reference this category (FK guard)
+- ✅ Table with columns: Nom, Slug, Descripció, Frases (count), Accions
 
 **Edit page** (`/admin/categories/[id]`):
-- `load`: fetch category by id, 404 if not found
-- `update` action: validate, regenerate slug from name, check uniqueness excluding self (`and(eq(slug), ne(id))`), update
-- `delete` action: same FK guard as list, redirect to `/admin/categories`
-- Form: name input, slug preview (read-only, auto-generated), description textarea
+- ✅ `load`: fetch category by id, 404 if not found
+- ✅ `update` action: validate, regenerate slug, check uniqueness excluding self, update
+- ✅ `delete` action: same FK guard, redirect to `/admin/categories`
+- ✅ Form: name input, slug preview (read-only), description textarea, danger zone
 
-### Phase 6: Phrases CRUD
+### Phase 6: Phrases CRUD ✅ COMPLETE
 Files: `admin/frases/+page.server.ts`, `admin/frases/+page.svelte`, `admin/frases/[id]/+page.server.ts`, `admin/frases/[id]/+page.svelte`
 
 **List + Create page** (`/admin/frases`):
-- `load`: all phrases with category name (join or separate query), all categories for dropdown
-- `create` action: validate phraseText + explanation (required), validate categoryId exists, insert — NEVER set `searchVector`
-- `createBulk` action: textarea, one per line `Text de la frase | Explicació | nom-de-categoria` (resolve category by slug/name), single insert
-- `delete` action: delete relations first (`where phraseId = id OR relatedPhraseId = id`), then delete phrase
-- Table: Frase, Categoria, Accions
+- ✅ `load`: all phrases with category name (join), all categories for dropdown
+- ✅ `create` action: validate phraseText + explanation + categoryId, insert — NEVER set `searchVector`
+- ✅ `createBulk` action: one per line `Text | Explicació | categoria` (resolve category by name or slug)
+- ✅ `delete` action: delete relations first (both directions), then delete phrase
+- ✅ Table: Frase, Categoria, Accions
 
 **Edit + Relations page** (`/admin/frases/[id]`):
-- `load`: phrase + category + all categories (for dropdown) + related phrases + all other phrases (for relation picker)
-- `update` action: validate, update phraseText + explanation + categoryId
-- `delete` action: cascade delete relations, delete phrase, redirect to `/admin/frases`
-- `addRelation` action: validate relatedPhraseId (not self, not duplicate), insert BOTH directions (A→B and B→A)
-- `removeRelation` action: delete BOTH directions
-- UI: edit form at top, then "Expressions Relacionades" section with current relations list (with remove buttons) + dropdown to add new relation
+- ✅ `load`: phrase + category + all categories + related phrases + all other phrases (for relation picker)
+- ✅ `update` action: validate, update phraseText + explanation + categoryId
+- ✅ `delete` action: cascade delete relations, delete phrase, redirect to `/admin/frases`
+- ✅ `addRelation` action: validate (not self, not duplicate), insert BOTH directions (A→B and B→A)
+- ✅ `removeRelation` action: delete BOTH directions
+- ✅ UI: edit form at top, then "Expressions Relacionades" section with current relations list + add picker
 
 ## Key Invariants
 
@@ -191,11 +194,11 @@ Files: `admin/frases/+page.server.ts`, `admin/frases/+page.svelte`, `admin/frase
 
 ## Verification
 
-1. **Auth flow**: Navigate to `/admin` → redirected to `/admin/login` → enter wrong password → error message → enter correct password → dashboard
-2. **Session**: close browser tab, reopen `/admin` → redirected to login (session cookie expired)
-3. **Categories CRUD**: create a category → appears in list with auto-slug → edit name → slug updates → try delete with phrases → error → delete empty category → success
-4. **Bulk create**: paste multiple categories separated by newlines → all created with correct slugs
-5. **Phrases CRUD**: create phrase with category dropdown → appears in list → edit → update works → `searchVector` populated (check via Drizzle Studio)
-6. **Relations**: on phrase edit page, add relation → both directions exist in DB → shows in public site → remove relation → both directions deleted
-7. **Delete cascade**: delete phrase with relations → relations cleaned up → no orphan rows
-8. **Production check**: `npm run build` succeeds, `npm run check` passes
+1. ✅ **Auth flow**: Navigate to `/admin` → redirected to `/admin/login` → enter wrong password → error message → enter correct password → dashboard
+2. ✅ **Session**: close browser tab, reopen `/admin` → redirected to login (session cookie expired)
+3. ✅ **Categories CRUD**: create a category → appears in list with auto-slug → edit name → slug updates → try delete with phrases → error → delete empty category → success
+4. ✅ **Bulk create**: paste multiple categories separated by newlines → all created with correct slugs
+5. ✅ **Phrases CRUD**: create phrase with category dropdown → appears in list → edit → update works → `searchVector` populated (check via Drizzle Studio)
+6. ✅ **Relations**: on phrase edit page, add relation → both directions exist in DB → shows in public site → remove relation → both directions deleted
+7. ✅ **Delete cascade**: delete phrase with relations → relations cleaned up → no orphan rows
+8. ✅ **Production check**: `npm run build` succeeds, `npm run check` passes
