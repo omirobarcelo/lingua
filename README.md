@@ -8,6 +8,7 @@ Catalan phrase/idiom dictionary web application with full-text search and phrase
 - **Phrase Browse** (`/expressions`): Browse Catalan phrases organized by categories, with detailed explanations and related phrases
 - **Catalan Full-Text Search**: PostgreSQL FTS with custom Catalan stemming configuration and accent-insensitive matching
 - **PWA**: Installable progressive web app with offline-first navigation caching
+- **Admin Panel** (`/admin`): Password-protected CRUD interface for managing categories, phrases, and phrase relations
 - **Analytics**: PostHog integration with reverse proxy, custom events, and session recording
 
 ## Tech Stack
@@ -30,6 +31,10 @@ Catalan phrase/idiom dictionary web application with full-text search and phrase
 | `/expressions` | Category list |
 | `/expressions/<slug>` | Phrases in a category |
 | `/expressions/<id>` | Phrase detail with related phrases |
+| `/admin` | Admin panel (login required) |
+| `/admin/categories` | Manage categories (create, edit, delete, bulk create) |
+| `/admin/frases` | Manage phrases (create, edit, delete, bulk create) |
+| `/admin/frases/<id>` | Edit phrase + manage related phrases |
 | `/design-system` | Design system reference (English) |
 | `/sistema-disseny` | Design system reference (Catalan) |
 
@@ -108,13 +113,15 @@ npm run db:seed            # Optional: seed with sample data
 | `PUBLIC_POSTHOG_ENABLED` | Client (public) | `true`/`false` — toggle all PostHog |
 | `PUBLIC_POSTHOG_PROJECT_TOKEN` | Client (public) | PostHog project API key |
 | `PUBLIC_POSTHOG_HOST` | Client (public) | PostHog ingestion host (e.g., `https://eu.i.posthog.com`) |
+| `ADMIN_PASSWORD` | Server (private) | Shared password for admin panel login |
+| `ADMIN_SESSION_SECRET` | Server (private) | HMAC secret for signing admin session cookies |
 
 ## Deployment
 
 The app is deployed on **Vercel** with **Neon** (serverless PostgreSQL) via the Vercel Managed Integration.
 
 - The integration auto-provisions `DATABASE_URL` in the Vercel project environment
-- PostHog env vars must be added manually in Vercel project settings
+- PostHog and admin env vars (`ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`) must be added manually in Vercel project settings
 - `src/lib/server/db/index.ts` uses the `postgres` driver locally and `@neondatabase/serverless` in production
 
 To initialize the Neon database:
@@ -133,11 +140,15 @@ src/
 ├── app.html              # Shell HTML (lang="ca")
 ├── app.css               # TailwindCSS v4 @import + @theme design tokens
 ├── hooks.client.ts       # PostHog client init + error capture
-├── hooks.server.ts       # /ingest reverse proxy + server error capture
+├── hooks.server.ts       # Admin auth guard + /ingest reverse proxy + server error capture
 ├── params/
 │   └── integer.ts        # Route param matcher for numeric IDs
 ├── lib/
+│   ├── components/admin/         # Admin UI components (field, toast, dialog)
+│   ├── stores/                   # Admin toast + confirm dialog stores
+│   ├── utils/slug.ts             # Catalan-aware slug generation
 │   └── server/
+│       ├── admin/auth.ts         # HMAC session auth (login, logout, guard)
 │       ├── posthog.ts            # posthog-node singleton factory
 │       └── db/
 │           ├── index.ts          # Drizzle client (postgres locally, Neon in prod)
@@ -151,6 +162,7 @@ src/
     ├── +page.svelte      # Home: search form + about section
     ├── cerca/            # Word search (FTS)
     ├── expressions/      # Phrase browsing by category
+    ├── admin/            # Admin panel (CRUD for categories, phrases, relations)
     ├── design-system/    # Design system reference (EN)
     └── sistema-disseny/  # Design system reference (CA)
 ```

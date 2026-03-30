@@ -8,6 +8,7 @@ Diccionari d'expressions i frases fetes catalanes amb cerca de text complet i na
 - **Consulta d'Expressions** (`/expressions`): Explora expressions catalanes organitzades per categories, amb explicacions detallades i expressions relacionades
 - **Cerca de Text Complet en Català**: PostgreSQL FTS amb configuració de stemming català i concordança insensible als accents
 - **PWA**: Aplicació web progressiva instal·lable amb navegació amb memòria cau
+- **Panell d'Administració** (`/admin`): Interfície CRUD protegida amb contrasenya per gestionar categories, expressions i relacions
 - **Analítica**: Integració amb PostHog amb proxy invers, esdeveniments personalitzats i enregistrament de sessions
 
 ## Stack Tecnològic
@@ -30,6 +31,10 @@ Diccionari d'expressions i frases fetes catalanes amb cerca de text complet i na
 | `/expressions` | Llista de categories |
 | `/expressions/<slug>` | Expressions d'una categoria |
 | `/expressions/<id>` | Detall d'una expressió amb expressions relacionades |
+| `/admin` | Panell d'administració (requereix autenticació) |
+| `/admin/categories` | Gestió de categories (crear, editar, eliminar, creació massiva) |
+| `/admin/frases` | Gestió d'expressions (crear, editar, eliminar, creació massiva) |
+| `/admin/frases/<id>` | Editar expressió + gestionar expressions relacionades |
 | `/design-system` | Referència del sistema de disseny (anglès) |
 | `/sistema-disseny` | Referència del sistema de disseny (català) |
 
@@ -108,13 +113,15 @@ npm run db:seed            # Opcional: insereix dades de mostra
 | `PUBLIC_POSTHOG_ENABLED` | Client (pública) | `true`/`false` — activa/desactiva PostHog |
 | `PUBLIC_POSTHOG_PROJECT_TOKEN` | Client (pública) | Clau API del projecte PostHog |
 | `PUBLIC_POSTHOG_HOST` | Client (pública) | Host d'ingestió PostHog (p. ex., `https://eu.i.posthog.com`) |
+| `ADMIN_PASSWORD` | Servidor (privada) | Contrasenya compartida per al panell d'administració |
+| `ADMIN_SESSION_SECRET` | Servidor (privada) | Secret HMAC per signar les cookies de sessió d'admin |
 
 ## Desplegament
 
 L'aplicació està desplegada a **Vercel** amb **Neon** (PostgreSQL serverless) via la Vercel Managed Integration.
 
 - La integració aprovisiona automàticament `DATABASE_URL` a l'entorn del projecte Vercel
-- Les variables de PostHog s'han d'afegir manualment a la configuració del projecte Vercel
+- Les variables de PostHog i d'admin (`ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`) s'han d'afegir manualment a la configuració del projecte Vercel
 - `src/lib/server/db/index.ts` utilitza el driver `postgres` localment i `@neondatabase/serverless` en producció
 
 Per inicialitzar la base de dades Neon:
@@ -133,11 +140,15 @@ src/
 ├── app.html              # HTML shell (lang="ca")
 ├── app.css               # TailwindCSS v4 @import + @theme tokens de disseny
 ├── hooks.client.ts       # Inicialització PostHog client + captura d'errors
-├── hooks.server.ts       # Proxy invers /ingest + captura d'errors servidor
+├── hooks.server.ts       # Guarda d'auth admin + proxy invers /ingest + captura d'errors servidor
 ├── params/
 │   └── integer.ts        # Matcher de paràmetres de ruta per a IDs numèrics
 ├── lib/
+│   ├── components/admin/         # Components UI d'admin (camp, toast, diàleg)
+│   ├── stores/                   # Stores de toast + diàleg de confirmació
+│   ├── utils/slug.ts             # Generació de slugs amb suport català
 │   └── server/
+│       ├── admin/auth.ts         # Auth de sessió HMAC (login, logout, guarda)
 │       ├── posthog.ts            # Singleton posthog-node
 │       └── db/
 │           ├── index.ts          # Client Drizzle (postgres local, Neon en prod)
@@ -151,6 +162,7 @@ src/
     ├── +page.svelte      # Inici: formulari de cerca + secció sobre
     ├── cerca/            # Cerca de paraules (FTS)
     ├── expressions/      # Navegació d'expressions per categoria
+    ├── admin/            # Panell d'admin (CRUD de categories, expressions, relacions)
     ├── design-system/    # Referència del sistema de disseny (EN)
     └── sistema-disseny/  # Referència del sistema de disseny (CA)
 ```
