@@ -32,14 +32,19 @@ The app language is Catalan (`lang="ca"` in `app.html`).
   Use semantic aliases (`bg-brand`, `text-muted`, `text-base`) not raw palette (`bg-primary-500`).
   `text-base` is both a font-size utility (1rem) AND our base text color — both resolve correctly in v4.
 - **Design system pages**: `/design-system` (English), `/sistema-disseny` (Catalan). Keep both in sync.
+- **Layout groups**: Public routes live under `src/routes/(main)/`, admin routes under `src/routes/admin/`. The root `+layout.svelte` is minimal; the main app shell is in `(main)/+layout.svelte`.
 - **Prerendering**: Static pages (no DB dependency) use `export const prerender = true` in `+page.ts`.
 - **PWA**: SW registered via `virtual:pwa-register` in `+layout.svelte` `onMount`. Manifest link is manual in `app.html` (not auto-injected by plugin with adapter-vercel).
 - **Icons**: Source SVG at `static/icons/lingua.svg`. Regenerate all PNGs + favicon.ico via `npx tsx scripts/generate-icons.ts`.
 - **PostHog**: Initialized in `src/hooks.client.ts` via `init()` hook (NOT `+layout.ts`). Toggle with `PUBLIC_POSTHOG_ENABLED` env var. Client uses `opt_out_capturing_by_default` — no per-call guards needed in route files. Server-side (`posthog-node`) needs explicit guards. Reverse proxy at `/ingest` in `hooks.server.ts` for ad-blocker resilience.
 - **DB driver**: `src/lib/server/db/index.ts` uses `postgres` (postgres-js) in dev and `@neondatabase/serverless` (neon-http) in production, selected at runtime via `dev` flag.
 - **search_vector**: Auto-updated by the `phrases_fts_trigger` DB trigger — NEVER set it manually in inserts/updates.
+- **Admin panel**: Password-protected at `/admin`. Auth via HMAC session cookie (`src/lib/server/admin/auth.ts`). Guard in `hooks.server.ts` via `sequence()`. Admin env vars: `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`.
+- **Admin routes**: `/admin/categories` and `/admin/frases` for CRUD. Phrase relations are always bidirectional (insert/delete both A→B and B→A).
 
 ## Commands
+
+> **Note:** No test framework is configured (no vitest/playwright/jest).
 
 | Command | Description |
 |---|---|
@@ -67,6 +72,8 @@ The app language is Catalan (`lang="ca"` in `app.html`).
 | `PUBLIC_POSTHOG_ENABLED` | Client (public) | `true`/`false` — toggle all PostHog |
 | `PUBLIC_POSTHOG_PROJECT_TOKEN` | Client (public) | PostHog project API key |
 | `PUBLIC_POSTHOG_HOST` | Client (public) | `https://eu.i.posthog.com` |
+| `ADMIN_PASSWORD` | Server (private) | Shared password for admin panel login |
+| `ADMIN_SESSION_SECRET` | Server (private) | HMAC secret for admin session cookies |
 
 ## Database Setup (order matters!)
 
