@@ -19,11 +19,12 @@ export const load: PageServerLoad = async ({ url }) => {
 	const tsquery = buildTsquery(paraula);
 
 	if (!tsquery) {
-		return { paraula, phrases: [], dcvbDefinition: null, gdlcDefinition: null };
+		return { paraula, phrases: [], dcvbDefinition: Promise.resolve(null), gdlcDefinition: Promise.resolve(null) };
 	}
 
-	const dcvbPromise = fetchDcvbDefinition(paraula);
-	const gdlcPromise = fetchGdlcDefinition(paraula);
+	// Stream definitions — page renders immediately, definitions pop in as they resolve
+	const dcvbDefinition = fetchDcvbDefinition(paraula);
+	const gdlcDefinition = fetchGdlcDefinition(paraula);
 
 	// Stage 1: catalan-stemmed (catches inflected forms)
 	const catalanQ = sql`to_tsquery('public.catalan', ${tsquery})`;
@@ -38,7 +39,7 @@ export const load: PageServerLoad = async ({ url }) => {
 		.limit(20);
 
 	if (results.length > 0) {
-		return { paraula, phrases: results, dcvbDefinition: await dcvbPromise, gdlcDefinition: await gdlcPromise };
+		return { paraula, phrases: results, dcvbDefinition, gdlcDefinition };
 	}
 
 	// Stage 2 (fallback): simple tokenization (archaic/unknown words)
@@ -53,5 +54,5 @@ export const load: PageServerLoad = async ({ url }) => {
 		.where(sql`to_tsvector('simple', ${phrases.phraseText}) @@ ${simpleQ}`)
 		.limit(20);
 
-	return { paraula, phrases: fallbackResults, dcvbDefinition: await dcvbPromise, gdlcDefinition: await gdlcPromise };
+	return { paraula, phrases: fallbackResults, dcvbDefinition, gdlcDefinition };
 };

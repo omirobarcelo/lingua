@@ -5,32 +5,22 @@
 
 	let { data }: { data: PageData } = $props();
 
-	let gdlcHtml = $state<string | null>(null);
-	let dcvbHtml = $state<string | null>(null);
-	let gdlcLoading = $state(false);
-	let dcvbLoading = $state(false);
+	// Streamed from server, overridden on reload
+	let gdlcPromise = $state(Promise.resolve(data.gdlcDefinition));
+	let dcvbPromise = $state(Promise.resolve(data.dcvbDefinition));
 
-	// Sync from server data (initial load + navigation)
 	$effect(() => {
-		gdlcHtml = data.gdlcDefinition;
-		dcvbHtml = data.dcvbDefinition;
+		gdlcPromise = Promise.resolve(data.gdlcDefinition);
+		dcvbPromise = Promise.resolve(data.dcvbDefinition);
 	});
 
-	async function reloadDefinition(source: 'gdlc' | 'dcvb') {
-		if (source === 'gdlc') gdlcLoading = true;
-		else dcvbLoading = true;
+	function reloadDefinition(source: 'gdlc' | 'dcvb') {
+		const promise = fetch(`/api/definitions/${source}?word=${encodeURIComponent(data.paraula)}`)
+			.then((res) => res.ok ? res.json() : null)
+			.then((json) => json?.definition ?? null);
 
-		try {
-			const res = await fetch(`/api/definitions/${source}?word=${encodeURIComponent(data.paraula)}`);
-			if (res.ok) {
-				const { definition } = await res.json();
-				if (source === 'gdlc') gdlcHtml = definition;
-				else dcvbHtml = definition;
-			}
-		} finally {
-			if (source === 'gdlc') gdlcLoading = false;
-			else dcvbLoading = false;
-		}
+		if (source === 'gdlc') gdlcPromise = promise;
+		else dcvbPromise = promise;
 	}
 
 	onMount(() => {
@@ -61,46 +51,50 @@
 	<div class="rounded-xl bg-surface-card border border-border shadow-sm flex flex-col">
 		<div class="flex items-center justify-between px-6 pt-6 pb-3">
 			<h3 class="text-lg text-primary-800 font-semibold">GDLC</h3>
-			<button onclick={() => reloadDefinition('gdlc')} disabled={gdlcLoading} class="reload-btn" title="Recarregar definici&oacute;">
-				<svg class="w-4 h-4" class:animate-spin={gdlcLoading} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+			<button onclick={() => reloadDefinition('gdlc')} class="reload-btn" title="Recarregar definici&oacute;">
+				<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
 			</button>
 		</div>
 		<div class="border-t border-border flex flex-col flex-1">
-			{#if gdlcLoading}
+			{#await gdlcPromise}
 				<p class="text-muted px-6 py-4">Carregant...</p>
-			{:else if gdlcHtml}
-				<div class="gdlc-definition text-base leading-relaxed max-h-100 overflow-y-auto px-6 py-4 flex-1">
-					{@html gdlcHtml}
-				</div>
-				<p class="px-6 py-2.5 text-sm text-muted border-t border-border">
-					Font: <a href="https://www.diccionari.cat/cerca/gran-diccionari-de-la-llengua-catalana?search_api_fulltext_cust={encodeURIComponent(data.paraula)}&search_api_fulltext_cust_1&field_faceta_cerca_1=5065&show=title" target="_blank" rel="noopener noreferrer" class="text-brand hover:text-brand-hover transition-colors">Gran Diccionari de la Llengua Catalana</a>
-				</p>
-			{:else}
-				<p class="text-muted px-6 py-4">No s'ha trobat cap definici&oacute; al GDLC.</p>
-			{/if}
+			{:then gdlcHtml}
+				{#if gdlcHtml}
+					<div class="gdlc-definition text-base leading-relaxed max-h-100 overflow-y-auto px-6 py-4 flex-1">
+						{@html gdlcHtml}
+					</div>
+					<p class="px-6 py-2.5 text-sm text-muted border-t border-border">
+						Font: <a href="https://www.diccionari.cat/cerca/gran-diccionari-de-la-llengua-catalana?search_api_fulltext_cust={encodeURIComponent(data.paraula)}&search_api_fulltext_cust_1&field_faceta_cerca_1=5065&show=title" target="_blank" rel="noopener noreferrer" class="text-brand hover:text-brand-hover transition-colors">Gran Diccionari de la Llengua Catalana</a>
+					</p>
+				{:else}
+					<p class="text-muted px-6 py-4">No s'ha trobat cap definici&oacute; al GDLC.</p>
+				{/if}
+			{/await}
 		</div>
 	</div>
 
 	<div class="rounded-xl bg-surface-card border border-border shadow-sm flex flex-col">
 		<div class="flex items-center justify-between px-6 pt-6 pb-3">
 			<h3 class="text-lg text-primary-800 font-semibold">DCVB</h3>
-			<button onclick={() => reloadDefinition('dcvb')} disabled={dcvbLoading} class="reload-btn" title="Recarregar definici&oacute;">
-				<svg class="w-4 h-4" class:animate-spin={dcvbLoading} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+			<button onclick={() => reloadDefinition('dcvb')} class="reload-btn" title="Recarregar definici&oacute;">
+				<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
 			</button>
 		</div>
 		<div class="border-t border-border flex flex-col flex-1">
-			{#if dcvbLoading}
+			{#await dcvbPromise}
 				<p class="text-muted px-6 py-4">Carregant...</p>
-			{:else if dcvbHtml}
-				<div class="dcvb-definition text-base leading-relaxed max-h-100 overflow-y-auto px-6 py-4 flex-1">
-					{@html dcvbHtml}
-				</div>
-				<p class="px-6 py-2.5 text-sm text-muted border-t border-border">
-					Font: <a href="https://dcvb.iec.cat/results.asp?Word={encodeURIComponent(data.paraula)}" target="_blank" rel="noopener noreferrer" class="text-brand hover:text-brand-hover transition-colors">Diccionari Catal&agrave;-Valenci&agrave;-Balear</a>
-				</p>
-			{:else}
-				<p class="text-muted px-6 py-4">No s'ha pogut obtenir la definici&oacute; del DCVB.</p>
-			{/if}
+			{:then dcvbHtml}
+				{#if dcvbHtml}
+					<div class="dcvb-definition text-base leading-relaxed max-h-100 overflow-y-auto px-6 py-4 flex-1">
+						{@html dcvbHtml}
+					</div>
+					<p class="px-6 py-2.5 text-sm text-muted border-t border-border">
+						Font: <a href="https://dcvb.iec.cat/results.asp?Word={encodeURIComponent(data.paraula)}" target="_blank" rel="noopener noreferrer" class="text-brand hover:text-brand-hover transition-colors">Diccionari Catal&agrave;-Valenci&agrave;-Balear</a>
+					</p>
+				{:else}
+					<p class="text-muted px-6 py-4">No s'ha pogut obtenir la definici&oacute; del DCVB.</p>
+				{/if}
+			{/await}
 		</div>
 	</div>
 </div>

@@ -9,7 +9,8 @@
       "mcp__puppeteer-mcp-claude__puppeteer_get_cookies",
       "Bash(npx svelte-kit:*)",
       "Bash(npx svelte-check:*)",
-      "Bash(time curl:*)"
+      "Bash(time curl:*)",
+      "Bash(git add:*)"
     ],
     "additionalDirectories": [
       "/Users/omb/repos/omirobarcelo/lingua/src/routes/admin/categories",
