@@ -12,7 +12,7 @@ export const load: PageServerLoad = async () => {
 			name: categories.name,
 			slug: categories.slug,
 			description: categories.description,
-			phraseCount: sql<number>`(select count(*) from phrases where phrases.category_id = ${categories.id})`.mapWith(Number)
+			phraseCount: sql<number>`(select count(*) from phrases where phrases.category_id = categories.id)`.mapWith(Number)
 		})
 		.from(categories)
 		.orderBy(categories.name);

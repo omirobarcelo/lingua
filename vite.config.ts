@@ -29,10 +29,11 @@ export default defineConfig({
 				]
 			},
 			workbox: {
-				globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+				globPatterns: ['client/**/*.{js,css,ico,png,svg,woff2}'],
+				navigateFallback: null,
 				runtimeCaching: [
 					{
-						urlPattern: ({ request }) => request.mode === 'navigate',
+						urlPattern: ({ request, url }) => request.mode === 'navigate' && !url.pathname.startsWith('/admin'),
 						handler: 'NetworkFirst',
 						options: { cacheName: 'pages', networkTimeoutSeconds: 3 }
 					}

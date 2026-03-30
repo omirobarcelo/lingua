@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import '../../app.css';
+	import { page } from '$app/state';
 	import { untrack } from 'svelte';
 	import type { Snippet } from 'svelte';
 	import type { LayoutData } from './$types';
@@ -11,7 +12,7 @@
 
 	let lastFormJson = '';
 	$effect(() => {
-		const form = $page.form;
+		const form = page.form;
 		if (!form) return;
 		const json = JSON.stringify(form);
 		if (json === lastFormJson) return;
@@ -47,7 +48,7 @@
 				{#each navItems as item}
 					<a
 						href={item.href}
-						class="block rounded-lg px-3 py-2 text-sm font-medium no-underline transition-colors {isActive(item.href, $page.url.pathname)
+						class="block rounded-lg px-3 py-2 text-sm font-medium no-underline transition-colors {isActive(item.href, page.url.pathname)
 							? 'bg-brand text-white'
 							: 'text-neutral-700 hover:bg-neutral-200'}"
 					>
@@ -56,6 +57,12 @@
 				{/each}
 			</nav>
 			<div class="mt-auto p-3 border-t border-border absolute bottom-0 w-56">
+				<a
+					href="/"
+					class="w-full rounded-lg px-3 py-2 text-sm font-medium text-muted hover:text-base hover:bg-neutral-200 transition-colors cursor-pointer text-left"
+				>
+					Principi
+				</a>
 				<form method="POST" action="/admin?/logout">
 					<button
 						type="submit"
