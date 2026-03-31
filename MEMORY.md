@@ -1,0 +1,1 @@
+- [Commit strategy](.claude/memory/feedback_commit_strategy.md) — Do planned commits in order during implementation, not all at the end

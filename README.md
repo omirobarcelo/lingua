@@ -16,6 +16,8 @@ Catalan phrase/idiom dictionary web application with full-text search and phrase
 - **Framework**: SvelteKit 2 + Svelte 5 + TypeScript
 - **Build**: Vite 8
 - **Styling**: TailwindCSS v4 with custom design system (vermillion `#fb542b` palette)
+- **Linting**: ESLint (flat config) with `eslint-plugin-svelte` + `typescript-eslint`
+- **Formatting**: Prettier with `prettier-plugin-svelte` + `prettier-plugin-tailwindcss`
 - **ORM**: Drizzle ORM (`drizzle-orm` + `postgres` driver)
 - **Database**: PostgreSQL 16 (Docker locally, Neon serverless in production)
 - **PWA**: `@vite-pwa/sveltekit` (generateSW, autoUpdate)
@@ -68,6 +70,9 @@ npm run dev                        # Start dev server at localhost:5173
 | `npm run build`              | Production build                                              |
 | `npm run preview`            | Preview production build locally                              |
 | `npm run check`              | TypeScript type checking (`svelte-kit sync` + `svelte-check`) |
+| `npm run lint`               | Run ESLint                                                    |
+| `npm run format`             | Format all files with Prettier                                |
+| `npm run format:check`       | Check formatting without writing                              |
 | `docker compose up -d`       | Start local PostgreSQL 16                                     |
 | `npm run db:setup:fts`       | Phase 1: extensions + FTS config (before `db:push`)           |
 | `npm run db:generate`        | Generate Drizzle migration SQL files                          |

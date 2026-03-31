@@ -16,6 +16,8 @@ Diccionari d'expressions i frases fetes catalanes amb cerca de text complet i na
 - **Framework**: SvelteKit 2 + Svelte 5 + TypeScript
 - **Build**: Vite 8
 - **Estils**: TailwindCSS v4 amb sistema de disseny personalitzat (paleta vermellosa `#fb542b`)
+- **Linting**: ESLint (flat config) amb `eslint-plugin-svelte` + `typescript-eslint`
+- **Format**: Prettier amb `prettier-plugin-svelte` + `prettier-plugin-tailwindcss`
 - **ORM**: Drizzle ORM (`drizzle-orm` + driver `postgres`)
 - **Base de dades**: PostgreSQL 16 (Docker localment, Neon serverless en producció)
 - **PWA**: `@vite-pwa/sveltekit` (generateSW, autoUpdate)
@@ -68,6 +70,9 @@ npm run dev                        # Inicia el servidor a localhost:5173
 | `npm run build`              | Build de producció                                                   |
 | `npm run preview`            | Previsualitza el build de producció                                  |
 | `npm run check`              | Comprovació de tipus TypeScript (`svelte-kit sync` + `svelte-check`) |
+| `npm run lint`               | Executa ESLint                                                       |
+| `npm run format`             | Formata tots els fitxers amb Prettier                                |
+| `npm run format:check`       | Comprova el format sense escriure                                    |
 | `docker compose up -d`       | Inicia PostgreSQL 16 local                                           |
 | `npm run db:setup:fts`       | Fase 1: extensions + config FTS (abans de `db:push`)                 |
 | `npm run db:generate`        | Genera fitxers SQL de migració Drizzle                               |

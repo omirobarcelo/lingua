@@ -43,6 +43,10 @@ The app language is Catalan (`lang="ca"` in `app.html`).
 - **Admin panel**: Password-protected at `/admin`. Auth via HMAC session cookie (`src/lib/server/admin/auth.ts`). Guard in `hooks.server.ts` via `sequence()`. Admin env vars: `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`.
 - **Admin routes**: `/admin/categories` and `/admin/frases` for CRUD. Phrase relations are always bidirectional (insert/delete both A→B and B→A).
 - **External definitions**: Fetched server-side via `src/lib/server/definitions/` (`dcvb.ts`, `gdlc.ts`). Parsed with `node-html-parser`. Both sources have malformed HTML requiring pre-processing (self-closing spans, broken nesting). Client-side reload via `/api/definitions/[source]?word=X`.
+- **Linting**: ESLint flat config (`eslint.config.js`) with `eslint-plugin-svelte` + `typescript-eslint`. `svelte/no-navigation-without-resolve` is off (no base path). `svelte/no-at-html-tags` is a warning (intentional use for definitions).
+- **Formatting**: Prettier with `prettier-plugin-svelte` + `prettier-plugin-tailwindcss`. `printWidth: 120`, `useTabs: true`, `singleQuote: true`. Run `npm run format` before committing.
+- **Tailwind v4 renames**: Some v3 utilities are renamed. E.g. `break-words` → `wrap-break-word`. Check IDE diagnostics for `suggestCanonicalClasses` warnings.
+- **`npx sv add`**: Requires a clean git working directory. Commit or stash before running.
 
 ## Commands
 
@@ -55,6 +59,9 @@ The app language is Catalan (`lang="ca"` in `app.html`).
 | `npm run build`              | Production build                                    |
 | `npm run preview`            | Preview production build locally                    |
 | `npm run check`              | `svelte-kit sync` + `svelte-check` TypeScript check |
+| `npm run lint`               | ESLint (flat config, Svelte + TypeScript)            |
+| `npm run format`             | Prettier (write mode)                               |
+| `npm run format:check`       | Prettier (check mode, CI-friendly)                  |
 | `docker compose up -d`       | Start local PostgreSQL 16                           |
 | `npm run db:setup:fts`       | Phase 1: extensions + FTS config (before db:push)   |
 | `npm run db:generate`        | Generate Drizzle migration SQL files                |
@@ -86,7 +93,12 @@ The app language is Catalan (`lang="ca"` in `app.html`).
 
 FTS uses a two-stage search strategy: catalan-stemmed first, simple fallback if 0 results. Input is split on whitespace, joined with `&` (AND), last token gets `:*` prefix.
 
+## Memory
+
+Check `MEMORY.md` at the start of each conversation for persistent context (feedback, user preferences, project state). Memory files live in `.claude/memory/`.
+
 ## Workflows
 
+- **Plans**: Stored in `.claude/plans/` with naming convention `YYYY-MM-DD-descriptive-name.md`. When a plan specifies multiple commits, make each commit as you complete that phase — don't batch all changes and split retroactively.
 - **Corrections**: When the user corrects a mistake — acknowledge, propose a concise CLAUDE.md or memory update (show exact text), ask **add/tweak/skip**, only write after approval.
 - **Post-plan README**: After completing all steps of a plan, update `README.md` (and `README_CAT.md`) to reflect new state. Ask user to review before committing.
