@@ -24,19 +24,19 @@ Catalan phrase/idiom dictionary web application with full-text search and phrase
 
 ## Routes
 
-| Route | Description |
-|---|---|
-| `/` | Home page with word search |
-| `/cerca?paraula=<word>` | Word search results with DCVB + GDLC definitions |
-| `/expressions` | Category list |
-| `/expressions/<slug>` | Phrases in a category |
-| `/expressions/<id>` | Phrase detail with related phrases |
-| `/admin` | Admin panel (login required) |
-| `/admin/categories` | Manage categories (create, edit, delete, bulk create) |
-| `/admin/frases` | Manage phrases (create, edit, delete, bulk create) |
-| `/admin/frases/<id>` | Edit phrase + manage related phrases |
-| `/design-system` | Design system reference (English) |
-| `/sistema-disseny` | Design system reference (Catalan) |
+| Route                   | Description                                           |
+| ----------------------- | ----------------------------------------------------- |
+| `/`                     | Home page with word search                            |
+| `/cerca?paraula=<word>` | Word search results with DCVB + GDLC definitions      |
+| `/expressions`          | Category list                                         |
+| `/expressions/<slug>`   | Phrases in a category                                 |
+| `/expressions/<id>`     | Phrase detail with related phrases                    |
+| `/admin`                | Admin panel (login required)                          |
+| `/admin/categories`     | Manage categories (create, edit, delete, bulk create) |
+| `/admin/frases`         | Manage phrases (create, edit, delete, bulk create)    |
+| `/admin/frases/<id>`    | Edit phrase + manage related phrases                  |
+| `/design-system`        | Design system reference (English)                     |
+| `/sistema-disseny`      | Design system reference (Catalan)                     |
 
 ## Local Development
 
@@ -62,21 +62,21 @@ npm run dev                        # Start dev server at localhost:5173
 
 ### Available Scripts
 
-| Command | Description |
-|---|---|
-| `npm run dev` | Start dev server (Vite, port 5173) |
-| `npm run build` | Production build |
-| `npm run preview` | Preview production build locally |
-| `npm run check` | TypeScript type checking (`svelte-kit sync` + `svelte-check`) |
-| `docker compose up -d` | Start local PostgreSQL 16 |
-| `npm run db:setup:fts` | Phase 1: extensions + FTS config (before `db:push`) |
-| `npm run db:generate` | Generate Drizzle migration SQL files |
-| `npm run db:push` | Apply schema directly to connected DB |
-| `npm run db:setup:trigger` | Phase 2: trigger + backfill (after `db:push`) |
-| `npm run db:seed` | Seed with 5 categories + 25 phrases + relations |
-| `npm run db:studio` | Open Drizzle Studio GUI |
-| `npm run db:pull` | Pull data from Neon into local Docker DB |
-| `npm run db:pull -- --merge` | Merge Neon data into local DB (skip conflicts) |
+| Command                      | Description                                                   |
+| ---------------------------- | ------------------------------------------------------------- |
+| `npm run dev`                | Start dev server (Vite, port 5173)                            |
+| `npm run build`              | Production build                                              |
+| `npm run preview`            | Preview production build locally                              |
+| `npm run check`              | TypeScript type checking (`svelte-kit sync` + `svelte-check`) |
+| `docker compose up -d`       | Start local PostgreSQL 16                                     |
+| `npm run db:setup:fts`       | Phase 1: extensions + FTS config (before `db:push`)           |
+| `npm run db:generate`        | Generate Drizzle migration SQL files                          |
+| `npm run db:push`            | Apply schema directly to connected DB                         |
+| `npm run db:setup:trigger`   | Phase 2: trigger + backfill (after `db:push`)                 |
+| `npm run db:seed`            | Seed with 5 categories + 25 phrases + relations               |
+| `npm run db:studio`          | Open Drizzle Studio GUI                                       |
+| `npm run db:pull`            | Pull data from Neon into local Docker DB                      |
+| `npm run db:pull -- --merge` | Merge Neon data into local DB (skip conflicts)                |
 
 ## Database
 
@@ -106,15 +106,15 @@ npm run db:seed            # Optional: seed with sample data
 
 ## Environment Variables
 
-| Variable | Scope | Description |
-|---|---|---|
-| `DATABASE_URL` | Server (private) | PostgreSQL connection string |
-| `NEON_DATABASE_URL` | Local only (`.env`) | Neon pooled connection string for `db:pull` script |
-| `PUBLIC_POSTHOG_ENABLED` | Client (public) | `true`/`false` — toggle all PostHog |
-| `PUBLIC_POSTHOG_PROJECT_TOKEN` | Client (public) | PostHog project API key |
-| `PUBLIC_POSTHOG_HOST` | Client (public) | PostHog ingestion host (e.g., `https://eu.i.posthog.com`) |
-| `ADMIN_PASSWORD` | Server (private) | Shared password for admin panel login |
-| `ADMIN_SESSION_SECRET` | Server (private) | HMAC secret for signing admin session cookies |
+| Variable                       | Scope               | Description                                               |
+| ------------------------------ | ------------------- | --------------------------------------------------------- |
+| `DATABASE_URL`                 | Server (private)    | PostgreSQL connection string                              |
+| `NEON_DATABASE_URL`            | Local only (`.env`) | Neon pooled connection string for `db:pull` script        |
+| `PUBLIC_POSTHOG_ENABLED`       | Client (public)     | `true`/`false` — toggle all PostHog                       |
+| `PUBLIC_POSTHOG_PROJECT_TOKEN` | Client (public)     | PostHog project API key                                   |
+| `PUBLIC_POSTHOG_HOST`          | Client (public)     | PostHog ingestion host (e.g., `https://eu.i.posthog.com`) |
+| `ADMIN_PASSWORD`               | Server (private)    | Shared password for admin panel login                     |
+| `ADMIN_SESSION_SECRET`         | Server (private)    | HMAC secret for signing admin session cookies             |
 
 ## Deployment
 

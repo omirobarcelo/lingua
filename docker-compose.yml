@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: lingua_dev_password
       POSTGRES_DB: lingua
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
 

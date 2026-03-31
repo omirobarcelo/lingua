@@ -54,17 +54,17 @@ console.log(`Generated ${maskablePath} (${maskableSize}x${maskableSize} maskable
 const ico32 = await sharp(svgBuffer).resize(32, 32).png().toBuffer();
 // ICO header for a single 32x32 PNG image
 const icoHeader = Buffer.alloc(6 + 16);
-icoHeader.writeUInt16LE(0, 0);       // reserved
-icoHeader.writeUInt16LE(1, 2);       // ICO type
-icoHeader.writeUInt16LE(1, 4);       // 1 image
-icoHeader.writeUInt8(32, 6);         // width
-icoHeader.writeUInt8(32, 7);         // height
-icoHeader.writeUInt8(0, 8);          // color palette
-icoHeader.writeUInt8(0, 9);          // reserved
-icoHeader.writeUInt16LE(1, 10);      // color planes
-icoHeader.writeUInt16LE(32, 12);     // bits per pixel
+icoHeader.writeUInt16LE(0, 0); // reserved
+icoHeader.writeUInt16LE(1, 2); // ICO type
+icoHeader.writeUInt16LE(1, 4); // 1 image
+icoHeader.writeUInt8(32, 6); // width
+icoHeader.writeUInt8(32, 7); // height
+icoHeader.writeUInt8(0, 8); // color palette
+icoHeader.writeUInt8(0, 9); // reserved
+icoHeader.writeUInt16LE(1, 10); // color planes
+icoHeader.writeUInt16LE(32, 12); // bits per pixel
 icoHeader.writeUInt32LE(ico32.length, 14); // image size
-icoHeader.writeUInt32LE(22, 18);     // image offset (6 + 16)
+icoHeader.writeUInt32LE(22, 18); // image offset (6 + 16)
 const icoPath = resolve(root, 'static/favicon.ico');
 const { writeFileSync } = await import('fs');
 writeFileSync(icoPath, Buffer.concat([icoHeader, ico32]));

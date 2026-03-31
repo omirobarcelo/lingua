@@ -11,7 +11,9 @@
 		if (trimmedWord) {
 			searching = true;
 			posthog.capture('word_searched', { word: trimmedWord });
-			goto(`/cerca?paraula=${encodeURIComponent(trimmedWord)}`);
+			goto(`/cerca?paraula=${encodeURIComponent(trimmedWord)}`).catch(() => {
+				searching = false;
+			});
 		}
 	}
 </script>
@@ -20,12 +22,10 @@
 	<title>Lingua - Diccionari d'Expressions Catalanes</title>
 </svelte:head>
 
-<div class="rounded-xl bg-surface-card border border-border p-8 shadow-sm mb-8">
-	<h2 class="text-2xl text-primary-800 mb-3">Cerca de Paraules</h2>
-	<p class="text-muted mb-5">
-		Cerca paraules per veure la seva definici&oacute; i expressions relacionades.
-	</p>
-	<form class="flex gap-3" onsubmit={handleSearch}>
+<div class="mb-8 rounded-xl border border-border bg-surface-card p-5 shadow-sm sm:p-8">
+	<h2 class="mb-3 text-2xl text-primary-800">Cerca de Paraules</h2>
+	<p class="mb-5 text-muted">Cerca paraules per veure la seva definici&oacute; i expressions relacionades.</p>
+	<form class="flex flex-col gap-3 sm:flex-row" onsubmit={handleSearch}>
 		<input
 			type="search"
 			bind:value={searchWord}
@@ -36,10 +36,19 @@
 		<button
 			type="submit"
 			disabled={searching}
-			class="rounded-lg bg-brand px-6 py-3 font-medium text-white transition-colors hover:bg-brand-hover cursor-pointer disabled:opacity-70 disabled:cursor-wait min-w-25"
+			class="cursor-pointer rounded-lg bg-brand px-6 py-3 font-medium text-white transition-colors hover:bg-brand-hover disabled:cursor-wait disabled:opacity-70 sm:min-w-25"
 		>
 			{#if searching}
-				<svg class="inline-block w-5 h-5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2a10 10 0 0 1 10 10"/></svg>
+				<svg
+					class="inline-block h-5 w-5 animate-spin"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2.5"
+					stroke-linecap="round"
+					role="status"
+					aria-label="Cercant..."><path d="M12 2a10 10 0 0 1 10 10" /></svg
+				>
 			{:else}
 				Cercar
 			{/if}
@@ -47,13 +56,13 @@
 	</form>
 </div>
 
-<div class="rounded-xl bg-surface-card border border-border p-8 shadow-sm">
-	<h2 class="text-2xl text-primary-800 mb-4">Sobre Lingua</h2>
-	<p class="text-muted mb-4 leading-relaxed">
-		Benvingut a Lingua, el teu diccionari d'expressions catalanes. Aquesta plataforma t'ofereix
-		dues maneres d'explorar el ric patrimoni ling&uuml;&iacute;stic catal&agrave;:
+<div class="rounded-xl border border-border bg-surface-card p-5 shadow-sm sm:p-8">
+	<h2 class="mb-4 text-2xl text-primary-800">Sobre Lingua</h2>
+	<p class="mb-4 leading-relaxed text-muted">
+		Benvingut a Lingua, el teu diccionari d'expressions catalanes. Aquesta plataforma t'ofereix dues maneres d'explorar
+		el ric patrimoni ling&uuml;&iacute;stic catal&agrave;:
 	</p>
-	<ul class="ml-5 mb-4 list-disc space-y-2 text-muted">
+	<ul class="mb-4 ml-5 list-disc space-y-2 text-muted">
 		<li>
 			<strong class="text-base">Cerca de Paraules:</strong> Introdueix qualsevol paraula per veure la seva definici&oacute;
 			i descobreix expressions que la contenen.
@@ -66,7 +75,7 @@
 	<p class="text-muted">
 		Comen&ccedil;a la teva cerca utilitzant el cercador de dalt o <a
 			href="/expressions"
-			class="text-brand font-medium hover:text-brand-hover transition-colors">explora les expressions per categories</a
+			class="font-medium text-brand transition-colors hover:text-brand-hover">explora les expressions per categories</a
 		>.
 	</p>
 </div>

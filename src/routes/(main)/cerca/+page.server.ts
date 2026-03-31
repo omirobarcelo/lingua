@@ -9,9 +9,7 @@ function buildTsquery(input: string): string | null {
 	const tokens = input.trim().split(/\s+/).filter(Boolean);
 	if (tokens.length === 0) return null;
 	// All tokens joined with & (AND), last token gets :* for prefix matching
-	return tokens
-		.map((t, i) => (i === tokens.length - 1 ? `${t}:*` : t))
-		.join(' & ');
+	return tokens.map((t, i) => (i === tokens.length - 1 ? `${t}:*` : t)).join(' & ');
 }
 
 export const load: PageServerLoad = async ({ url }) => {
@@ -19,7 +17,12 @@ export const load: PageServerLoad = async ({ url }) => {
 	const tsquery = buildTsquery(paraula);
 
 	if (!tsquery) {
-		return { paraula, phrases: [], dcvbDefinition: Promise.resolve(null), gdlcDefinition: Promise.resolve(null) };
+		return {
+			paraula,
+			phrases: [],
+			dcvbDefinition: Promise.resolve(null),
+			gdlcDefinition: Promise.resolve(null)
+		};
 	}
 
 	// Stream definitions — page renders immediately, definitions pop in as they resolve

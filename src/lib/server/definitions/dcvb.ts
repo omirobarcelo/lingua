@@ -4,9 +4,7 @@ const BASE_URL = 'https://dcvb.iec.cat';
 
 export async function fetchDcvbDefinition(word: string): Promise<string | null> {
 	try {
-		const res = await fetch(
-			`${BASE_URL}/results.asp?Word=${encodeURIComponent(word)}`
-		);
+		const res = await fetch(`${BASE_URL}/results.asp?Word=${encodeURIComponent(word)}`);
 		if (!res.ok) return null;
 
 		// DCVB returns ISO-8859-1 encoded HTML

@@ -24,19 +24,19 @@ Diccionari d'expressions i frases fetes catalanes amb cerca de text complet i na
 
 ## Rutes
 
-| Ruta | Descripció |
-|---|---|
-| `/` | Pàgina d'inici amb cerca de paraules |
-| `/cerca?paraula=<paraula>` | Resultats de cerca amb definicions del DCVB + GDLC |
-| `/expressions` | Llista de categories |
-| `/expressions/<slug>` | Expressions d'una categoria |
-| `/expressions/<id>` | Detall d'una expressió amb expressions relacionades |
-| `/admin` | Panell d'administració (requereix autenticació) |
-| `/admin/categories` | Gestió de categories (crear, editar, eliminar, creació massiva) |
-| `/admin/frases` | Gestió d'expressions (crear, editar, eliminar, creació massiva) |
-| `/admin/frases/<id>` | Editar expressió + gestionar expressions relacionades |
-| `/design-system` | Referència del sistema de disseny (anglès) |
-| `/sistema-disseny` | Referència del sistema de disseny (català) |
+| Ruta                       | Descripció                                                      |
+| -------------------------- | --------------------------------------------------------------- |
+| `/`                        | Pàgina d'inici amb cerca de paraules                            |
+| `/cerca?paraula=<paraula>` | Resultats de cerca amb definicions del DCVB + GDLC              |
+| `/expressions`             | Llista de categories                                            |
+| `/expressions/<slug>`      | Expressions d'una categoria                                     |
+| `/expressions/<id>`        | Detall d'una expressió amb expressions relacionades             |
+| `/admin`                   | Panell d'administració (requereix autenticació)                 |
+| `/admin/categories`        | Gestió de categories (crear, editar, eliminar, creació massiva) |
+| `/admin/frases`            | Gestió d'expressions (crear, editar, eliminar, creació massiva) |
+| `/admin/frases/<id>`       | Editar expressió + gestionar expressions relacionades           |
+| `/design-system`           | Referència del sistema de disseny (anglès)                      |
+| `/sistema-disseny`         | Referència del sistema de disseny (català)                      |
 
 ## Desenvolupament Local
 
@@ -62,21 +62,21 @@ npm run dev                        # Inicia el servidor a localhost:5173
 
 ### Scripts Disponibles
 
-| Comanda | Descripció |
-|---|---|
-| `npm run dev` | Inicia el servidor de desenvolupament (Vite, port 5173) |
-| `npm run build` | Build de producció |
-| `npm run preview` | Previsualitza el build de producció |
-| `npm run check` | Comprovació de tipus TypeScript (`svelte-kit sync` + `svelte-check`) |
-| `docker compose up -d` | Inicia PostgreSQL 16 local |
-| `npm run db:setup:fts` | Fase 1: extensions + config FTS (abans de `db:push`) |
-| `npm run db:generate` | Genera fitxers SQL de migració Drizzle |
-| `npm run db:push` | Aplica l'esquema directament a la BD |
-| `npm run db:setup:trigger` | Fase 2: trigger + backfill (després de `db:push`) |
-| `npm run db:seed` | Insereix 5 categories + 25 expressions + relacions |
-| `npm run db:studio` | Obre la GUI de Drizzle Studio |
-| `npm run db:pull` | Descarrega dades de Neon a la BD local |
-| `npm run db:pull -- --merge` | Fusiona dades de Neon a la BD local (omet conflictes) |
+| Comanda                      | Descripció                                                           |
+| ---------------------------- | -------------------------------------------------------------------- |
+| `npm run dev`                | Inicia el servidor de desenvolupament (Vite, port 5173)              |
+| `npm run build`              | Build de producció                                                   |
+| `npm run preview`            | Previsualitza el build de producció                                  |
+| `npm run check`              | Comprovació de tipus TypeScript (`svelte-kit sync` + `svelte-check`) |
+| `docker compose up -d`       | Inicia PostgreSQL 16 local                                           |
+| `npm run db:setup:fts`       | Fase 1: extensions + config FTS (abans de `db:push`)                 |
+| `npm run db:generate`        | Genera fitxers SQL de migració Drizzle                               |
+| `npm run db:push`            | Aplica l'esquema directament a la BD                                 |
+| `npm run db:setup:trigger`   | Fase 2: trigger + backfill (després de `db:push`)                    |
+| `npm run db:seed`            | Insereix 5 categories + 25 expressions + relacions                   |
+| `npm run db:studio`          | Obre la GUI de Drizzle Studio                                        |
+| `npm run db:pull`            | Descarrega dades de Neon a la BD local                               |
+| `npm run db:pull -- --merge` | Fusiona dades de Neon a la BD local (omet conflictes)                |
 
 ## Base de Dades
 
@@ -106,15 +106,15 @@ npm run db:seed            # Opcional: insereix dades de mostra
 
 ## Variables d'Entorn
 
-| Variable | Àmbit | Descripció |
-|---|---|---|
-| `DATABASE_URL` | Servidor (privada) | Cadena de connexió PostgreSQL |
-| `NEON_DATABASE_URL` | Només local (`.env`) | Cadena de connexió Neon per a l'script `db:pull` |
-| `PUBLIC_POSTHOG_ENABLED` | Client (pública) | `true`/`false` — activa/desactiva PostHog |
-| `PUBLIC_POSTHOG_PROJECT_TOKEN` | Client (pública) | Clau API del projecte PostHog |
-| `PUBLIC_POSTHOG_HOST` | Client (pública) | Host d'ingestió PostHog (p. ex., `https://eu.i.posthog.com`) |
-| `ADMIN_PASSWORD` | Servidor (privada) | Contrasenya compartida per al panell d'administració |
-| `ADMIN_SESSION_SECRET` | Servidor (privada) | Secret HMAC per signar les cookies de sessió d'admin |
+| Variable                       | Àmbit                | Descripció                                                   |
+| ------------------------------ | -------------------- | ------------------------------------------------------------ |
+| `DATABASE_URL`                 | Servidor (privada)   | Cadena de connexió PostgreSQL                                |
+| `NEON_DATABASE_URL`            | Només local (`.env`) | Cadena de connexió Neon per a l'script `db:pull`             |
+| `PUBLIC_POSTHOG_ENABLED`       | Client (pública)     | `true`/`false` — activa/desactiva PostHog                    |
+| `PUBLIC_POSTHOG_PROJECT_TOKEN` | Client (pública)     | Clau API del projecte PostHog                                |
+| `PUBLIC_POSTHOG_HOST`          | Client (pública)     | Host d'ingestió PostHog (p. ex., `https://eu.i.posthog.com`) |
+| `ADMIN_PASSWORD`               | Servidor (privada)   | Contrasenya compartida per al panell d'administració         |
+| `ADMIN_SESSION_SECRET`         | Servidor (privada)   | Secret HMAC per signar les cookies de sessió d'admin         |
 
 ## Desplegament
 

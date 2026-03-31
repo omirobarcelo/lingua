@@ -68,7 +68,7 @@ export const actions: Actions = {
 		const categoryId = parseInt(data.get('categoryId') as string);
 
 		const errors: Record<string, string> = {};
-		if (!phraseText) errors.phraseText = "El text és obligatori";
+		if (!phraseText) errors.phraseText = 'El text és obligatori';
 		if (!explanation) errors.explanation = "L'explicació és obligatòria";
 		if (isNaN(categoryId)) errors.categoryId = 'Selecciona una categoria';
 
@@ -77,10 +77,7 @@ export const actions: Actions = {
 		}
 
 		// Never set searchVector — trigger handles it
-		await db
-			.update(phrases)
-			.set({ phraseText, explanation, categoryId })
-			.where(eq(phrases.id, id));
+		await db.update(phrases).set({ phraseText, explanation, categoryId }).where(eq(phrases.id, id));
 
 		return { success: true, message: 'Frase actualitzada' };
 	},
@@ -91,9 +88,7 @@ export const actions: Actions = {
 		// Delete relations first (both directions)
 		await db
 			.delete(phraseRelations)
-			.where(
-				or(eq(phraseRelations.phraseId, id), eq(phraseRelations.relatedPhraseId, id))
-			);
+			.where(or(eq(phraseRelations.phraseId, id), eq(phraseRelations.relatedPhraseId, id)));
 
 		await db.delete(phrases).where(eq(phrases.id, id));
 		throw redirect(303, '/admin/frases');
@@ -113,14 +108,8 @@ export const actions: Actions = {
 			.from(phraseRelations)
 			.where(
 				or(
-					and(
-						eq(phraseRelations.phraseId, phraseId),
-						eq(phraseRelations.relatedPhraseId, relatedPhraseId)
-					),
-					and(
-						eq(phraseRelations.phraseId, relatedPhraseId),
-						eq(phraseRelations.relatedPhraseId, phraseId)
-					)
+					and(eq(phraseRelations.phraseId, phraseId), eq(phraseRelations.relatedPhraseId, relatedPhraseId)),
+					and(eq(phraseRelations.phraseId, relatedPhraseId), eq(phraseRelations.relatedPhraseId, phraseId))
 				)
 			)
 			.limit(1);
@@ -146,21 +135,11 @@ export const actions: Actions = {
 		// Delete both directions
 		await db
 			.delete(phraseRelations)
-			.where(
-				and(
-					eq(phraseRelations.phraseId, phraseId),
-					eq(phraseRelations.relatedPhraseId, relatedPhraseId)
-				)
-			);
+			.where(and(eq(phraseRelations.phraseId, phraseId), eq(phraseRelations.relatedPhraseId, relatedPhraseId)));
 
 		await db
 			.delete(phraseRelations)
-			.where(
-				and(
-					eq(phraseRelations.phraseId, relatedPhraseId),
-					eq(phraseRelations.relatedPhraseId, phraseId)
-				)
-			);
+			.where(and(eq(phraseRelations.phraseId, relatedPhraseId), eq(phraseRelations.relatedPhraseId, phraseId)));
 
 		return { success: true, message: 'Relació eliminada' };
 	}

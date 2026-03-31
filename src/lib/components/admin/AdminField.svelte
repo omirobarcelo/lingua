@@ -27,7 +27,7 @@
 </script>
 
 <div class="mb-4">
-	<label class="block mb-1.5 text-sm font-medium text-base" for={name}>{label}</label>
+	<label class="mb-1.5 block text-sm font-medium text-base" for={name}>{label}</label>
 
 	{#if type === 'textarea'}
 		<textarea
@@ -36,11 +36,10 @@
 			{required}
 			{placeholder}
 			{rows}
-			readonly={readonly}
+			{readonly}
 			class="w-full rounded-lg border-2 px-4 py-3 text-base transition-colors focus:border-brand focus:outline-none {error
 				? 'border-red-400'
-				: 'border-border'} {readonly ? 'bg-neutral-100 text-muted' : ''}"
-			>{value}</textarea
+				: 'border-border'} {readonly ? 'bg-neutral-100 text-muted' : ''}">{value}</textarea
 		>
 	{:else if type === 'select'}
 		<select
@@ -52,7 +51,7 @@
 				: 'border-border'}"
 		>
 			<option value="">{placeholder || 'Selecciona...'}</option>
-			{#each options as opt}
+			{#each options as opt (opt.value)}
 				<option value={opt.value} selected={opt.value === value}>{opt.label}</option>
 			{/each}
 		</select>
@@ -64,7 +63,7 @@
 			{value}
 			{required}
 			{placeholder}
-			readonly={readonly}
+			{readonly}
 			class="w-full rounded-lg border-2 px-4 py-3 text-base transition-colors focus:border-brand focus:outline-none {error
 				? 'border-red-400'
 				: 'border-border'} {readonly ? 'bg-neutral-100 text-muted' : ''}"

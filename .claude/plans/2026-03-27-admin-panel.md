@@ -76,6 +76,7 @@ src/
 ```
 
 **Deviations from original plan:**
+
 - `AdminSidebar.svelte` — not created as a separate component; sidebar is inlined in `+layout.svelte`
 - `Toast.svelte` — not created; `ToastContainer.svelte` handles all toast rendering directly
 
@@ -83,14 +84,15 @@ src/
 
 ## Environment Variables
 
-| Variable | Scope | Where |
-|---|---|---|
-| `ADMIN_PASSWORD` | Server (private) | `.env` + Vercel |
+| Variable               | Scope            | Where           |
+| ---------------------- | ---------------- | --------------- |
+| `ADMIN_PASSWORD`       | Server (private) | `.env` + Vercel |
 | `ADMIN_SESSION_SECRET` | Server (private) | `.env` + Vercel |
 
 ## Implementation Phases
 
 ### Phase 1: Auth Infrastructure ✅ COMPLETE
+
 Files: `app.d.ts`, `src/lib/server/admin/auth.ts`, `src/hooks.server.ts`
 
 1. ✅ Created `src/lib/server/admin/auth.ts`:
@@ -109,6 +111,7 @@ Files: `app.d.ts`, `src/lib/server/admin/auth.ts`, `src/hooks.server.ts`
    - Added `isAdminAuthenticated: boolean` to `App.Locals`
 
 ### Phase 2: Login + Admin Layout ✅ COMPLETE
+
 Files: `login/+page.server.ts`, `login/+page.svelte`, `+layout.server.ts`, `+layout.svelte`
 
 1. ✅ Login page (`/admin/login`):
@@ -123,6 +126,7 @@ Files: `login/+page.server.ts`, `login/+page.svelte`, `+layout.server.ts`, `+lay
    - Layout effect auto-shows toasts on form success/error
 
 ### Phase 3: Shared Components + Utilities ✅ COMPLETE
+
 Files: all `src/lib/components/admin/*.svelte`, `src/lib/stores/*.svelte.ts`, `src/lib/utils/slug.ts`
 
 1. ✅ `slug.ts`: `generateSlug(text)` — handles Catalan diacritics via NFD normalize, special `l·l`→`ll` replacement
@@ -133,15 +137,18 @@ Files: all `src/lib/components/admin/*.svelte`, `src/lib/stores/*.svelte.ts`, `s
 6. ✅ Dialog store + ConfirmDialog: `confirm(message)` returns `Promise<boolean>`, Escape key support
 
 ### Phase 4: Dashboard ✅ COMPLETE
+
 Files: `admin/+page.server.ts`, `admin/+page.svelte`
 
 - ✅ Load: count queries for categories, phrases, relations
 - ✅ Display: 3 count cards + quick-action links to create category/phrase
 
 ### Phase 5: Categories CRUD ✅ COMPLETE
+
 Files: `admin/categories/+page.server.ts`, `admin/categories/+page.svelte`, `admin/categories/[id]/+page.server.ts`, `admin/categories/[id]/+page.svelte`
 
 **List + Create page** (`/admin/categories`):
+
 - ✅ `load`: categories ordered by name + phrase count per category
 - ✅ `create` action: validate name, auto-generate slug, check uniqueness, insert
 - ✅ `createBulk` action: one per line `Nom | Descripció`, auto-generate slugs, single insert with transaction
@@ -149,15 +156,18 @@ Files: `admin/categories/+page.server.ts`, `admin/categories/+page.svelte`, `adm
 - ✅ Table with columns: Nom, Slug, Descripció, Frases (count), Accions
 
 **Edit page** (`/admin/categories/[id]`):
+
 - ✅ `load`: fetch category by id, 404 if not found
 - ✅ `update` action: validate, regenerate slug, check uniqueness excluding self, update
 - ✅ `delete` action: same FK guard, redirect to `/admin/categories`
 - ✅ Form: name input, slug preview (read-only), description textarea, danger zone
 
 ### Phase 6: Phrases CRUD ✅ COMPLETE
+
 Files: `admin/frases/+page.server.ts`, `admin/frases/+page.svelte`, `admin/frases/[id]/+page.server.ts`, `admin/frases/[id]/+page.svelte`
 
 **List + Create page** (`/admin/frases`):
+
 - ✅ `load`: all phrases with category name (join), all categories for dropdown
 - ✅ `create` action: validate phraseText + explanation + categoryId, insert — NEVER set `searchVector`
 - ✅ `createBulk` action: one per line `Text | Explicació | categoria` (resolve category by name or slug)
@@ -165,6 +175,7 @@ Files: `admin/frases/+page.server.ts`, `admin/frases/+page.svelte`, `admin/frase
 - ✅ Table: Frase, Categoria, Accions
 
 **Edit + Relations page** (`/admin/frases/[id]`):
+
 - ✅ `load`: phrase + category + all categories + related phrases + all other phrases (for relation picker)
 - ✅ `update` action: validate, update phraseText + explanation + categoryId
 - ✅ `delete` action: cascade delete relations, delete phrase, redirect to `/admin/frases`

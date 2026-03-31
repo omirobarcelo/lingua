@@ -10,14 +10,14 @@ The wizard has completed a deep integration of PostHog analytics into the Lingua
 
 ## Events instrumented
 
-| Event | Description | File |
-|---|---|---|
-| `word_searched` | User submits a word search from the home page form | `src/routes/+page.svelte` |
-| `search_results_viewed` | User lands on the search results page — top of the word-search funnel. Properties: `word`, `result_count`, `has_results` | `src/routes/cerca/+page.svelte` |
-| `phrase_clicked_from_search` | User clicks a phrase link on the search results page. Properties: `phrase_id`, `phrase_text`, `search_word` | `src/routes/cerca/+page.svelte` |
-| `category_clicked` | User clicks a category card on the expressions browse page. Properties: `category_slug`, `category_name` | `src/routes/expressions/+page.svelte` |
-| `phrase_clicked_from_category` | User clicks a phrase card within a category listing. Properties: `phrase_id`, `phrase_text`, `category_slug`, `category_name` | `src/routes/expressions/[slug]/+page.svelte` |
-| `related_phrase_clicked` | User clicks a related phrase link on a phrase detail page. Properties: `related_phrase_id`, `related_phrase_text`, `source_phrase_id`, `source_phrase_text` | `src/routes/expressions/[id=integer]/+page.svelte` |
+| Event                          | Description                                                                                                                                                 | File                                               |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| `word_searched`                | User submits a word search from the home page form                                                                                                          | `src/routes/+page.svelte`                          |
+| `search_results_viewed`        | User lands on the search results page — top of the word-search funnel. Properties: `word`, `result_count`, `has_results`                                    | `src/routes/cerca/+page.svelte`                    |
+| `phrase_clicked_from_search`   | User clicks a phrase link on the search results page. Properties: `phrase_id`, `phrase_text`, `search_word`                                                 | `src/routes/cerca/+page.svelte`                    |
+| `category_clicked`             | User clicks a category card on the expressions browse page. Properties: `category_slug`, `category_name`                                                    | `src/routes/expressions/+page.svelte`              |
+| `phrase_clicked_from_category` | User clicks a phrase card within a category listing. Properties: `phrase_id`, `phrase_text`, `category_slug`, `category_name`                               | `src/routes/expressions/[slug]/+page.svelte`       |
+| `related_phrase_clicked`       | User clicks a related phrase link on a phrase detail page. Properties: `related_phrase_id`, `related_phrase_text`, `source_phrase_id`, `source_phrase_text` | `src/routes/expressions/[id=integer]/+page.svelte` |
 
 ## Next steps
 

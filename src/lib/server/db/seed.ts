@@ -39,15 +39,15 @@ const phraseData: Record<string, { phraseText: string; explanation: string }[]> 
 	'amor-i-sentiments': [
 		{
 			phraseText: 'Tenir el cor trencat',
-			explanation: "Estar molt trist per una decepció amorosa o una pèrdua sentimental profunda."
+			explanation: 'Estar molt trist per una decepció amorosa o una pèrdua sentimental profunda.'
 		},
 		{
-			phraseText: "Estimar-se com ceba i perol",
-			explanation: "Tenir una relació molt estreta i inseparable, com dos elements que sempre van junts."
+			phraseText: 'Estimar-se com ceba i perol',
+			explanation: 'Tenir una relació molt estreta i inseparable, com dos elements que sempre van junts.'
 		},
 		{
 			phraseText: 'Fer el ploramiques',
-			explanation: "Queixar-se constantment sense motiu real, exagerant les penes."
+			explanation: 'Queixar-se constantment sense motiu real, exagerant les penes.'
 		},
 		{
 			phraseText: "Ser l'ànima de la festa",
@@ -55,95 +55,95 @@ const phraseData: Record<string, { phraseText: string; explanation: string }[]> 
 		},
 		{
 			phraseText: 'Tenir sang freda',
-			explanation: "Mantenir la calma i el control emocional en situacions difícils o perilloses."
+			explanation: 'Mantenir la calma i el control emocional en situacions difícils o perilloses.'
 		}
 	],
 	animals: [
 		{
 			phraseText: 'Ser un ase',
-			explanation: "Ser una persona tossuda o poc intel·ligent. També pot significar ser molt treballador."
+			explanation: 'Ser una persona tossuda o poc intel·ligent. També pot significar ser molt treballador.'
 		},
 		{
 			phraseText: 'Anar amb peus de plom',
-			explanation: "Actuar amb molta precaució i prudència, com si es tinguessin els peus pesants."
+			explanation: 'Actuar amb molta precaució i prudència, com si es tinguessin els peus pesants.'
 		},
 		{
 			phraseText: 'Estar com una cabra',
-			explanation: "Estar boig o comportar-se de manera estranya i imprevisible."
+			explanation: 'Estar boig o comportar-se de manera estranya i imprevisible.'
 		},
 		{
 			phraseText: 'Ser més lent que una tortuga',
-			explanation: "Fer les coses amb molta lentitud, trigar molt a acabar qualsevol tasca."
+			explanation: 'Fer les coses amb molta lentitud, trigar molt a acabar qualsevol tasca.'
 		},
 		{
 			phraseText: 'Cridar com un bou',
-			explanation: "Cridar molt fort, amb una veu potent i estrident."
+			explanation: 'Cridar molt fort, amb una veu potent i estrident.'
 		}
 	],
 	'menjar-i-beguda': [
 		{
 			phraseText: 'Donar carabassa',
-			explanation: "Rebutjar algú romànticament o suspendre en un examen."
+			explanation: 'Rebutjar algú romànticament o suspendre en un examen.'
 		},
 		{
 			phraseText: 'Estar colat per algú',
 			explanation: "Estar molt enamorat d'algú, sovint de manera no corresposta."
 		},
 		{
-			phraseText: "Ser pa sucat amb oli",
-			explanation: "Ser una cosa molt fàcil de fer, que no requereix cap esforç."
+			phraseText: 'Ser pa sucat amb oli',
+			explanation: 'Ser una cosa molt fàcil de fer, que no requereix cap esforç.'
 		},
 		{
 			phraseText: "Anar-se'n el sant al cel",
 			explanation: "Oblidar-se del que s'havia de fer o dir, perdre el fil del pensament."
 		},
 		{
-			phraseText: "Posar tota la carn a la graella",
-			explanation: "Arriscar-ho tot en una sola acció, apostar tots els recursos disponibles."
+			phraseText: 'Posar tota la carn a la graella',
+			explanation: 'Arriscar-ho tot en una sola acció, apostar tots els recursos disponibles.'
 		}
 	],
 	meteorologia: [
 		{
 			phraseText: 'Ploure a bots i barrals',
-			explanation: "Ploure amb molta intensitat, de manera torrencial."
+			explanation: 'Ploure amb molta intensitat, de manera torrencial.'
 		},
 		{
 			phraseText: 'Fer un fred que pela',
-			explanation: "Fer molt de fred, un fred intens que gairebé fa mal a la pell."
+			explanation: 'Fer molt de fred, un fred intens que gairebé fa mal a la pell.'
 		},
 		{
 			phraseText: 'Estar al setè cel',
-			explanation: "Sentir-se extremadament feliç, com si es fos al paradís."
+			explanation: 'Sentir-se extremadament feliç, com si es fos al paradís.'
 		},
 		{
 			phraseText: 'Fer sol i ombra',
-			explanation: "Alternar entre moments bons i dolents, ser inconstant."
+			explanation: 'Alternar entre moments bons i dolents, ser inconstant.'
 		},
 		{
-			phraseText: "Portar tempesta de cap",
-			explanation: "Estar molt preocupat o tenir molts problemes al cap."
+			phraseText: 'Portar tempesta de cap',
+			explanation: 'Estar molt preocupat o tenir molts problemes al cap.'
 		}
 	],
 	'cos-i-salut': [
 		{
-			phraseText: "No tenir pèls a la llengua",
-			explanation: "Dir les coses tal com es pensen, sense filtres ni por de les conseqüències."
+			phraseText: 'No tenir pèls a la llengua',
+			explanation: 'Dir les coses tal com es pensen, sense filtres ni por de les conseqüències.'
 		},
 		{
 			phraseText: 'Tenir mala espina',
-			explanation: "Tenir una sospita o un mal pressentiment sobre alguna cosa."
+			explanation: 'Tenir una sospita o un mal pressentiment sobre alguna cosa.'
 		},
 		{
 			phraseText: 'Fer-se el mandra',
-			explanation: "Fingir que no es vol fer una cosa per mandra o desinterès."
+			explanation: 'Fingir que no es vol fer una cosa per mandra o desinterès.'
 		},
 		{
 			phraseText: 'Posar els peus a la galleda',
-			explanation: "Equivocar-se greument, cometre un error important."
+			explanation: 'Equivocar-se greument, cometre un error important.'
 		},
 		{
-			phraseText: "Tenir la mosca al nas",
-			explanation: "Estar enfadat o de mal humor, sospitar que alguna cosa no va bé."
+			phraseText: 'Tenir la mosca al nas',
+			explanation: 'Estar enfadat o de mal humor, sospitar que alguna cosa no va bé.'
 		}
 	]
 };
@@ -188,7 +188,7 @@ async function seed() {
 		['Ploure a bots i barrals', 'Fer un fred que pela'],
 		['Donar carabassa', 'Estar colat per algú'],
 		['Ser un ase', 'Estar com una cabra'],
-		["No tenir pèls a la llengua", "Tenir la mosca al nas"]
+		['No tenir pèls a la llengua', 'Tenir la mosca al nas']
 	];
 
 	const relationValues = relationPairs.flatMap(([a, b]) => [

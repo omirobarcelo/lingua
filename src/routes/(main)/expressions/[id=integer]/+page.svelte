@@ -18,25 +18,33 @@
 	<title>{data.phrase.phraseText} - Lingua</title>
 </svelte:head>
 
-<a href="/expressions/{data.categorySlug}" class="inline-block mb-5 text-brand hover:text-brand-hover transition-colors font-medium">&larr; Tornar a {data.categoryName}</a>
+<a
+	href="/expressions/{data.categorySlug}"
+	class="mb-5 inline-block font-medium text-brand transition-colors hover:text-brand-hover"
+	>&larr; Tornar a {data.categoryName}</a
+>
 
-<div class="rounded-xl bg-surface-card border border-border p-8 shadow-sm mb-6">
+<div class="mb-6 rounded-xl border border-border bg-surface-card p-5 shadow-sm sm:p-8">
 	<h2 class="text-2xl text-primary-900">{data.phrase.phraseText}</h2>
 	<p class="mt-2 text-sm text-muted italic">Categoria: {data.categoryName}</p>
 </div>
 
-<div class="rounded-xl bg-surface-card border border-border p-8 shadow-sm mb-6">
-	<h3 class="text-xl text-primary-800 mb-3">Explicaci&oacute;</h3>
-	<p class="text-muted leading-relaxed">{data.phrase.explanation}</p>
+<div class="mb-6 rounded-xl border border-border bg-surface-card p-5 shadow-sm sm:p-8">
+	<h3 class="mb-3 text-xl text-primary-800">Explicaci&oacute;</h3>
+	<p class="leading-relaxed text-muted">{data.phrase.explanation}</p>
 </div>
 
 {#if data.relatedPhrases.length > 0}
-	<div class="rounded-xl bg-surface-card border border-border p-8 shadow-sm">
-		<h3 class="text-xl text-primary-800 mb-4">Expressions Relacionades</h3>
+	<div class="rounded-xl border border-border bg-surface-card p-5 shadow-sm sm:p-8">
+		<h3 class="mb-4 text-xl text-primary-800">Expressions Relacionades</h3>
 		<ul class="space-y-3">
-			{#each data.relatedPhrases as related}
+			{#each data.relatedPhrases as related (related.id)}
 				<li>
-					<a href="/expressions/{related.id}" class="text-brand hover:text-brand-hover transition-colors" onclick={() => handleRelatedPhraseClick(related.id, related.phraseText)}>
+					<a
+						href="/expressions/{related.id}"
+						class="wrap-break-word text-brand transition-colors hover:text-brand-hover"
+						onclick={() => handleRelatedPhraseClick(related.id, related.phraseText)}
+					>
 						<strong>{related.phraseText}</strong>
 						<span class="text-muted"> &mdash; {related.explanation}</span>
 					</a>

@@ -47,41 +47,41 @@ npm run check
 
 ## Part B: Code Quality Fixes
 
-### B1. Error handling in `reloadDefinition()` — [cerca/+page.svelte](src/routes/(main)/cerca/+page.svelte)
+### B1. Error handling in `reloadDefinition()` — [cerca/+page.svelte](<src/routes/(main)/cerca/+page.svelte>)
 
 - Add `.catch(() => null)` to the promise chain (line 18-20)
 - Add `{:catch}` blocks to both `{#await}` sections (after lines 71 and 97)
 
-### B2. Aria-labels on reload buttons — [cerca/+page.svelte](src/routes/(main)/cerca/+page.svelte)
+### B2. Aria-labels on reload buttons — [cerca/+page.svelte](<src/routes/(main)/cerca/+page.svelte>)
 
 - Line 54: add `aria-label="Recarregar definicio GDLC"`
 - Line 79: add `aria-label="Recarregar definicio DCVB"`
 
-### B3. Aria-labels on nav and logo — [(main)/+layout.svelte](src/routes/(main)/+layout.svelte)
+### B3. Aria-labels on nav and logo — [(main)/+layout.svelte](<src/routes/(main)/+layout.svelte>)
 
 - `<nav>`: add `aria-label="Navegacio principal"`
 - Logo `<a>`: add `aria-label="Lingua - Pagina principal"`
 
-### B4. Fix spinner accessibility + `searching` state — [+page.svelte](src/routes/(main)/+page.svelte)
+### B4. Fix spinner accessibility + `searching` state — [+page.svelte](<src/routes/(main)/+page.svelte>)
 
 - Add `role="status"` and `aria-label="Cercant..."` to spinner SVG
 - Add `.catch(() => { searching = false; })` to `goto()` call
 
 ### B5. Add `break-words` to long phrase links
 
-- [expressions/[id=integer]/+page.svelte](src/routes/(main)/expressions/[id=integer]/+page.svelte) line 39
-- [cerca/+page.svelte](src/routes/(main)/cerca/+page.svelte) line 108
+- [expressions/[id=integer]/+page.svelte](<src/routes/(main)/expressions/[id=integer]/+page.svelte>) line 39
+- [cerca/+page.svelte](<src/routes/(main)/cerca/+page.svelte>) line 108
 
 ---
 
 ## Part C: Mobile Responsiveness
 
-### C1. Reduce header/main padding on small screens — [(main)/+layout.svelte](src/routes/(main)/+layout.svelte)
+### C1. Reduce header/main padding on small screens — [(main)/+layout.svelte](<src/routes/(main)/+layout.svelte>)
 
 - Header inner div: `px-6` -> `px-4 sm:px-6`
 - `<main>`: `px-6` -> `px-4 sm:px-6`
 
-### C2. Stack search form on narrow screens — [+page.svelte](src/routes/(main)/+page.svelte)
+### C2. Stack search form on narrow screens — [+page.svelte](<src/routes/(main)/+page.svelte>)
 
 - Form: `flex gap-3` -> `flex flex-col sm:flex-row gap-3`
 - Button: `min-w-25` -> `sm:min-w-25`
@@ -89,11 +89,12 @@ npm run check
 ### C3. Reduce card padding on mobile
 
 In these files, change `p-8` to `p-5 sm:p-8`:
-- [+page.svelte](src/routes/(main)/+page.svelte) (home) — lines 23, 50
-- [cerca/+page.svelte](src/routes/(main)/cerca/+page.svelte) — lines 103, 117
-- [expressions/[id=integer]/+page.svelte](src/routes/(main)/expressions/[id=integer]/+page.svelte) — lines 23, 28, 34
 
-### C4. Reduce definition card inner padding on mobile — [cerca/+page.svelte](src/routes/(main)/cerca/+page.svelte)
+- [+page.svelte](<src/routes/(main)/+page.svelte>) (home) — lines 23, 50
+- [cerca/+page.svelte](<src/routes/(main)/cerca/+page.svelte>) — lines 103, 117
+- [expressions/[id=integer]/+page.svelte](<src/routes/(main)/expressions/[id=integer]/+page.svelte>) — lines 23, 28, 34
+
+### C4. Reduce definition card inner padding on mobile — [cerca/+page.svelte](<src/routes/(main)/cerca/+page.svelte>)
 
 - Card headers and content: `px-6` -> `px-4 sm:px-6`
 - Applies to both GDLC and DCVB definition cards

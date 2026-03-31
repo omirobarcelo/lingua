@@ -40,15 +40,18 @@
 {:else}
 	<div class="flex min-h-screen">
 		<!-- Sidebar -->
-		<aside class="w-56 shrink-0 bg-neutral-100 border-r border-border">
+		<aside class="w-56 shrink-0 border-r border-border bg-neutral-100">
 			<div class="p-5">
 				<a href="/admin" class="text-lg font-bold text-primary-900 no-underline">Lingua Admin</a>
 			</div>
-			<nav class="px-3 space-y-1">
-				{#each navItems as item}
+			<nav class="space-y-1 px-3">
+				{#each navItems as item (item.href)}
 					<a
 						href={item.href}
-						class="block rounded-lg px-3 py-2 text-sm font-medium no-underline transition-colors {isActive(item.href, page.url.pathname)
+						class="block rounded-lg px-3 py-2 text-sm font-medium no-underline transition-colors {isActive(
+							item.href,
+							page.url.pathname
+						)
 							? 'bg-brand text-white'
 							: 'text-neutral-700 hover:bg-neutral-200'}"
 					>
@@ -56,17 +59,17 @@
 					</a>
 				{/each}
 			</nav>
-			<div class="mt-auto p-3 border-t border-border absolute bottom-0 w-56">
+			<div class="absolute bottom-0 mt-auto w-56 border-t border-border p-3">
 				<a
 					href="/"
-					class="w-full rounded-lg px-3 py-2 text-sm font-medium text-muted hover:text-base hover:bg-neutral-200 transition-colors cursor-pointer text-left"
+					class="w-full cursor-pointer rounded-lg px-3 py-2 text-left text-sm font-medium text-muted transition-colors hover:bg-neutral-200 hover:text-base"
 				>
 					Principi
 				</a>
 				<form method="POST" action="/admin?/logout">
 					<button
 						type="submit"
-						class="w-full rounded-lg px-3 py-2 text-sm font-medium text-muted hover:text-base hover:bg-neutral-200 transition-colors cursor-pointer text-left"
+						class="w-full cursor-pointer rounded-lg px-3 py-2 text-left text-sm font-medium text-muted transition-colors hover:bg-neutral-200 hover:text-base"
 					>
 						Sortir
 					</button>

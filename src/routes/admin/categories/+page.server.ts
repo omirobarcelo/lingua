@@ -95,10 +95,7 @@ export const actions: Actions = {
 			return fail(400, { error: 'ID invàlid' });
 		}
 
-		const [phraseCount] = await db
-			.select({ count: count() })
-			.from(phrases)
-			.where(eq(phrases.categoryId, id));
+		const [phraseCount] = await db.select({ count: count() }).from(phrases).where(eq(phrases.categoryId, id));
 
 		if (phraseCount.count > 0) {
 			return fail(409, {

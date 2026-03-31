@@ -9,11 +9,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	const id = parseInt(params.id);
 	if (isNaN(id)) throw error(400, 'ID invàlid');
 
-	const [category] = await db
-		.select()
-		.from(categories)
-		.where(eq(categories.id, id))
-		.limit(1);
+	const [category] = await db.select().from(categories).where(eq(categories.id, id)).limit(1);
 
 	if (!category) throw error(404, 'Categoria no trobada');
 
@@ -43,10 +39,7 @@ export const actions: Actions = {
 			return fail(409, { errors: { name: 'Ja existeix una altra categoria amb aquest nom' } });
 		}
 
-		await db
-			.update(categories)
-			.set({ name, slug, description })
-			.where(eq(categories.id, id));
+		await db.update(categories).set({ name, slug, description }).where(eq(categories.id, id));
 
 		return { success: true, message: 'Categoria actualitzada' };
 	},
@@ -54,10 +47,7 @@ export const actions: Actions = {
 	delete: async ({ params }) => {
 		const id = parseInt(params.id);
 
-		const [phraseCount] = await db
-			.select({ count: count() })
-			.from(phrases)
-			.where(eq(phrases.categoryId, id));
+		const [phraseCount] = await db.select({ count: count() }).from(phrases).where(eq(phrases.categoryId, id));
 
 		if (phraseCount.count > 0) {
 			return fail(409, {

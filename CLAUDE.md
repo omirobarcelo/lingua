@@ -3,6 +3,7 @@
 ## Project Overview
 
 Lingua is a Catalan phrase/idiom dictionary web application. Two core features:
+
 1. **Word Search** (`/cerca?paraula=X`): Search for a word, see definitions from DCVB and GDLC side by side, and related phrases
 2. **Phrase Browse** (`/expressions`): Browse Catalan phrases organized by categories, with detailed explanations and related phrases
 
@@ -47,41 +48,41 @@ The app language is Catalan (`lang="ca"` in `app.html`).
 
 > **Note:** No test framework is configured (no vitest/playwright/jest).
 
-| Command | Description |
-|---|---|
-| `npm run dev` | Start dev server (Vite, port 5173) |
-| `npm run staging` | Start dev server in staging mode |
-| `npm run build` | Production build |
-| `npm run preview` | Preview production build locally |
-| `npm run check` | `svelte-kit sync` + `svelte-check` TypeScript check |
-| `docker compose up -d` | Start local PostgreSQL 16 |
-| `npm run db:setup:fts` | Phase 1: extensions + FTS config (before db:push) |
-| `npm run db:generate` | Generate Drizzle migration SQL files |
-| `npm run db:push` | Apply schema directly to connected DB |
-| `npm run db:setup:trigger` | Phase 2: trigger + backfill (after db:push) |
-| `npm run db:seed` | Seed with 5 categories + 25 phrases + relations |
-| `npm run db:studio` | Open Drizzle Studio GUI |
-| `npm run db:pull` | Pull data from Neon into local Docker DB |
-| `npm run db:pull -- --merge` | Merge Neon data into local DB (skip conflicts) |
+| Command                      | Description                                         |
+| ---------------------------- | --------------------------------------------------- |
+| `npm run dev`                | Start dev server (Vite, port 5173)                  |
+| `npm run staging`            | Start dev server in staging mode                    |
+| `npm run build`              | Production build                                    |
+| `npm run preview`            | Preview production build locally                    |
+| `npm run check`              | `svelte-kit sync` + `svelte-check` TypeScript check |
+| `docker compose up -d`       | Start local PostgreSQL 16                           |
+| `npm run db:setup:fts`       | Phase 1: extensions + FTS config (before db:push)   |
+| `npm run db:generate`        | Generate Drizzle migration SQL files                |
+| `npm run db:push`            | Apply schema directly to connected DB               |
+| `npm run db:setup:trigger`   | Phase 2: trigger + backfill (after db:push)         |
+| `npm run db:seed`            | Seed with 5 categories + 25 phrases + relations     |
+| `npm run db:studio`          | Open Drizzle Studio GUI                             |
+| `npm run db:pull`            | Pull data from Neon into local Docker DB            |
+| `npm run db:pull -- --merge` | Merge Neon data into local DB (skip conflicts)      |
 
 ## Environment Variables
 
-| Variable | Scope | Description |
-|---|---|---|
-| `DATABASE_URL` | Server (private) | PostgreSQL connection string |
-| `NEON_DATABASE_URL` | Local only (`.env`) | Neon pooled connection string for `db:pull` script |
-| `PUBLIC_POSTHOG_ENABLED` | Client (public) | `true`/`false` — toggle all PostHog |
-| `PUBLIC_POSTHOG_PROJECT_TOKEN` | Client (public) | PostHog project API key |
-| `PUBLIC_POSTHOG_HOST` | Client (public) | `https://eu.i.posthog.com` |
-| `ADMIN_PASSWORD` | Server (private) | Shared password for admin panel login |
-| `ADMIN_SESSION_SECRET` | Server (private) | HMAC secret for admin session cookies |
+| Variable                       | Scope               | Description                                        |
+| ------------------------------ | ------------------- | -------------------------------------------------- |
+| `DATABASE_URL`                 | Server (private)    | PostgreSQL connection string                       |
+| `NEON_DATABASE_URL`            | Local only (`.env`) | Neon pooled connection string for `db:pull` script |
+| `PUBLIC_POSTHOG_ENABLED`       | Client (public)     | `true`/`false` — toggle all PostHog                |
+| `PUBLIC_POSTHOG_PROJECT_TOKEN` | Client (public)     | PostHog project API key                            |
+| `PUBLIC_POSTHOG_HOST`          | Client (public)     | `https://eu.i.posthog.com`                         |
+| `ADMIN_PASSWORD`               | Server (private)    | Shared password for admin panel login              |
+| `ADMIN_SESSION_SECRET`         | Server (private)    | HMAC secret for admin session cookies              |
 
 ## Database Setup (order matters!)
 
-1. `npm run db:setup:fts`     — Phase 1: extensions + FTS config (no table dependency)
-2. `npm run db:push`          — apply schema (creates tables)
+1. `npm run db:setup:fts` — Phase 1: extensions + FTS config (no table dependency)
+2. `npm run db:push` — apply schema (creates tables)
 3. `npm run db:setup:trigger` — Phase 2: trigger + backfill (requires phrases table)
-4. `npm run db:seed`          — optional: seed with sample data
+4. `npm run db:seed` — optional: seed with sample data
 
 FTS uses a two-stage search strategy: catalan-stemmed first, simple fallback if 0 results. Input is split on whitespace, joined with `&` (AND), last token gets `:*` prefix.
 

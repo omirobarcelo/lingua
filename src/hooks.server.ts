@@ -25,9 +25,7 @@ const posthogHandle: Handle = async ({ event, resolve }) => {
 	const { pathname } = event.url;
 
 	if (enabled && pathname.startsWith('/ingest')) {
-		const hostname = pathname.startsWith('/ingest/static/')
-			? 'eu-assets.i.posthog.com'
-			: 'eu.i.posthog.com';
+		const hostname = pathname.startsWith('/ingest/static/') ? 'eu-assets.i.posthog.com' : 'eu.i.posthog.com';
 
 		const url = new URL(event.request.url);
 		url.protocol = 'https:';

@@ -15,23 +15,30 @@
 	<title>Editar {data.category.name} - Lingua Admin</title>
 </svelte:head>
 
-<a href="/admin/categories" class="inline-block mb-5 text-brand hover:text-brand-hover transition-colors font-medium no-underline">&larr; Tornar a categories</a>
+<a
+	href="/admin/categories"
+	class="mb-5 inline-block font-medium text-brand no-underline transition-colors hover:text-brand-hover"
+	>&larr; Tornar a categories</a
+>
 
-<h1 class="text-3xl text-primary-900 mb-6">Editar categoria</h1>
+<h1 class="mb-6 text-3xl text-primary-900">Editar categoria</h1>
 
-<div class="rounded-xl bg-surface-card border border-border p-6 shadow-sm mb-6">
+<div class="mb-6 rounded-xl border border-border bg-surface-card p-6 shadow-sm">
 	<AdminFormError message={form?.error} />
 
 	<form method="POST" action="?/update" use:enhance>
 		<div class="mb-4">
-			<label class="block mb-1.5 text-sm font-medium text-base" for="name">Nom</label>
+			<label class="mb-1.5 block text-sm font-medium text-base" for="name">Nom</label>
 			<input
 				id="name"
 				name="name"
 				type="text"
 				bind:value={nameInput}
 				required
-				class="w-full rounded-lg border-2 px-4 py-3 text-base transition-colors focus:border-brand focus:outline-none {form?.errors?.name ? 'border-red-400' : 'border-border'}"
+				class="w-full rounded-lg border-2 px-4 py-3 text-base transition-colors focus:border-brand focus:outline-none {form
+					?.errors?.name
+					? 'border-red-400'
+					: 'border-border'}"
 			/>
 			{#if form?.errors?.name}
 				<p class="mt-1 text-sm text-red-600">{form.errors.name}</p>
@@ -39,8 +46,10 @@
 		</div>
 
 		<div class="mb-4">
-			<span class="block mb-1.5 text-sm font-medium text-base">Slug (auto-generat)</span>
-			<p class="rounded-lg border-2 border-border bg-neutral-100 px-4 py-3 text-muted">{slugPreview}</p>
+			<span class="mb-1.5 block text-sm font-medium text-base">Slug (auto-generat)</span>
+			<p class="rounded-lg border-2 border-border bg-neutral-100 px-4 py-3 text-muted">
+				{slugPreview}
+			</p>
 		</div>
 
 		<AdminField
@@ -54,7 +63,7 @@
 		<div class="flex gap-3">
 			<button
 				type="submit"
-				class="rounded-lg bg-brand px-6 py-3 font-medium text-white transition-colors hover:bg-brand-hover cursor-pointer"
+				class="cursor-pointer rounded-lg bg-brand px-6 py-3 font-medium text-white transition-colors hover:bg-brand-hover"
 			>
 				Desar
 			</button>
@@ -62,8 +71,8 @@
 	</form>
 </div>
 
-<div class="rounded-xl bg-surface-card border border-border p-6 shadow-sm">
-	<h2 class="text-xl text-primary-800 mb-4">Zona perillosa</h2>
+<div class="rounded-xl border border-border bg-surface-card p-6 shadow-sm">
+	<h2 class="mb-4 text-xl text-primary-800">Zona perillosa</h2>
 	<form
 		method="POST"
 		action="?/delete"
@@ -74,7 +83,7 @@
 	>
 		<button
 			type="submit"
-			class="rounded-lg bg-red-600 px-6 py-3 font-medium text-white transition-colors hover:bg-red-700 cursor-pointer"
+			class="cursor-pointer rounded-lg bg-red-600 px-6 py-3 font-medium text-white transition-colors hover:bg-red-700"
 		>
 			Eliminar categoria
 		</button>

@@ -1,25 +1,25 @@
 {
-  "permissions": {
-    "allow": [
-      "mcp__puppeteer-mcp-claude__puppeteer_wait_for_selector",
-      "WebFetch(domain:v7.vite.dev)",
-      "WebFetch(domain:vite.dev)",
-      "WebFetch(domain:dev.to)",
-      "mcp__puppeteer-mcp-claude__puppeteer_type",
-      "mcp__puppeteer-mcp-claude__puppeteer_get_cookies",
-      "Bash(npx svelte-kit:*)",
-      "Bash(npx svelte-check:*)",
-      "Bash(time curl:*)",
-      "Bash(git add:*)"
-    ],
-    "additionalDirectories": [
-      "/Users/omb/repos/omirobarcelo/lingua/src/routes/admin/categories",
-      "/Users/omb/repos/omirobarcelo/lingua/src/routes/admin/frases"
-    ]
-  },
-  "enabledPlugins": {
-    "frontend-design@claude-plugins-official": true,
-    "typescript-lsp@claude-plugins-official": true,
-    "impeccable@impeccable": true
-  }
+	"permissions": {
+		"allow": [
+			"mcp__puppeteer-mcp-claude__puppeteer_wait_for_selector",
+			"WebFetch(domain:v7.vite.dev)",
+			"WebFetch(domain:vite.dev)",
+			"WebFetch(domain:dev.to)",
+			"mcp__puppeteer-mcp-claude__puppeteer_type",
+			"mcp__puppeteer-mcp-claude__puppeteer_get_cookies",
+			"Bash(npx svelte-kit:*)",
+			"Bash(npx svelte-check:*)",
+			"Bash(time curl:*)",
+			"Bash(git add:*)"
+		],
+		"additionalDirectories": [
+			"/Users/omb/repos/omirobarcelo/lingua/src/routes/admin/categories",
+			"/Users/omb/repos/omirobarcelo/lingua/src/routes/admin/frases"
+		]
+	},
+	"enabledPlugins": {
+		"frontend-design@claude-plugins-official": true,
+		"typescript-lsp@claude-plugins-official": true,
+		"impeccable@impeccable": true
+	}
 }

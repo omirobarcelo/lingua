@@ -13,20 +13,22 @@
 	<title>Categories - Lingua Admin</title>
 </svelte:head>
 
-<div class="flex items-center justify-between mb-6">
+<div class="mb-6 flex items-center justify-between">
 	<h1 class="text-3xl text-primary-900">Categories</h1>
 	<button
 		type="button"
 		onclick={() => (showBulk = !showBulk)}
-		class="rounded-lg bg-transparent px-4 py-2 text-sm font-medium text-brand transition-colors hover:bg-neutral-100 cursor-pointer"
+		class="cursor-pointer rounded-lg bg-transparent px-4 py-2 text-sm font-medium text-brand transition-colors hover:bg-neutral-100"
 	>
 		{showBulk ? 'Creació individual' : 'Creació massiva'}
 	</button>
 </div>
 
 <!-- Create form -->
-<div class="rounded-xl bg-surface-card border border-border p-6 shadow-sm mb-8">
-	<h2 class="text-xl text-primary-800 mb-4">{showBulk ? 'Crear categories (massiu)' : 'Nova categoria'}</h2>
+<div class="mb-8 rounded-xl border border-border bg-surface-card p-6 shadow-sm">
+	<h2 class="mb-4 text-xl text-primary-800">
+		{showBulk ? 'Crear categories (massiu)' : 'Nova categoria'}
+	</h2>
 
 	{#if showBulk}
 		<AdminFormError message={form?.action === 'createBulk' ? form?.error : ''} />
@@ -40,7 +42,7 @@
 			/>
 			<button
 				type="submit"
-				class="rounded-lg bg-brand px-6 py-3 font-medium text-white transition-colors hover:bg-brand-hover cursor-pointer"
+				class="cursor-pointer rounded-lg bg-brand px-6 py-3 font-medium text-white transition-colors hover:bg-brand-hover"
 			>
 				Crear totes
 			</button>
@@ -58,7 +60,7 @@
 			/>
 			<button
 				type="submit"
-				class="rounded-lg bg-brand px-6 py-3 font-medium text-white transition-colors hover:bg-brand-hover cursor-pointer"
+				class="cursor-pointer rounded-lg bg-brand px-6 py-3 font-medium text-white transition-colors hover:bg-brand-hover"
 			>
 				Crear
 			</button>
@@ -68,7 +70,7 @@
 
 <!-- Categories table -->
 {#if data.categories.length > 0}
-	<div class="rounded-xl bg-surface-card border border-border shadow-sm overflow-hidden">
+	<div class="overflow-hidden rounded-xl border border-border bg-surface-card shadow-sm">
 		<table class="w-full text-sm">
 			<thead>
 				<tr class="border-b border-border bg-neutral-50">
@@ -79,7 +81,7 @@
 				</tr>
 			</thead>
 			<tbody>
-				{#each data.categories as cat}
+				{#each data.categories as cat (cat.slug)}
 					<tr class="border-b border-border last:border-0">
 						<td class="px-4 py-3 font-medium">{cat.name}</td>
 						<td class="px-4 py-3 text-muted">{cat.slug}</td>
@@ -88,7 +90,7 @@
 							<div class="flex items-center justify-end gap-2">
 								<a
 									href="/admin/categories/{cat.id}"
-									class="rounded-md px-3 py-1 text-sm font-medium text-brand hover:bg-brand-light transition-colors no-underline"
+									class="rounded-md px-3 py-1 text-sm font-medium text-brand no-underline transition-colors hover:bg-brand-light"
 								>
 									Edita
 								</a>
@@ -103,7 +105,7 @@
 									<input type="hidden" name="id" value={cat.id} />
 									<button
 										type="submit"
-										class="rounded-md px-3 py-1 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+										class="cursor-pointer rounded-md px-3 py-1 text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
 									>
 										Elimina
 									</button>

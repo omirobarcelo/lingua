@@ -16,8 +16,9 @@
 
 	function reloadDefinition(source: 'gdlc' | 'dcvb') {
 		const promise = fetch(`/api/definitions/${source}?word=${encodeURIComponent(data.paraula)}`)
-			.then((res) => res.ok ? res.json() : null)
-			.then((json) => json?.definition ?? null);
+			.then((res) => (res.ok ? res.json() : null))
+			.then((json) => json?.definition ?? null)
+			.catch(() => null);
 
 		if (source === 'gdlc') gdlcPromise = promise;
 		else dcvbPromise = promise;
@@ -44,55 +45,98 @@
 	<title>Cerca: {data.paraula} - Lingua</title>
 </svelte:head>
 
-<a href="/" class="inline-block mb-5 text-brand hover:text-brand-hover transition-colors font-medium">&larr; Tornar a l'inici</a>
+<a href="/" class="mb-5 inline-block font-medium text-brand transition-colors hover:text-brand-hover"
+	>&larr; Tornar a l'inici</a
+>
 
-<h2 class="text-2xl text-primary-800 mb-4">Definicions: {data.paraula}</h2>
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-	<div class="rounded-xl bg-surface-card border border-border shadow-sm flex flex-col">
-		<div class="flex items-center justify-between px-6 pt-6 pb-3">
-			<h3 class="text-lg text-primary-800 font-semibold">GDLC</h3>
-			<button onclick={() => reloadDefinition('gdlc')} class="reload-btn" title="Recarregar definici&oacute;">
-				<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+<h2 class="mb-4 text-2xl text-primary-800">Definicions: {data.paraula}</h2>
+<div class="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
+	<div class="flex flex-col rounded-xl border border-border bg-surface-card shadow-sm">
+		<div class="flex items-center justify-between px-4 pt-5 pb-3 sm:px-6 sm:pt-6">
+			<h3 class="text-lg font-semibold text-primary-800">GDLC</h3>
+			<button
+				onclick={() => reloadDefinition('gdlc')}
+				class="reload-btn"
+				title="Recarregar definici&oacute;"
+				aria-label="Recarregar definici&oacute; GDLC"
+			>
+				<svg
+					class="h-4 w-4"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" /></svg
+				>
 			</button>
 		</div>
-		<div class="border-t border-border flex flex-col flex-1">
+		<div class="flex flex-1 flex-col border-t border-border">
 			{#await gdlcPromise}
-				<p class="text-muted px-6 py-4">Carregant...</p>
+				<p class="px-4 py-4 text-muted sm:px-6">Carregant...</p>
 			{:then gdlcHtml}
 				{#if gdlcHtml}
-					<div class="gdlc-definition text-base leading-relaxed max-h-100 overflow-y-auto px-6 py-4 flex-1">
+					<div class="gdlc-definition max-h-100 flex-1 overflow-y-auto px-4 py-4 leading-relaxed text-base sm:px-6">
 						{@html gdlcHtml}
 					</div>
-					<p class="px-6 py-2.5 text-sm text-muted border-t border-border">
-						Font: <a href="https://www.diccionari.cat/cerca/gran-diccionari-de-la-llengua-catalana?search_api_fulltext_cust={encodeURIComponent(data.paraula)}&search_api_fulltext_cust_1&field_faceta_cerca_1=5065&show=title" target="_blank" rel="noopener noreferrer" class="text-brand hover:text-brand-hover transition-colors">Gran Diccionari de la Llengua Catalana</a>
+					<p class="border-t border-border px-4 py-2.5 text-sm text-muted sm:px-6">
+						Font: <a
+							href="https://www.diccionari.cat/cerca/gran-diccionari-de-la-llengua-catalana?search_api_fulltext_cust={encodeURIComponent(
+								data.paraula
+							)}&search_api_fulltext_cust_1&field_faceta_cerca_1=5065&show=title"
+							target="_blank"
+							rel="noopener noreferrer"
+							class="text-brand transition-colors hover:text-brand-hover">Gran Diccionari de la Llengua Catalana</a
+						>
 					</p>
 				{:else}
-					<p class="text-muted px-6 py-4">No s'ha trobat cap definici&oacute; al GDLC.</p>
+					<p class="px-4 py-4 text-muted sm:px-6">No s'ha trobat cap definici&oacute; al GDLC.</p>
 				{/if}
 			{/await}
 		</div>
 	</div>
 
-	<div class="rounded-xl bg-surface-card border border-border shadow-sm flex flex-col">
-		<div class="flex items-center justify-between px-6 pt-6 pb-3">
-			<h3 class="text-lg text-primary-800 font-semibold">DCVB</h3>
-			<button onclick={() => reloadDefinition('dcvb')} class="reload-btn" title="Recarregar definici&oacute;">
-				<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+	<div class="flex flex-col rounded-xl border border-border bg-surface-card shadow-sm">
+		<div class="flex items-center justify-between px-4 pt-5 pb-3 sm:px-6 sm:pt-6">
+			<h3 class="text-lg font-semibold text-primary-800">DCVB</h3>
+			<button
+				onclick={() => reloadDefinition('dcvb')}
+				class="reload-btn"
+				title="Recarregar definici&oacute;"
+				aria-label="Recarregar definici&oacute; DCVB"
+			>
+				<svg
+					class="h-4 w-4"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" /></svg
+				>
 			</button>
 		</div>
-		<div class="border-t border-border flex flex-col flex-1">
+		<div class="flex flex-1 flex-col border-t border-border">
 			{#await dcvbPromise}
-				<p class="text-muted px-6 py-4">Carregant...</p>
+				<p class="px-4 py-4 text-muted sm:px-6">Carregant...</p>
 			{:then dcvbHtml}
 				{#if dcvbHtml}
-					<div class="dcvb-definition text-base leading-relaxed max-h-100 overflow-y-auto px-6 py-4 flex-1">
+					<div class="dcvb-definition max-h-100 flex-1 overflow-y-auto px-4 py-4 leading-relaxed text-base sm:px-6">
 						{@html dcvbHtml}
 					</div>
-					<p class="px-6 py-2.5 text-sm text-muted border-t border-border">
-						Font: <a href="https://dcvb.iec.cat/results.asp?Word={encodeURIComponent(data.paraula)}" target="_blank" rel="noopener noreferrer" class="text-brand hover:text-brand-hover transition-colors">Diccionari Catal&agrave;-Valenci&agrave;-Balear</a>
+					<p class="border-t border-border px-4 py-2.5 text-sm text-muted sm:px-6">
+						Font: <a
+							href="https://dcvb.iec.cat/results.asp?Word={encodeURIComponent(data.paraula)}"
+							target="_blank"
+							rel="noopener noreferrer"
+							class="text-brand transition-colors hover:text-brand-hover"
+							>Diccionari Catal&agrave;-Valenci&agrave;-Balear</a
+						>
 					</p>
 				{:else}
-					<p class="text-muted px-6 py-4">No s'ha pogut obtenir la definici&oacute; del DCVB.</p>
+					<p class="px-4 py-4 text-muted sm:px-6">No s'ha pogut obtenir la definici&oacute; del DCVB.</p>
 				{/if}
 			{/await}
 		</div>
@@ -100,12 +144,18 @@
 </div>
 
 {#if data.phrases.length > 0}
-	<div class="rounded-xl bg-surface-card border border-border p-8 shadow-sm">
-		<h3 class="text-xl text-primary-800 mb-4">Expressions que contenen &ldquo;{data.paraula}&rdquo;</h3>
+	<div class="rounded-xl border border-border bg-surface-card p-5 shadow-sm sm:p-8">
+		<h3 class="mb-4 text-xl text-primary-800">
+			Expressions que contenen &ldquo;{data.paraula}&rdquo;
+		</h3>
 		<ul class="space-y-3">
-			{#each data.phrases as phrase}
+			{#each data.phrases as phrase (phrase.id)}
 				<li>
-					<a href="/expressions/{phrase.id}" class="text-brand hover:text-brand-hover transition-colors" onclick={() => handlePhraseClick(phrase.id, phrase.phraseText)}>
+					<a
+						href="/expressions/{phrase.id}"
+						class="wrap-break-word text-brand transition-colors hover:text-brand-hover"
+						onclick={() => handlePhraseClick(phrase.id, phrase.phraseText)}
+					>
 						<strong>{phrase.phraseText}</strong>
 						<span class="text-muted"> &mdash; {phrase.explanation}</span>
 					</a>
@@ -114,7 +164,7 @@
 		</ul>
 	</div>
 {:else}
-	<div class="rounded-xl bg-surface-card border border-border p-8 shadow-sm">
+	<div class="rounded-xl border border-border bg-surface-card p-5 shadow-sm sm:p-8">
 		<p class="text-muted">No s'han trobat expressions que continguin aquesta paraula.</p>
 	</div>
 {/if}

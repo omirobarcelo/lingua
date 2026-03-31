@@ -4,7 +4,7 @@ type DialogState = {
 	resolve: ((value: boolean) => void) | null;
 };
 
-let state = $state<DialogState>({ open: false, message: '', resolve: null });
+const state = $state<DialogState>({ open: false, message: '', resolve: null });
 
 export function confirm(message: string): Promise<boolean> {
 	return new Promise((resolve) => {

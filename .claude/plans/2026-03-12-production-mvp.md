@@ -14,35 +14,36 @@ No routing changes are needed. No authentication. No admin panel. This is purely
 
 **Primary — Vermillion/Terracotta (base: `#fb542b`)**
 
-| Token | Hex | Usage |
-|---|---|---|
-| `primary-50` | `#fff4f0` | Tint backgrounds |
-| `primary-100` | `#ffe4d9` | Hover states on light |
-| `primary-200` | `#ffc5ad` | — |
-| `primary-300` | `#ff9e7a` | — |
-| `primary-400` | `#fd7347` | — |
-| `primary-500` | `#fb542b` | **Base brand color** |
+| Token         | Hex       | Usage                   |
+| ------------- | --------- | ----------------------- |
+| `primary-50`  | `#fff4f0` | Tint backgrounds        |
+| `primary-100` | `#ffe4d9` | Hover states on light   |
+| `primary-200` | `#ffc5ad` | —                       |
+| `primary-300` | `#ff9e7a` | —                       |
+| `primary-400` | `#fd7347` | —                       |
+| `primary-500` | `#fb542b` | **Base brand color**    |
 | `primary-600` | `#e03a12` | Hover on brand elements |
-| `primary-700` | `#ba2d0e` | Active/pressed |
-| `primary-800` | `#992714` | Text on light bg |
-| `primary-900` | `#7e2416` | Dark headings |
+| `primary-700` | `#ba2d0e` | Active/pressed          |
+| `primary-800` | `#992714` | Text on light bg        |
+| `primary-900` | `#7e2416` | Dark headings           |
 
 **Neutral — Warm Zinc**
 
-| Token | Hex | Usage |
-|---|---|---|
-| `neutral-50` | `#fafaf9` | Page background |
-| `neutral-100` | `#f4f4f3` | Card backgrounds |
-| `neutral-200` | `#e6e6e4` | Borders |
-| `neutral-300` | `#d0d0cd` | Dividers |
+| Token         | Hex       | Usage                |
+| ------------- | --------- | -------------------- |
+| `neutral-50`  | `#fafaf9` | Page background      |
+| `neutral-100` | `#f4f4f3` | Card backgrounds     |
+| `neutral-200` | `#e6e6e4` | Borders              |
+| `neutral-300` | `#d0d0cd` | Dividers             |
 | `neutral-400` | `#a6a6a2` | Disabled/placeholder |
-| `neutral-500` | `#75756f` | Muted text |
-| `neutral-600` | `#56564f` | Secondary text |
-| `neutral-700` | `#3d3d37` | — |
-| `neutral-800` | `#272722` | Primary text |
-| `neutral-900` | `#141410` | Headings |
+| `neutral-500` | `#75756f` | Muted text           |
+| `neutral-600` | `#56564f` | Secondary text       |
+| `neutral-700` | `#3d3d37` | —                    |
+| `neutral-800` | `#272722` | Primary text         |
+| `neutral-900` | `#141410` | Headings             |
 
 **Semantic aliases** (use these in components, not raw palette):
+
 - `--color-brand` → primary-500
 - `--color-brand-hover` → primary-600
 - `--color-brand-light` → primary-100
@@ -55,11 +56,13 @@ No routing changes are needed. No authentication. No admin panel. This is purely
 **To change the brand color later**: update only the `primary-*` values in `@theme`. Semantic aliases propagate everywhere automatically.
 
 ### Typography
+
 - **Headings**: `font-serif` — "Lora" (Google Font, elegant for literary content) or Georgia as fallback
 - **Body/UI**: `font-sans` — "Inter" (Google Font) or system-ui as fallback
 - Scale: xs(0.75) / sm(0.875) / base(1) / lg(1.125) / xl(1.25) / 2xl(1.5) / 3xl(1.875) / 4xl(2.25)
 
 ### Component Spec (for `/design-system` route)
+
 - **Button**: primary (bg-brand), secondary (border + brand text), ghost (text only)
 - **Card**: white bg, border-border, shadow-sm, rounded-lg, padding-6
 - **Badge**: small pill, bg-brand-light, text-brand-800
@@ -77,6 +80,7 @@ No routing changes are needed. No authentication. No admin panel. This is purely
 **New file:** `CLAUDE.md`
 
 Content should cover:
+
 - **Project overview**: Lingua — Catalan phrase/idiom dictionary, SvelteKit 2 + Svelte 5
 - **Current state**: mock data, no Tailwind, no PWA, no analytics yet
 - **Target architecture** (what the plan will build): TailwindCSS v4, PostgreSQL FTS with Catalan, PWA, PostHog
@@ -96,6 +100,7 @@ This is intentionally a living document — each step will append or update sect
 **Completed.** All changes implemented and verified.
 
 **What was done:**
+
 - Installed `tailwindcss` + `@tailwindcss/vite` as dev dependencies
 - `vite.config.ts` — added `tailwindcss()` plugin before `sveltekit()`
 - `src/app.css` — replaced entirely with Tailwind v4 `@import "tailwindcss"`, `@theme` block with primary/neutral palettes + semantic aliases (`brand`, `brand-hover`, `brand-light`, `surface`, `surface-card`, `base`, `muted`, `border`), Google Fonts import, and base body/heading styles
@@ -105,6 +110,7 @@ This is intentionally a living document — each step will append or update sect
 - Created `/design-system` (English) and `/sistema-disseny` (Catalan) — full design system reference pages with 6 sections: Colors, Typography, Buttons, Cards, Badges, Forms. Tab-style anchor navigation.
 
 **Deviations from original plan:**
+
 - Semantic alias `--color-text` renamed to `--color-base`, `--color-text-muted` renamed to `--color-muted` (user request)
 - Added `--color-surface-card` alias (white) not in original plan
 - Design system page created in two languages: `/design-system` (EN) + `/sistema-disseny` (CA) instead of single route
@@ -119,6 +125,7 @@ This is intentionally a living document — each step will append or update sect
 **Completed.** All changes implemented and verified.
 
 **What was done:**
+
 - Installed `tsx` and `@types/node` as dev dependencies (scripts use `tsx --env-file .env` instead of dotenv)
 - Split DB setup into two phases to avoid trigger-before-table dependency:
   - `setup-fts.sql` — Phase 1 (before `db:push`): `unaccent` extension + `public.catalan` FTS config
@@ -131,6 +138,7 @@ This is intentionally a living document — each step will append or update sect
 - Drizzle's expression GIN index API worked correctly — no need for raw SQL fallback
 
 **FTS Architecture Decisions:**
+
 - Copied from `pg_catalog.catalan` (not `spanish`) for proper Catalan morphology
 - Added `catalan_unaccent` pre-filter for accent-insensitive matching (e.g., `cafè` matches `cafe`)
 - **No stopwords**: PostgreSQL has no `catalan.stop` file. Intentionally skipped — at 500 phrases the overhead is ~15KB (negligible). To add later: place `catalan.stop` file + run `UPDATE phrases SET phrase_text = phrase_text;` to recalculate all vectors
@@ -138,6 +146,7 @@ This is intentionally a living document — each step will append or update sect
 - `unaccent` extension is available on Neon
 
 **Run order (CRITICAL — note the split):**
+
 ```bash
 docker compose up -d
 npm run db:setup:fts      # Phase 1: extensions + FTS config (no table dependency)
@@ -155,6 +164,7 @@ npm run db:setup:trigger  # Phase 2: trigger + backfill (requires phrases table)
 **Completed.** All changes implemented and verified.
 
 **What was done:**
+
 - Created `src/lib/server/db/seed.ts` — inserts 5 categories and 25 Catalan idiomatic phrases (5 per category), plus 6 bidirectional phrase relations (12 rows total — both directions)
 - Categories: Amor i Sentiments, Animals, Menjar i Beguda, Meteorologia, Cos i Salut
 - `searchVector` omitted from inserts — the DB trigger fills it automatically on INSERT
@@ -171,6 +181,7 @@ npm run db:setup:trigger  # Phase 2: trigger + backfill (requires phrases table)
 **Completed.** All mock data replaced with live Drizzle queries.
 
 **What was done:**
+
 - `src/routes/expressions/+page.server.ts` — `db.select().from(categories).orderBy(categories.name)`
 - `src/routes/expressions/[slug]/+page.server.ts` — category lookup by slug (404 if not found), phrases by categoryId ordered by phraseText
 - `src/routes/expressions/[id=integer]/+page.server.ts` — phrase by ID (404 if missing), category lookup for name/slug, related phrases via `phraseRelations` + `inArray` query
@@ -181,6 +192,7 @@ npm run db:setup:trigger  # Phase 2: trigger + backfill (requires phrases table)
 - Updated 3 `.svelte` templates: `phrase.text` → `phrase.phraseText` in `[slug]/+page.svelte`, `[id=integer]/+page.svelte`, `cerca/+page.svelte`
 
 **Deviations from original plan:**
+
 - FTS uses AND logic with prefix on last token instead of single-token prefix — better for multi-word searches like "cor trencat" or "bots i barrals"
 - Empty/whitespace search queries short-circuit to empty results (no DB hit)
 
@@ -193,6 +205,7 @@ npm run db:setup:trigger  # Phase 2: trigger + backfill (requires phrases table)
 **Completed.** All changes implemented and verified.
 
 **What was done:**
+
 - Installed `@vite-pwa/sveltekit` and `sharp` (+ `@types/sharp`) as dev dependencies
 - `vite.config.ts` — added `SvelteKitPWA` plugin after `sveltekit()` with `generateSW` strategy, `autoUpdate` registration, manifest metadata, and `NetworkFirst` runtime caching for navigations (3s network timeout)
 - `svelte.config.js` — disabled SvelteKit's built-in SW registration (`serviceWorker: { register: false }`)
@@ -205,15 +218,19 @@ npm run db:setup:trigger  # Phase 2: trigger + backfill (requires phrases table)
 
 **Icon Generation (for future reference):**
 To regenerate icons after modifying `static/icons/lingua.svg`:
+
 ```bash
 npx tsx scripts/generate-icons.ts
 ```
+
 This produces three files from the SVG:
+
 - `static/icons/icon-192.png` (192×192) — PWA manifest icon
 - `static/icons/icon-512.png` (512×512) — PWA manifest icon (any + maskable)
 - `static/favicon.png` (48×48) — browser tab favicon
 
 **Deviations from original plan:**
+
 - Added `sharp` as dev dependency + `scripts/generate-icons.ts` for reproducible icon generation (plan suggested manual/online tools)
 - Added Apple mobile web app meta tags in `app.html` (not in original plan)
 - Added `<meta name="theme-color">` in `app.html` for browser chrome theming
@@ -229,6 +246,7 @@ This produces three files from the SVG:
 **Completed.** Initial setup via PostHog AI Wizard (`npx @posthog/wizard --region eu`), then refined manually.
 
 **What was done:**
+
 - Installed `posthog-js` (client) and `posthog-node` (server) as runtime dependencies
 - `src/hooks.client.ts` (new) — initializes `posthog-js` via SvelteKit `init` hook with `/ingest` reverse proxy, `defaults: '2026-01-30'` for automatic SPA pageview tracking, `capture_exceptions: true` for client-side error tracking, and `session_recording` config to unmask search inputs while masking all other inputs
 - `src/hooks.server.ts` (new) — reverse proxy at `/ingest` routing to `eu.i.posthog.com` / `eu-assets.i.posthog.com` (ad-blocker resilience), plus server-side error capture via `posthog-node`. Both proxy and error capture are guarded by `PUBLIC_POSTHOG_ENABLED`
@@ -240,11 +258,13 @@ This produces three files from the SVG:
 - PostHog dashboards and insights auto-created in EU project
 
 **Enable/disable toggle:**
+
 - `PUBLIC_POSTHOG_ENABLED=true|false` in `.env` controls all PostHog behavior
 - Client-side: uses `opt_out_capturing_by_default` — PostHog initializes but silently drops all events when disabled. No per-call guards needed in route files
 - Server-side: explicit `enabled` guard on `/ingest` proxy and error capture (posthog-node lacks `opt_out_capturing_by_default`)
 
 **Deviations from original plan:**
+
 - Used `hooks.client.ts` `init()` instead of `+layout.ts` load function (more modern SvelteKit pattern)
 - `defaults: '2026-01-30'` enables automatic SPA pageview tracking — no manual `afterNavigate` needed
 - Added `/ingest` reverse proxy for ad-blocker avoidance (not in original plan)
@@ -254,6 +274,7 @@ This produces three files from the SVG:
 - Added session recording config: all inputs masked except `type="search"`
 
 **PostHog dashboards (EU project 144826):**
+
 - Analytics basics: https://eu.posthog.com/project/144826/dashboard/584716
 - Word searches over time: https://eu.posthog.com/project/144826/insights/hllh5qLw
 - Search-to-phrase click funnel: https://eu.posthog.com/project/144826/insights/RfCJ1X8i
@@ -272,12 +293,14 @@ This produces three files from the SVG:
 **What was done:**
 
 **7a — Vercel + Neon Setup (Managed Integration)**
+
 - Created Vercel account and project linked to the GitHub repository
 - Installed the **Neon Managed Integration** for Vercel (https://neon.com/docs/guides/vercel-managed-integration) — Neon is accessed through the Vercel dashboard, not a separate Neon account
 - The integration automatically provisions the Neon database and sets `DATABASE_URL` (+ other Neon env vars) in the Vercel project environment
 - Manually added PostHog env vars (`PUBLIC_POSTHOG_PROJECT_TOKEN`, `PUBLIC_POSTHOG_HOST`, `PUBLIC_POSTHOG_ENABLED`) in Vercel project settings
 
 **7b — Database Initialization on Neon**
+
 - Ran schema setup and seed against Neon from local machine using the Neon connection string:
   ```bash
   DATABASE_URL="<neon-connection-string>" npm run db:setup:fts
@@ -287,12 +310,14 @@ This produces three files from the SVG:
   ```
 
 **7c — Conditional DB Driver**
+
 - `src/lib/server/db/index.ts` — now uses dynamic imports to select the DB driver at runtime:
   - **Development** (`dev === true`): `postgres` (postgres-js) for local Docker PostgreSQL
   - **Production**: `@neondatabase/serverless` (`neon-http` driver) for Vercel serverless functions
 - Installed `@neondatabase/serverless` as a runtime dependency
 
 **7d — Neon-to-Local Sync Script**
+
 - Created `scripts/pull-neon.ts` — pulls data from Neon and loads it into local Docker PostgreSQL
 - Uses `@neondatabase/serverless` (tagged template queries) to read from Neon and `postgres` to write locally
 - Two modes:
@@ -317,6 +342,7 @@ This produces three files from the SVG:
 **What was done:**
 
 **8a — Vite 6 → 8 Upgrade**
+
 - Upgraded `vite` from `^6.4.1` to `^8.0.0` (Rolldown replaces esbuild + Rollup under the hood)
 - Upgraded `@sveltejs/kit` from `^2.50.1` to `^2.55.0` (Vite 8 support added in 2.53.0)
 - Upgraded `@sveltejs/vite-plugin-svelte` from `^6.2.4` to `^7.0.0` (required for Vite 8, drops Vite 7)
@@ -324,6 +350,7 @@ This produces three files from the SVG:
 - `vite-plugin-pwa@1.2.0` declares peer dep up to `^7.0.0` only — Vite 8 works via compatibility layer but shows a peer dep warning. No `vite-plugin-pwa` update available yet.
 
 **8b — PWA Manifest Fixes**
+
 - Split `icon-512.png` `purpose: 'any maskable'` into two separate entries: `icon-512.png` (purpose: any, default) and `icon-512-maskable.png` (purpose: maskable) — mixed purpose causes padding issues on some platforms
 - Generated `icon-512-maskable.png` via `scripts/generate-icons.ts` — 512x512 with 80% inner icon centered on `#fb542b` brand background (safe zone padding)
 - Added `screenshots` array to manifest for richer PWA install UI:
@@ -332,6 +359,7 @@ This produces three files from the SVG:
 - Created `static/.well-known/appspecific/com.chrome.devtools.json` — silences Chrome DevTools config request message
 
 **8c — Skill: `/refresh-pwa-assets`**
+
 - Created `.claude/skills/refresh-pwa-assets/SKILL.md` — regenerates all icons (via `scripts/generate-icons.ts`) and takes desktop/mobile screenshots (via Puppeteer MCP) from the preview server
 
 **Verification:** `npm run build && npm run preview` succeeds. Chrome DevTools > Application > Manifest shows no errors or warnings. PWA install prompt appears with richer UI (screenshots visible).
@@ -381,6 +409,7 @@ npm install posthog-js posthog-node @neondatabase/serverless
 4. **posthog-js SSR guard**: PostHog accesses `window`/`document`. ALWAYS guard with `if (browser)` or dynamic `import()`. Never import it at the top level of any file that also runs on the server.
 
 5. **Drizzle expression GIN index**: If `index().using('gin').on(sql`...`)` doesn't generate correctly, fall back to writing the expression index directly in `setup.sql`:
+
    ```sql
    CREATE INDEX IF NOT EXISTS search_simple_idx ON phrases
      USING GIN (to_tsvector('simple', phrase_text));

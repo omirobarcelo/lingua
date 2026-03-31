@@ -31,7 +31,7 @@ export const actions: Actions = {
 		const explanation = (data.get('explanation') as string)?.trim();
 		const categoryId = parseInt(data.get('categoryId') as string);
 
-		if (!phraseText) return fail(400, { error: "El text de la frase és obligatori", action: 'create' });
+		if (!phraseText) return fail(400, { error: 'El text de la frase és obligatori', action: 'create' });
 		if (!explanation) return fail(400, { error: "L'explicació és obligatòria", action: 'create' });
 		if (isNaN(categoryId)) return fail(400, { error: 'Selecciona una categoria', action: 'create' });
 
@@ -104,9 +104,7 @@ export const actions: Actions = {
 		// Delete relations first (both directions)
 		await db
 			.delete(phraseRelations)
-			.where(
-				or(eq(phraseRelations.phraseId, id), eq(phraseRelations.relatedPhraseId, id))
-			);
+			.where(or(eq(phraseRelations.phraseId, id), eq(phraseRelations.relatedPhraseId, id)));
 
 		await db.delete(phrases).where(eq(phrases.id, id));
 		return { success: true, message: 'Frase eliminada' };
