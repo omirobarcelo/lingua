@@ -3,11 +3,13 @@
 	import posthog from 'posthog-js';
 
 	let searchWord = $state('');
+	let searching = $state(false);
 
 	function handleSearch(event: Event) {
 		event.preventDefault();
 		const trimmedWord = searchWord.trim();
 		if (trimmedWord) {
+			searching = true;
 			posthog.capture('word_searched', { word: trimmedWord });
 			goto(`/cerca?paraula=${encodeURIComponent(trimmedWord)}`);
 		}
@@ -33,9 +35,14 @@
 		/>
 		<button
 			type="submit"
-			class="rounded-lg bg-brand px-6 py-3 font-medium text-white transition-colors hover:bg-brand-hover cursor-pointer"
+			disabled={searching}
+			class="rounded-lg bg-brand px-6 py-3 font-medium text-white transition-colors hover:bg-brand-hover cursor-pointer disabled:opacity-70 disabled:cursor-wait min-w-25"
 		>
-			Cercar
+			{#if searching}
+				<svg class="inline-block w-5 h-5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2a10 10 0 0 1 10 10"/></svg>
+			{:else}
+				Cercar
+			{/if}
 		</button>
 	</form>
 </div>
