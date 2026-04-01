@@ -10,7 +10,8 @@
 			"Bash(npx svelte-kit:*)",
 			"Bash(npx svelte-check:*)",
 			"Bash(time curl:*)",
-			"Bash(git add:*)"
+			"Bash(git add:*)",
+			"Bash(npm run:*)"
 		],
 		"additionalDirectories": [
 			"/Users/omb/repos/omirobarcelo/lingua/src/routes/admin/categories",

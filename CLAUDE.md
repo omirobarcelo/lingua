@@ -59,7 +59,7 @@ The app language is Catalan (`lang="ca"` in `app.html`).
 | `npm run build`              | Production build                                    |
 | `npm run preview`            | Preview production build locally                    |
 | `npm run check`              | `svelte-kit sync` + `svelte-check` TypeScript check |
-| `npm run lint`               | ESLint (flat config, Svelte + TypeScript)            |
+| `npm run lint`               | ESLint (flat config, Svelte + TypeScript)           |
 | `npm run format`             | Prettier (write mode)                               |
 | `npm run format:check`       | Prettier (check mode, CI-friendly)                  |
 | `docker compose up -d`       | Start local PostgreSQL 16                           |
