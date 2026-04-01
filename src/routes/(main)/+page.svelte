@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import posthog from 'posthog-js';
+	import InstallPwa from '$lib/components/InstallPwa.svelte';
 
 	let searchWord = $state('');
 	let searching = $state(false);
@@ -55,6 +56,8 @@
 		</button>
 	</form>
 </div>
+
+<InstallPwa />
 
 <div class="rounded-xl border border-border bg-surface-card p-5 shadow-sm sm:p-8">
 	<h2 class="mb-4 text-2xl text-primary-800">Sobre Lingua</h2>
