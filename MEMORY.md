@@ -1,1 +1,3 @@
 - [Commit strategy](.claude/memory/feedback_commit_strategy.md) — Do planned commits in order during implementation, not all at the end
+- [Plan naming](.claude/memory/feedback_plan_naming.md) — Always use YYYY-MM-DD-descriptive-name.md, ignore system-generated random names
+- [Memory location](.claude/memory/feedback_memory_location.md) — Store memory in repo's .claude/memory/, not global path
