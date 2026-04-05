@@ -207,6 +207,14 @@
 		text-decoration: none;
 	}
 
+	.dcvb-definition :global(hr.dcvb-separator) {
+		margin-top: 1rem;
+		padding-top: 0;
+		border: none;
+		border-top: 1px solid var(--color-border);
+		margin-bottom: 1rem;
+	}
+
 	/* Style GDLC definition HTML injected via {@html} */
 	.gdlc-definition :global(.gdlc-entry + .gdlc-entry) {
 		margin-top: 1rem;
