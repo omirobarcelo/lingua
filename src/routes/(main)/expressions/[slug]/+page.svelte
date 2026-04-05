@@ -2,8 +2,23 @@
 	import posthog from 'posthog-js';
 	import type { PageData } from './$types';
 	import SeoHead from '$lib/components/SeoHead.svelte';
+	import { SITE_URL } from '$lib/seo';
 
 	let { data }: { data: PageData } = $props();
+
+	const jsonLdScript = $derived(
+		'<script type="application/ld+json">' +
+			JSON.stringify({
+				'@context': 'https://schema.org',
+				'@type': 'DefinedTermSet',
+				name: data.category.name,
+				description: data.category.description || undefined,
+				url: SITE_URL + '/expressions/' + data.category.slug,
+				inLanguage: 'ca'
+			}) +
+			'</' +
+			'script>'
+	);
 
 	function handlePhraseClick(phraseId: number, phraseText: string) {
 		posthog.capture('phrase_clicked_from_category', {
@@ -22,6 +37,10 @@
 		: ''} a Lingua."
 	path="/expressions/{data.category.slug}"
 />
+
+<svelte:head>
+	{@html jsonLdScript}
+</svelte:head>
 
 <a href="/expressions" class="mb-5 inline-block font-medium text-brand transition-colors hover:text-brand-hover"
 	>&larr; Tornar a categories</a

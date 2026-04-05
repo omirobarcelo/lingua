@@ -71,22 +71,20 @@ Lingua has good foundations (SSR, semantic HTML, `lang="ca"`, titles on every pa
 
 ---
 
-## Phase 5: JSON-LD Structured Data
+## Phase 5: JSON-LD Structured Data ✅
 
 > Help Google understand content semantically for potential rich results.
 
-**Files to modify:**
+**Completed.** All 4 public content routes have JSON-LD structured data.
 
-| File                                                      | Schema Type                                                                     |
-| --------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| `src/routes/(main)/+page.svelte`                          | `WebSite` with `SearchAction` pointing to `/cerca?paraula={search_term_string}` |
-| `src/routes/(main)/expressions/+page.svelte`              | `CollectionPage`                                                                |
-| `src/routes/(main)/expressions/[slug]/+page.svelte`       | `DefinedTermSet` with category name/description                                 |
-| `src/routes/(main)/expressions/[id=integer]/+page.svelte` | `DefinedTerm` with phrase text, explanation, parent `DefinedTermSet`            |
+**Changes made:**
 
-All use `"inLanguage": "ca"` and are injected via `{@html '<script type="application/ld+json">...'}`.
+- `src/routes/(main)/+page.svelte`: `WebSite` with `SearchAction` pointing to `/cerca?paraula={search_term_string}`
+- `src/routes/(main)/expressions/+page.svelte`: `CollectionPage` with `isPartOf` WebSite
+- `src/routes/(main)/expressions/[slug]/+page.svelte`: `DefinedTermSet` with category name/description (reactive via `$derived`)
+- `src/routes/(main)/expressions/[id=integer]/+page.svelte`: `DefinedTerm` with phrase text, explanation, parent `DefinedTermSet` (reactive via `$derived`)
 
-**Verify:** Google Rich Results Test, validator.schema.org.
+All use `"inLanguage": "ca"`. JSON-LD is built in the script block and injected via `{@html jsonLdScript}` to avoid ESLint parsing issues with nested template literals.
 
 ---
 

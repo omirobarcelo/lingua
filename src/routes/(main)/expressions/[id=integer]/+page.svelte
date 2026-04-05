@@ -2,8 +2,28 @@
 	import posthog from 'posthog-js';
 	import type { PageData } from './$types';
 	import SeoHead from '$lib/components/SeoHead.svelte';
+	import { SITE_URL } from '$lib/seo';
 
 	let { data }: { data: PageData } = $props();
+
+	const jsonLdScript = $derived(
+		'<script type="application/ld+json">' +
+			JSON.stringify({
+				'@context': 'https://schema.org',
+				'@type': 'DefinedTerm',
+				name: data.phrase.phraseText,
+				description: data.phrase.explanation,
+				url: SITE_URL + '/expressions/' + data.phrase.id,
+				inLanguage: 'ca',
+				inDefinedTermSet: {
+					'@type': 'DefinedTermSet',
+					name: data.categoryName,
+					url: SITE_URL + '/expressions/' + data.categorySlug
+				}
+			}) +
+			'</' +
+			'script>'
+	);
 
 	function handleRelatedPhraseClick(relatedId: number, relatedText: string) {
 		posthog.capture('related_phrase_clicked', {
@@ -21,6 +41,10 @@
 		.explanation} — Categoria: {data.categoryName}. Lingua, diccionari d'expressions catalanes."
 	path="/expressions/{data.phrase.id}"
 />
+
+<svelte:head>
+	{@html jsonLdScript}
+</svelte:head>
 
 <a
 	href="/expressions/{data.categorySlug}"

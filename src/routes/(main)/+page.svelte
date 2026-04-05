@@ -3,6 +3,24 @@
 	import posthog from 'posthog-js';
 	import InstallPwa from '$lib/components/InstallPwa.svelte';
 	import SeoHead from '$lib/components/SeoHead.svelte';
+	import { SITE_URL } from '$lib/seo';
+
+	const jsonLdScript =
+		'<script type="application/ld+json">' +
+		JSON.stringify({
+			'@context': 'https://schema.org',
+			'@type': 'WebSite',
+			name: 'Lingua',
+			url: SITE_URL,
+			inLanguage: 'ca',
+			potentialAction: {
+				'@type': 'SearchAction',
+				target: SITE_URL + '/cerca?paraula={search_term_string}',
+				'query-input': 'required name=search_term_string'
+			}
+		}) +
+		'</' +
+		'script>';
 
 	let searchWord = $state('');
 	let searching = $state(false);
@@ -25,6 +43,10 @@
 	description="Lingua: diccionari d'expressions i frases fetes catalanes. Cerca paraules, descobreix expressions i explora el patrimoni lingüístic català."
 	path="/"
 />
+
+<svelte:head>
+	{@html jsonLdScript}
+</svelte:head>
 
 <div class="mb-8 rounded-xl border border-border bg-surface-card p-5 shadow-sm sm:p-8">
 	<h2 class="mb-3 text-2xl text-primary-800">Cerca de Paraules</h2>

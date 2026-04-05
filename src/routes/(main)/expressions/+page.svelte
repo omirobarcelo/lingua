@@ -2,8 +2,22 @@
 	import posthog from 'posthog-js';
 	import type { PageData } from './$types';
 	import SeoHead from '$lib/components/SeoHead.svelte';
+	import { SITE_URL } from '$lib/seo';
 
 	let { data }: { data: PageData } = $props();
+
+	const jsonLdScript =
+		'<script type="application/ld+json">' +
+		JSON.stringify({
+			'@context': 'https://schema.org',
+			'@type': 'CollectionPage',
+			name: "Categories d'Expressions Catalanes",
+			url: SITE_URL + '/expressions',
+			inLanguage: 'ca',
+			isPartOf: { '@type': 'WebSite', name: 'Lingua', url: SITE_URL }
+		}) +
+		'</' +
+		'script>';
 
 	function handleCategoryClick(categorySlug: string, categoryName: string) {
 		posthog.capture('category_clicked', {
@@ -18,6 +32,10 @@
 	description="Explora les expressions catalanes organitzades per categories temàtiques a Lingua."
 	path="/expressions"
 />
+
+<svelte:head>
+	{@html jsonLdScript}
+</svelte:head>
 
 <h2 class="mb-2 text-3xl text-primary-900">Categories d'Expressions</h2>
 <p class="mb-8 text-muted">Explora les expressions catalanes organitzades per tem&agrave;tica.</p>
