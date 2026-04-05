@@ -14,6 +14,8 @@ jobs:
       PUBLIC_POSTHOG_ENABLED: 'false'
       PUBLIC_POSTHOG_PROJECT_TOKEN: 'unused'
       PUBLIC_POSTHOG_HOST: 'https://localhost'
+      ADMIN_PASSWORD: 'ci-placeholder'
+      ADMIN_SESSION_SECRET: 'ci-placeholder'
 
     steps:
       - uses: actions/checkout@v4
