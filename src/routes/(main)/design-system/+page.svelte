@@ -5,9 +5,9 @@
 		{ name: 'primary-200', hex: '#ffc5ad', desc: 'Light accents' },
 		{ name: 'primary-300', hex: '#ff9e7a', desc: 'Decorative' },
 		{ name: 'primary-400', hex: '#fd7347', desc: 'Active states' },
-		{ name: 'primary-500', hex: '#fb542b', desc: 'Base brand color' },
-		{ name: 'primary-600', hex: '#e03a12', desc: 'Hover on brand' },
-		{ name: 'primary-700', hex: '#ba2d0e', desc: 'Active / pressed' },
+		{ name: 'primary-500', hex: '#fb542b', desc: 'Legacy brand (pre-a11y)' },
+		{ name: 'primary-600', hex: '#e03a12', desc: 'Mid accent' },
+		{ name: 'primary-700', hex: '#ba2d0e', desc: 'Brand color (WCAG AA)' },
 		{ name: 'primary-800', hex: '#992714', desc: 'Text on light bg' },
 		{ name: 'primary-900', hex: '#7e2416', desc: 'Dark headings' }
 	];
@@ -26,8 +26,8 @@
 	];
 
 	const semanticColors = [
-		{ name: 'brand', alias: 'primary-500', hex: '#fb542b', desc: 'Primary actions, links' },
-		{ name: 'brand-hover', alias: 'primary-600', hex: '#e03a12', desc: 'Hover states' },
+		{ name: 'brand', alias: 'primary-700', hex: '#ba2d0e', desc: 'Primary actions, links' },
+		{ name: 'brand-hover', alias: 'primary-800', hex: '#992714', desc: 'Hover states' },
 		{
 			name: 'brand-light',
 			alias: 'primary-100',
@@ -37,7 +37,7 @@
 		{ name: 'surface', alias: 'neutral-50', hex: '#fafaf9', desc: 'Page background' },
 		{ name: 'surface-card', alias: 'white', hex: '#ffffff', desc: 'Card backgrounds' },
 		{ name: 'base', alias: 'neutral-800', hex: '#272722', desc: 'Primary text' },
-		{ name: 'muted', alias: 'neutral-500', hex: '#75756f', desc: 'Secondary text' },
+		{ name: 'muted', alias: 'neutral-600', hex: '#56564f', desc: 'Secondary text' },
 		{ name: 'border', alias: 'neutral-200', hex: '#e6e6e4', desc: 'Borders, dividers' }
 	];
 
@@ -403,5 +403,5 @@
 </section>
 
 <footer class="border-t border-border pt-8 pb-4 text-center text-sm text-muted">
-	Lingua Design System · Last updated: March 2026
+	Lingua Design System · Last updated: April 2026
 </footer>

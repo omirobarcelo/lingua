@@ -14,7 +14,7 @@ export default defineConfig({
 				name: 'Lingua – Expressions Catalanes',
 				short_name: 'Lingua',
 				description: "Diccionari d'expressions i frases fetes catalanes",
-				theme_color: '#fb542b',
+				theme_color: '#ba2d0e',
 				background_color: '#fafaf9',
 				display: 'standalone',
 				start_url: '/',

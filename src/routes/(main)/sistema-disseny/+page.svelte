@@ -5,9 +5,9 @@
 		{ name: 'primary-200', hex: '#ffc5ad', desc: 'Accents clars' },
 		{ name: 'primary-300', hex: '#ff9e7a', desc: 'Decoratiu' },
 		{ name: 'primary-400', hex: '#fd7347', desc: 'Estats actius' },
-		{ name: 'primary-500', hex: '#fb542b', desc: 'Color de marca base' },
-		{ name: 'primary-600', hex: '#e03a12', desc: 'Hover sobre marca' },
-		{ name: 'primary-700', hex: '#ba2d0e', desc: 'Actiu / premut' },
+		{ name: 'primary-500', hex: '#fb542b', desc: 'Marca anterior (pre-a11y)' },
+		{ name: 'primary-600', hex: '#e03a12', desc: 'Accent intermedi' },
+		{ name: 'primary-700', hex: '#ba2d0e', desc: 'Color de marca (WCAG AA)' },
 		{ name: 'primary-800', hex: '#992714', desc: 'Text sobre fons clar' },
 		{ name: 'primary-900', hex: '#7e2416', desc: 'Títols foscos' }
 	];
@@ -26,8 +26,8 @@
 	];
 
 	const semanticColors = [
-		{ name: 'brand', alias: 'primary-500', hex: '#fb542b', desc: 'Accions primàries, enllaços' },
-		{ name: 'brand-hover', alias: 'primary-600', hex: '#e03a12', desc: 'Estats hover' },
+		{ name: 'brand', alias: 'primary-700', hex: '#ba2d0e', desc: 'Accions primàries, enllaços' },
+		{ name: 'brand-hover', alias: 'primary-800', hex: '#992714', desc: 'Estats hover' },
 		{
 			name: 'brand-light',
 			alias: 'primary-100',
@@ -37,7 +37,7 @@
 		{ name: 'surface', alias: 'neutral-50', hex: '#fafaf9', desc: 'Fons de pàgina' },
 		{ name: 'surface-card', alias: 'white', hex: '#ffffff', desc: 'Fons de targetes' },
 		{ name: 'base', alias: 'neutral-800', hex: '#272722', desc: 'Text principal' },
-		{ name: 'muted', alias: 'neutral-500', hex: '#75756f', desc: 'Text secundari' },
+		{ name: 'muted', alias: 'neutral-600', hex: '#56564f', desc: 'Text secundari' },
 		{ name: 'border', alias: 'neutral-200', hex: '#e6e6e4', desc: 'Vores, divisors' }
 	];
 
@@ -410,5 +410,5 @@
 </section>
 
 <footer class="border-t border-border pt-8 pb-4 text-center text-sm text-muted">
-	Lingua — Sistema de Disseny · Última actualització: Març 2026
+	Lingua — Sistema de Disseny · Última actualització: Abril 2026
 </footer>
