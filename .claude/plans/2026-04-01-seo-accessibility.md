@@ -44,20 +44,16 @@ Lingua has good foundations (SSR, semantic HTML, `lang="ca"`, titles on every pa
 
 ---
 
-## Phase 3: Open Graph & Twitter Card Tags
+## Phase 3: Open Graph & Twitter Card Tags ✅
 
 > Control how pages appear when shared on social media.
 
-**Files to create/modify:**
+**Completed.** Created `SeoHead.svelte` component and refactored all 5 public pages to use it.
 
-| File                                      | Changes                                                                                                                                                                                                                |
-| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/lib/components/SeoHead.svelte` (new) | Reusable component accepting `title`, `description`, `path` props. Renders `<meta name="description">`, `<link rel="canonical">`, all `og:*` tags, and `twitter:card`. Uses `/icons/icon-512.png` as default OG image. |
-| All 5 public page `.svelte` files         | Refactor Phase 2 inline meta tags into `<SeoHead>` usage, keeping page-specific `<title>` and optional `noindex`.                                                                                                      |
+**Changes made:**
 
-**OG tags per page:** `og:type=website`, `og:title`, `og:description`, `og:url`, `og:image`, `og:locale=ca`, `og:site_name=Lingua`, `twitter:card=summary`.
-
-**Verify:** Test with opengraph.xyz or Facebook Sharing Debugger.
+- `src/lib/components/SeoHead.svelte` (new): accepts `title`, `description`, `path`, optional `noindex`. Renders `<title>`, `<meta name="description">`, `<link rel="canonical">`, all OG tags (`og:type`, `og:title`, `og:description`, `og:url`, `og:image`, `og:locale=ca`, `og:site_name=Lingua`), and `twitter:card=summary`. Uses `/icons/icon-512.png` as OG image.
+- All 5 public page `.svelte` files: replaced inline `<svelte:head>` meta tags with `<SeoHead>` component usage. `/cerca` passes `noindex` prop.
 
 ---
 
