@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PUBLIC_POSTHOG_ENABLED: 'false'
+      PUBLIC_POSTHOG_PROJECT_TOKEN: 'unused'
+      PUBLIC_POSTHOG_HOST: 'https://localhost'
 
     steps:
       - uses: actions/checkout@v4
