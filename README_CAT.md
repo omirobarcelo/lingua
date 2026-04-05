@@ -124,15 +124,16 @@ npm run db:seed            # Opcional: insereix dades de mostra
 
 ## Variables d'Entorn
 
-| Variable                       | Àmbit                | Descripció                                                   |
-| ------------------------------ | -------------------- | ------------------------------------------------------------ |
-| `DATABASE_URL`                 | Servidor (privada)   | Cadena de connexió PostgreSQL                                |
-| `NEON_DATABASE_URL`            | Només local (`.env`) | Cadena de connexió Neon per a l'script `db:pull`             |
-| `PUBLIC_POSTHOG_ENABLED`       | Client (pública)     | `true`/`false` — activa/desactiva PostHog                    |
-| `PUBLIC_POSTHOG_PROJECT_TOKEN` | Client (pública)     | Clau API del projecte PostHog                                |
-| `PUBLIC_POSTHOG_HOST`          | Client (pública)     | Host d'ingestió PostHog (p. ex., `https://eu.i.posthog.com`) |
-| `ADMIN_PASSWORD`               | Servidor (privada)   | Contrasenya compartida per al panell d'administració         |
-| `ADMIN_SESSION_SECRET`         | Servidor (privada)   | Secret HMAC per signar les cookies de sessió d'admin         |
+| Variable                       | Àmbit                | Descripció                                                      |
+| ------------------------------ | -------------------- | --------------------------------------------------------------- |
+| `DATABASE_URL`                 | Servidor (privada)   | Cadena de connexió PostgreSQL                                   |
+| `NEON_DATABASE_URL`            | Només local (`.env`) | Cadena de connexió Neon per a l'script `db:pull`                |
+| `PUBLIC_POSTHOG_ENABLED`       | Client (pública)     | `true`/`false` — activa/desactiva PostHog                       |
+| `PUBLIC_POSTHOG_PROJECT_TOKEN` | Client (pública)     | Clau API del projecte PostHog                                   |
+| `PUBLIC_POSTHOG_HOST`          | Client (pública)     | Host d'ingestió PostHog (p. ex., `https://eu.i.posthog.com`)    |
+| `PUBLIC_SITE_URL`              | Client (pública)     | URL de producció per a etiquetes canonical/OG (fallback inclòs) |
+| `ADMIN_PASSWORD`               | Servidor (privada)   | Contrasenya compartida per al panell d'administració            |
+| `ADMIN_SESSION_SECRET`         | Servidor (privada)   | Secret HMAC per signar les cookies de sessió d'admin            |
 
 ## Desplegament
 

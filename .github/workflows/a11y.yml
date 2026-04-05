@@ -16,6 +16,7 @@ jobs:
       PUBLIC_POSTHOG_HOST: 'https://localhost'
       ADMIN_PASSWORD: 'ci-placeholder'
       ADMIN_SESSION_SECRET: 'ci-placeholder'
+      PUBLIC_SITE_URL: 'https://lingua-vercel.vercel.app'
 
     steps:
       - uses: actions/checkout@v4

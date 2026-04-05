@@ -131,6 +131,7 @@ npm run db:seed            # Optional: seed with sample data
 | `PUBLIC_POSTHOG_ENABLED`       | Client (public)     | `true`/`false` — toggle all PostHog                       |
 | `PUBLIC_POSTHOG_PROJECT_TOKEN` | Client (public)     | PostHog project API key                                   |
 | `PUBLIC_POSTHOG_HOST`          | Client (public)     | PostHog ingestion host (e.g., `https://eu.i.posthog.com`) |
+| `PUBLIC_SITE_URL`              | Client (public)     | Production URL for canonical/OG tags (fallback built-in)  |
 | `ADMIN_PASSWORD`               | Server (private)    | Shared password for admin panel login                     |
 | `ADMIN_SESSION_SECRET`         | Server (private)    | HMAC secret for signing admin session cookies             |
 

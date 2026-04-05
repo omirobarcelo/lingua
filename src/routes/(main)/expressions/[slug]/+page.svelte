@@ -1,6 +1,7 @@
 <script lang="ts">
 	import posthog from 'posthog-js';
 	import type { PageData } from './$types';
+	import { canonical } from '$lib/seo';
 
 	let { data }: { data: PageData } = $props();
 
@@ -16,6 +17,13 @@
 
 <svelte:head>
 	<title>{data.category.name} - Lingua</title>
+	<meta
+		name="description"
+		content="Expressions catalanes de la categoria «{data.category.name}»{data.category.description
+			? `: ${data.category.description}`
+			: ''} a Lingua."
+	/>
+	<link rel="canonical" href={canonical(`/expressions/${data.category.slug}`)} />
 </svelte:head>
 
 <a href="/expressions" class="mb-5 inline-block font-medium text-brand transition-colors hover:text-brand-hover"

@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import posthog from 'posthog-js';
 	import type { PageData } from './$types';
+	import { canonical } from '$lib/seo';
 
 	let { data }: { data: PageData } = $props();
 
@@ -43,6 +44,9 @@
 
 <svelte:head>
 	<title>Cerca: {data.paraula} - Lingua</title>
+	<meta name="description" content="Resultats de cerca per «{data.paraula}» a Lingua." />
+	<link rel="canonical" href={canonical(`/cerca?paraula=${encodeURIComponent(data.paraula)}`)} />
+	<meta name="robots" content="noindex" />
 </svelte:head>
 
 <a href="/" class="mb-5 inline-block font-medium text-brand transition-colors hover:text-brand-hover"

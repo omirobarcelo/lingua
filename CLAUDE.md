@@ -78,15 +78,16 @@ The app language is Catalan (`lang="ca"` in `app.html`).
 
 ## Environment Variables
 
-| Variable                       | Scope               | Description                                        |
-| ------------------------------ | ------------------- | -------------------------------------------------- |
-| `DATABASE_URL`                 | Server (private)    | PostgreSQL connection string                       |
-| `NEON_DATABASE_URL`            | Local only (`.env`) | Neon pooled connection string for `db:pull` script |
-| `PUBLIC_POSTHOG_ENABLED`       | Client (public)     | `true`/`false` — toggle all PostHog                |
-| `PUBLIC_POSTHOG_PROJECT_TOKEN` | Client (public)     | PostHog project API key                            |
-| `PUBLIC_POSTHOG_HOST`          | Client (public)     | `https://eu.i.posthog.com`                         |
-| `ADMIN_PASSWORD`               | Server (private)    | Shared password for admin panel login              |
-| `ADMIN_SESSION_SECRET`         | Server (private)    | HMAC secret for admin session cookies              |
+| Variable                       | Scope               | Description                                              |
+| ------------------------------ | ------------------- | -------------------------------------------------------- |
+| `DATABASE_URL`                 | Server (private)    | PostgreSQL connection string                             |
+| `NEON_DATABASE_URL`            | Local only (`.env`) | Neon pooled connection string for `db:pull` script       |
+| `PUBLIC_POSTHOG_ENABLED`       | Client (public)     | `true`/`false` — toggle all PostHog                      |
+| `PUBLIC_POSTHOG_PROJECT_TOKEN` | Client (public)     | PostHog project API key                                  |
+| `PUBLIC_POSTHOG_HOST`          | Client (public)     | `https://eu.i.posthog.com`                               |
+| `PUBLIC_SITE_URL`              | Client (public)     | Production URL for canonical/OG tags (fallback built-in) |
+| `ADMIN_PASSWORD`               | Server (private)    | Shared password for admin panel login                    |
+| `ADMIN_SESSION_SECRET`         | Server (private)    | HMAC secret for admin session cookies                    |
 
 ## Database Setup (order matters!)
 

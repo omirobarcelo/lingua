@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import posthog from 'posthog-js';
 	import InstallPwa from '$lib/components/InstallPwa.svelte';
+	import { canonical } from '$lib/seo';
 
 	let searchWord = $state('');
 	let searching = $state(false);
@@ -21,6 +22,11 @@
 
 <svelte:head>
 	<title>Lingua - Diccionari d'Expressions Catalanes</title>
+	<meta
+		name="description"
+		content="Lingua: diccionari d'expressions i frases fetes catalanes. Cerca paraules, descobreix expressions i explora el patrimoni lingüístic català."
+	/>
+	<link rel="canonical" href={canonical('/')} />
 </svelte:head>
 
 <div class="mb-8 rounded-xl border border-border bg-surface-card p-5 shadow-sm sm:p-8">
