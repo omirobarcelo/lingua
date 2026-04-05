@@ -18,11 +18,16 @@
 		"db:pull": "tsx --env-file .env scripts/pull-neon.ts",
 		"lint": "eslint .",
 		"format": "prettier --write .",
-		"format:check": "prettier --check ."
+		"format:check": "prettier --check .",
+		"test:a11y": "playwright test",
+		"test:lighthouse": "lhci autorun"
 	},
 	"devDependencies": {
+		"@axe-core/playwright": "^4.11.1",
 		"@eslint/compat": "^2.0.3",
 		"@eslint/js": "^10.0.1",
+		"@lhci/cli": "^0.15.1",
+		"@playwright/test": "^1.59.1",
 		"@sveltejs/adapter-vercel": "^6.3.1",
 		"@sveltejs/kit": "^2.55.0",
 		"@sveltejs/vite-plugin-svelte": "^7.0.0",

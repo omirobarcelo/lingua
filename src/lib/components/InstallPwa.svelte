@@ -18,8 +18,7 @@
 
 	onMount(() => {
 		isStandalone =
-			window.matchMedia('(display-mode: standalone)').matches ||
-			(navigator as NavigatorStandalone).standalone === true;
+			window.matchMedia('(display-mode: standalone)').matches || (navigator as NavigatorStandalone).standalone === true;
 		isIos = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
 		const handler = (e: Event) => {

@@ -1,0 +1,58 @@
+name: Accessibility
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  a11y:
+    name: Accessibility checks
+    runs-on: ubuntu-latest
+    env:
+      PUBLIC_POSTHOG_ENABLED: 'false'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create Neon branch
+        id: neon
+        uses: neondatabase/create-branch-action@v6
+        with:
+          project_id: ${{ vars.NEON_PROJECT_ID }}
+          api_key: ${{ secrets.NEON_API_KEY }}
+          branch_name: ci/a11y-${{ github.run_id }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Build
+        env:
+          DATABASE_URL: ${{ steps.neon.outputs.db_url_pooled }}
+        run: npm run build
+
+      - name: Run axe-core a11y tests
+        env:
+          DATABASE_URL: ${{ steps.neon.outputs.db_url_pooled }}
+        run: npm run test:a11y
+
+      - name: Run Lighthouse CI
+        env:
+          DATABASE_URL: ${{ steps.neon.outputs.db_url_pooled }}
+        run: npm run test:lighthouse
+
+      - name: Delete Neon branch
+        if: always()
+        uses: neondatabase/delete-branch-action@v3
+        with:
+          project_id: ${{ vars.NEON_PROJECT_ID }}
+          api_key: ${{ secrets.NEON_API_KEY }}
+          branch: ${{ steps.neon.outputs.branch_id }}

@@ -11,6 +11,8 @@
 	});
 </script>
 
+<a href="#main-content" class="skip-link">Salta al contingut</a>
+
 <header class="bg-brand shadow-md">
 	<div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-5 sm:px-6">
 		<h1 class="text-2xl font-bold">
@@ -23,7 +25,7 @@
 		<nav aria-label="Navegaci&oacute; principal" class="flex gap-6">
 			<a
 				href="/expressions"
-				class="text-sm font-medium tracking-wide text-white/90 uppercase no-underline transition-colors hover:text-white"
+				class="text-sm font-medium tracking-wide text-white uppercase no-underline transition-colors hover:opacity-90"
 			>
 				Expressions
 			</a>
@@ -31,6 +33,6 @@
 	</div>
 </header>
 
-<main class="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+<main id="main-content" class="mx-auto max-w-5xl px-4 py-8 sm:px-6">
 	{@render children()}
 </main>

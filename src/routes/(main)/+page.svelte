@@ -27,7 +27,9 @@
 	<h2 class="mb-3 text-2xl text-primary-800">Cerca de Paraules</h2>
 	<p class="mb-5 text-muted">Cerca paraules per veure la seva definici&oacute; i expressions relacionades.</p>
 	<form class="flex flex-col gap-3 sm:flex-row" onsubmit={handleSearch}>
+		<label for="home-search" class="sr-only">Cerca de paraules</label>
 		<input
+			id="home-search"
 			type="search"
 			bind:value={searchWord}
 			placeholder="Introdueix una paraula..."
