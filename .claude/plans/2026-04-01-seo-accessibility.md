@@ -27,28 +27,20 @@ Lingua has good foundations (SSR, semantic HTML, `lang="ca"`, titles on every pa
 
 ---
 
-## Phase 2: Meta Descriptions, Canonical URLs, and `noindex`
+## Phase 2: Meta Descriptions, Canonical URLs, and `noindex` ✅
 
 > Tell search engines what each page is about and which URL is authoritative.
 
-**Files to create/modify:**
+**Completed.** All 5 public routes have meta descriptions and canonical URLs. Search page is marked `noindex`.
 
-| File                                                      | Changes                                                                                                |
-| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `src/lib/seo.ts` (new)                                    | Export `SITE_URL` constant (use `PUBLIC_SITE_URL` env var with fallback) and `canonical(path)` helper. |
-| `src/routes/(main)/+page.svelte`                          | Add `<meta name="description">` and `<link rel="canonical">` in `<svelte:head>`.                       |
-| `src/routes/(main)/cerca/+page.svelte`                    | Same + `<meta name="robots" content="noindex">` (dynamic search results = thin content).               |
-| `src/routes/(main)/expressions/+page.svelte`              | Meta description + canonical.                                                                          |
-| `src/routes/(main)/expressions/[slug]/+page.svelte`       | Meta description (include category name + description) + canonical.                                    |
-| `src/routes/(main)/expressions/[id=integer]/+page.svelte` | Meta description (include phrase text + explanation) + canonical.                                      |
+**Changes made:**
 
-**Descriptions (in Catalan):**
-
-- Homepage: "Lingua: diccionari d'expressions i frases fetes catalanes. Cerca paraules, descobreix expressions i explora el patrimoni lingüístic català."
-- Categories: "Explora les expressions catalanes organitzades per categories temàtiques a Lingua."
-- Category detail / Phrase detail: dynamic from DB data.
-
-**Verify:** View page source on each route. Use a meta tag inspector extension.
+- `src/lib/seo.ts` (new): exports `SITE_URL` (from `PUBLIC_SITE_URL` with fallback) and `canonical(path)` helper.
+- All 5 public page `.svelte` files: `<meta name="description">` + `<link rel="canonical">` in `<svelte:head>`.
+- `/cerca`: additionally has `<meta name="robots" content="noindex">`.
+- Category detail: dynamic description with category name + description.
+- Phrase detail: dynamic description with phrase text + explanation + category name.
+- Added `PUBLIC_SITE_URL` to `.env.example`, CI workflow, and all env var docs.
 
 ---
 
