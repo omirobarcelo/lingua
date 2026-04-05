@@ -15,9 +15,11 @@ The app language is Catalan (`lang="ca"` in `app.html`).
 - **Build**: Vite 8
 - **ORM**: Drizzle ORM (`drizzle-orm` + `postgres` driver, NOT `pg`/`node-postgres`)
 - **Database**: PostgreSQL 16 (Docker locally, Neon serverless in production)
-- **Styling**: TailwindCSS v4 with custom design system (vermillion `#fb542b` palette)
+- **Styling**: TailwindCSS v4 with custom design system (vermillion `#ba2d0e` brand palette)
 - **PWA**: `@vite-pwa/sveltekit` (generateSW, autoUpdate)
 - **Analytics**: PostHog — `posthog-js` (client), `posthog-node` (server)
+- **Testing**: Playwright + `@axe-core/playwright` (a11y), Lighthouse CI (score threshold)
+- **CI**: GitHub Actions — a11y checks on push/PR with ephemeral Neon branches
 - **Deployment**: Vercel + Neon (via Vercel Managed Integration)
 
 ## Conventions
@@ -47,10 +49,10 @@ The app language is Catalan (`lang="ca"` in `app.html`).
 - **Formatting**: Prettier with `prettier-plugin-svelte` + `prettier-plugin-tailwindcss`. `printWidth: 120`, `useTabs: true`, `singleQuote: true`. Run `npm run format` before committing.
 - **Tailwind v4 renames**: Some v3 utilities are renamed. E.g. `break-words` → `wrap-break-word`. Check IDE diagnostics for `suggestCanonicalClasses` warnings.
 - **`npx sv add`**: Requires a clean git working directory. Commit or stash before running.
+- **A11y testing**: `tests/a11y.test.ts` runs axe-core via Playwright on public routes. External dictionary HTML (DCVB/GDLC `.dcvb-definition`, `.gdlc-definition`) is excluded from axe checks due to malformed third-party markup. `lighthouserc.cjs` configures Lighthouse CI with a 95+ a11y score threshold.
+- **CI workflow**: `.github/workflows/a11y.yml` runs on push to `main` and PRs. Creates an ephemeral Neon branch per run (via `neondatabase/create-branch-action`), runs both test suites, then deletes the branch. Requires `NEON_API_KEY` secret and `NEON_PROJECT_ID` variable in GitHub repo settings. All `$env/static/*` vars need dummy values in the workflow env block for the build to succeed.
 
 ## Commands
-
-> **Note:** No test framework is configured (no vitest/playwright/jest).
 
 | Command                      | Description                                         |
 | ---------------------------- | --------------------------------------------------- |
@@ -62,6 +64,8 @@ The app language is Catalan (`lang="ca"` in `app.html`).
 | `npm run lint`               | ESLint (flat config, Svelte + TypeScript)           |
 | `npm run format`             | Prettier (write mode)                               |
 | `npm run format:check`       | Prettier (check mode, CI-friendly)                  |
+| `npm run test:a11y`          | Run axe-core a11y tests via Playwright              |
+| `npm run test:lighthouse`    | Run Lighthouse CI (fails if a11y score < 95)        |
 | `docker compose up -d`       | Start local PostgreSQL 16                           |
 | `npm run db:setup:fts`       | Phase 1: extensions + FTS config (before db:push)   |
 | `npm run db:generate`        | Generate Drizzle migration SQL files                |

@@ -15,13 +15,15 @@ Diccionari d'expressions i frases fetes catalanes amb cerca de text complet i na
 
 - **Framework**: SvelteKit 2 + Svelte 5 + TypeScript
 - **Build**: Vite 8
-- **Estils**: TailwindCSS v4 amb sistema de disseny personalitzat (paleta vermellosa `#fb542b`)
+- **Estils**: TailwindCSS v4 amb sistema de disseny personalitzat (paleta vermellosa `#ba2d0e`)
 - **Linting**: ESLint (flat config) amb `eslint-plugin-svelte` + `typescript-eslint`
 - **Format**: Prettier amb `prettier-plugin-svelte` + `prettier-plugin-tailwindcss`
 - **ORM**: Drizzle ORM (`drizzle-orm` + driver `postgres`)
 - **Base de dades**: PostgreSQL 16 (Docker localment, Neon serverless en producció)
 - **PWA**: `@vite-pwa/sveltekit` (generateSW, autoUpdate)
 - **Analítica**: PostHog (`posthog-js` client + `posthog-node` servidor)
+- **Testing**: Playwright + axe-core (accessibilitat), Lighthouse CI (llindar de puntuació)
+- **CI**: GitHub Actions — comprovacions d'accessibilitat amb branques efímeres de Neon
 - **Desplegament**: Vercel + Neon (via Vercel Managed Integration)
 
 ## Rutes
@@ -73,6 +75,8 @@ npm run dev                        # Inicia el servidor a localhost:5173
 | `npm run lint`               | Executa ESLint                                                       |
 | `npm run format`             | Formata tots els fitxers amb Prettier                                |
 | `npm run format:check`       | Comprova el format sense escriure                                    |
+| `npm run test:a11y`          | Executa tests d'accessibilitat axe-core via Playwright               |
+| `npm run test:lighthouse`    | Executa Lighthouse CI (falla si puntuació a11y < 95)                 |
 | `docker compose up -d`       | Inicia PostgreSQL 16 local                                           |
 | `npm run db:setup:fts`       | Fase 1: extensions + config FTS (abans de `db:push`)                 |
 | `npm run db:generate`        | Genera fitxers SQL de migració Drizzle                               |
@@ -82,6 +86,15 @@ npm run dev                        # Inicia el servidor a localhost:5173
 | `npm run db:studio`          | Obre la GUI de Drizzle Studio                                        |
 | `npm run db:pull`            | Descarrega dades de Neon a la BD local                               |
 | `npm run db:pull -- --merge` | Fusiona dades de Neon a la BD local (omet conflictes)                |
+
+## Accessibilitat i CI
+
+El projecte garanteix estàndards d'accessibilitat mitjançant tests automatitzats:
+
+- **axe-core** (`npm run test:a11y`): Executa auditories d'accessibilitat a totes les rutes públiques via Playwright. Puntuació actual: Lighthouse **100**.
+- **Lighthouse CI** (`npm run test:lighthouse`): Exigeix una puntuació mínima d'accessibilitat de 95 a `/`, `/expressions` i `/cerca`.
+
+Les dues comprovacions s'executen automàticament a cada push a `main` i a les pull requests via GitHub Actions (`.github/workflows/a11y.yml`). Cada execució de CI crea una branca efímera de Neon per testar amb dades de producció actualitzades, que s'elimina després de l'execució.
 
 ## Base de Dades
 

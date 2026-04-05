@@ -6,19 +6,24 @@ Lingua has good foundations (SSR, semantic HTML, `lang="ca"`, titles on every pa
 
 ---
 
-## Phase 1: Accessibility Foundations
+## Phase 1: Accessibility Foundations ✅
 
 > Fixes that improve both a11y scores and SEO positioning.
 
-**Files to modify:**
+**Completed.** Lighthouse a11y score: **100**. All axe-core audits pass.
 
-| File                               | Changes                                                                                                                                                                                                                                          |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `src/app.css`                      | Darken `--color-brand` to `primary-700` (#ba2d0e, ~5.9:1 on white) and `--color-brand-hover` to `primary-800` (#992714). Darken `--color-muted` to `neutral-600` (#56564f, ~7.1:1). Add `.skip-link` styles (visually hidden, visible on focus). |
-| `src/routes/(main)/+layout.svelte` | Add skip link `<a href="#main-content" class="skip-link">Salta al contingut</a>` before `<header>`. Add `id="main-content"` to `<main>`.                                                                                                         |
-| `src/routes/(main)/+page.svelte`   | Add `<label for="home-search" class="sr-only">Cerca de paraules</label>` and `id="home-search"` to the search input.                                                                                                                             |
+**Changes made:**
 
-**Verify:** Tab through the site (skip link appears on focus), inspect a11y tree for search input label, check new brand/muted contrast with WebAIM Contrast Checker. Visually review the design system pages to confirm the darker brand still looks good.
+- `src/app.css`: `--color-brand` → `primary-700` (#ba2d0e, ~5.9:1), `--color-brand-hover` → `primary-800`, `--color-muted` → `neutral-600`. Added `.skip-link` styles.
+- `src/routes/(main)/+layout.svelte`: Skip link + `id="main-content"` on `<main>`. Nav link changed from `text-white/90` to `text-white` for contrast compliance.
+- `src/routes/(main)/+page.svelte`: `<label for="home-search">` + `id="home-search"` on search input.
+
+**Also set up automated a11y testing:**
+
+- `tests/a11y.test.ts`: axe-core tests via Playwright for `/`, `/cerca`, `/expressions`
+- `lighthouserc.cjs`: Lighthouse CI config with 95+ a11y score threshold
+- `.github/workflows/a11y.yml`: GitHub Actions workflow with Neon branch per run
+- Scripts: `npm run test:a11y`, `npm run test:lighthouse`
 
 ---
 
@@ -103,10 +108,11 @@ All use `"inLanguage": "ca"` and are injected via `{@html '<script type="applica
 
 > Not code changes — post-deploy checklist.
 
-### Accessibility measurement
+### Accessibility measurement (partially automated in Phase 1)
 
-- **Lighthouse** (Chrome DevTools > Lighthouse > Accessibility): run on every public page, target 95+.
-- **axe DevTools** browser extension: deeper a11y audit, catches issues Lighthouse misses.
+- ✅ **Lighthouse CI** (`npm run test:lighthouse`): automated in GitHub Actions, fails if score < 95.
+- ✅ **axe-core** (`npm run test:a11y`): automated via Playwright, runs on every push/PR.
+- **axe DevTools** browser extension: manual deeper audit for edge cases.
 - **WAVE** (wave.webaim.org): visual overlay of a11y problems.
 - **Manual keyboard test**: tab through every page, confirm all interactive elements reachable, focus visible, skip link works.
 - **Screen reader test**: VoiceOver (Cmd+F5 on macOS) to navigate the site and verify content announced correctly.

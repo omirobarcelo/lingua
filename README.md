@@ -15,13 +15,15 @@ Catalan phrase/idiom dictionary web application with full-text search and phrase
 
 - **Framework**: SvelteKit 2 + Svelte 5 + TypeScript
 - **Build**: Vite 8
-- **Styling**: TailwindCSS v4 with custom design system (vermillion `#fb542b` palette)
+- **Styling**: TailwindCSS v4 with custom design system (vermillion `#ba2d0e` palette)
 - **Linting**: ESLint (flat config) with `eslint-plugin-svelte` + `typescript-eslint`
 - **Formatting**: Prettier with `prettier-plugin-svelte` + `prettier-plugin-tailwindcss`
 - **ORM**: Drizzle ORM (`drizzle-orm` + `postgres` driver)
 - **Database**: PostgreSQL 16 (Docker locally, Neon serverless in production)
 - **PWA**: `@vite-pwa/sveltekit` (generateSW, autoUpdate)
 - **Analytics**: PostHog (`posthog-js` client + `posthog-node` server)
+- **Testing**: Playwright + axe-core (accessibility), Lighthouse CI (score threshold)
+- **CI**: GitHub Actions — accessibility checks with ephemeral Neon database branches
 - **Deployment**: Vercel + Neon (via Vercel Managed Integration)
 
 ## Routes
@@ -73,6 +75,8 @@ npm run dev                        # Start dev server at localhost:5173
 | `npm run lint`               | Run ESLint                                                    |
 | `npm run format`             | Format all files with Prettier                                |
 | `npm run format:check`       | Check formatting without writing                              |
+| `npm run test:a11y`          | Run axe-core accessibility tests via Playwright               |
+| `npm run test:lighthouse`    | Run Lighthouse CI (fails if accessibility score < 95)         |
 | `docker compose up -d`       | Start local PostgreSQL 16                                     |
 | `npm run db:setup:fts`       | Phase 1: extensions + FTS config (before `db:push`)           |
 | `npm run db:generate`        | Generate Drizzle migration SQL files                          |
@@ -82,6 +86,15 @@ npm run dev                        # Start dev server at localhost:5173
 | `npm run db:studio`          | Open Drizzle Studio GUI                                       |
 | `npm run db:pull`            | Pull data from Neon into local Docker DB                      |
 | `npm run db:pull -- --merge` | Merge Neon data into local DB (skip conflicts)                |
+
+## Accessibility & CI
+
+The project enforces accessibility standards through automated testing:
+
+- **axe-core** (`npm run test:a11y`): Runs accessibility audits on all public routes via Playwright. Current score: Lighthouse **100**.
+- **Lighthouse CI** (`npm run test:lighthouse`): Enforces a minimum accessibility score of 95 on `/`, `/expressions`, and `/cerca`.
+
+Both checks run automatically on every push to `main` and on pull requests via GitHub Actions (`.github/workflows/a11y.yml`). Each CI run creates an ephemeral Neon database branch to test against fresh production data, which is deleted after the run.
 
 ## Database
 
