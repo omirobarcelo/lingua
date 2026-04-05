@@ -57,19 +57,17 @@ Lingua has good foundations (SSR, semantic HTML, `lang="ca"`, titles on every pa
 
 ---
 
-## Phase 4: `robots.txt`, Sitemap, and Admin `noindex`
+## Phase 4: `robots.txt`, Sitemap, and Admin `noindex` ✅
 
 > Let crawlers discover all pages and stay out of admin/API routes.
 
-**Files to create/modify:**
+**Completed.** robots.txt, dynamic sitemap, and admin noindex all in place.
 
-| File                                      | Changes                                                                                                                                                              |
-| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/routes/robots.txt/+server.ts` (new)  | `Allow: /`, `Disallow: /admin/`, `/cerca`, `/api/`, `/design-system`, `/sistema-disseny`. Points to sitemap.                                                         |
-| `src/routes/sitemap.xml/+server.ts` (new) | Dynamic sitemap querying DB for all categories (`slug`) and phrases (`id`). Static entries for `/` and `/expressions`. Returns XML with `changefreq` and `priority`. |
-| `src/routes/admin/+layout.svelte`         | Add `<svelte:head><meta name="robots" content="noindex, nofollow"></svelte:head>` as defense-in-depth.                                                               |
+**Changes made:**
 
-**Verify:** Visit `/robots.txt` and `/sitemap.xml` in browser. Validate sitemap XML structure.
+- `src/routes/robots.txt/+server.ts` (new): Allows `/`, disallows `/admin/`, `/cerca`, `/api/`, `/design-system`, `/sistema-disseny`. Points to sitemap.
+- `src/routes/sitemap.xml/+server.ts` (new): Dynamic sitemap querying DB for all categories (slug) and phrases (id). Static entries for `/` and `/expressions`. Returns XML with `changefreq` and `priority`.
+- `src/routes/admin/+layout.svelte`: Added `<meta name="robots" content="noindex, nofollow">` as defense-in-depth.
 
 ---
 

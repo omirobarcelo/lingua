@@ -35,6 +35,10 @@
 	}
 </script>
 
+<svelte:head>
+	<meta name="robots" content="noindex, nofollow" />
+</svelte:head>
+
 {#if !data.isAdminAuthenticated}
 	{@render children()}
 {:else}
