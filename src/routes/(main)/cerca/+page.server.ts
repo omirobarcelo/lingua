@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { sql } from 'drizzle-orm';
 import { db } from '$lib/server/db';
-import { phrases } from '$lib/server/db/schema';
+import { phrases, words } from '$lib/server/db/schema';
 import { fetchDcvbDefinition } from '$lib/server/definitions/dcvb';
 import { fetchGdlcDefinition } from '$lib/server/definitions/gdlc';
 
@@ -20,6 +20,7 @@ export const load: PageServerLoad = async ({ url }) => {
 		return {
 			paraula,
 			phrases: [],
+			words: [],
 			dcvbDefinition: Promise.resolve(null),
 			gdlcDefinition: Promise.resolve(null)
 		};
@@ -31,31 +32,58 @@ export const load: PageServerLoad = async ({ url }) => {
 
 	// Stage 1: catalan-stemmed (catches inflected forms)
 	const catalanQ = sql`to_tsquery('public.catalan', ${tsquery})`;
-	const results = await db
-		.select({
-			id: phrases.id,
-			phraseText: phrases.phraseText,
-			explanation: phrases.explanation
-		})
-		.from(phrases)
-		.where(sql`${phrases.searchVector} @@ ${catalanQ}`)
-		.limit(20);
 
-	if (results.length > 0) {
-		return { paraula, phrases: results, dcvbDefinition, gdlcDefinition };
+	// Run phrase and word queries in parallel
+	const [phraseResults, wordResults] = await Promise.all([
+		db
+			.select({
+				id: phrases.id,
+				phraseText: phrases.phraseText,
+				explanation: phrases.explanation
+			})
+			.from(phrases)
+			.where(sql`${phrases.searchVector} @@ ${catalanQ}`)
+			.limit(20),
+		db
+			.select({
+				id: words.id,
+				word: words.word,
+				notes: words.notes,
+				relatedWords: words.relatedWords
+			})
+			.from(words)
+			.where(sql`${words.searchVector} @@ ${catalanQ}`)
+			.limit(20)
+	]);
+
+	if (phraseResults.length > 0 || wordResults.length > 0) {
+		return { paraula, phrases: phraseResults, words: wordResults, dcvbDefinition, gdlcDefinition };
 	}
 
 	// Stage 2 (fallback): simple tokenization (archaic/unknown words)
 	const simpleQ = sql`to_tsquery('simple', ${tsquery})`;
-	const fallbackResults = await db
-		.select({
-			id: phrases.id,
-			phraseText: phrases.phraseText,
-			explanation: phrases.explanation
-		})
-		.from(phrases)
-		.where(sql`to_tsvector('simple', ${phrases.phraseText}) @@ ${simpleQ}`)
-		.limit(20);
 
-	return { paraula, phrases: fallbackResults, dcvbDefinition, gdlcDefinition };
+	const [fallbackPhrases, fallbackWords] = await Promise.all([
+		db
+			.select({
+				id: phrases.id,
+				phraseText: phrases.phraseText,
+				explanation: phrases.explanation
+			})
+			.from(phrases)
+			.where(sql`to_tsvector('simple', ${phrases.phraseText}) @@ ${simpleQ}`)
+			.limit(20),
+		db
+			.select({
+				id: words.id,
+				word: words.word,
+				notes: words.notes,
+				relatedWords: words.relatedWords
+			})
+			.from(words)
+			.where(sql`to_tsvector('simple', ${words.word}) @@ ${simpleQ}`)
+			.limit(20)
+	]);
+
+	return { paraula, phrases: fallbackPhrases, words: fallbackWords, dcvbDefinition, gdlcDefinition };
 };
