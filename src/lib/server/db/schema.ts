@@ -33,6 +33,23 @@ export const phrases = pgTable(
 	]
 );
 
+export const words = pgTable(
+	'words',
+	{
+		id: serial('id').primaryKey(),
+		word: text('word').notNull().unique(),
+		notes: text('notes'),
+		relatedWords: text('related_words'),
+		searchVector: tsvector('search_vector') // auto-updated by DB trigger
+	},
+	(table) => [
+		// GIN on stored tsvector (catalan stemmed) — primary FTS
+		index('words_search_vector_idx').using('gin', table.searchVector),
+		// GIN expression index on 'simple' config — fallback for archaic words
+		index('words_search_simple_idx').using('gin', sql`to_tsvector('simple', ${table.word})`)
+	]
+);
+
 export const phraseRelations = pgTable('phrase_relations', {
 	id: serial('id').primaryKey(),
 	phraseId: integer('phrase_id')

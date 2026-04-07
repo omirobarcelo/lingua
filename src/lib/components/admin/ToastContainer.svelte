@@ -5,7 +5,7 @@
 </script>
 
 {#if toasts.length > 0}
-	<div class="fixed right-4 bottom-4 z-50 space-y-2">
+	<div class="fixed top-4 right-4 z-50 space-y-2">
 		{#each toasts as toast (toast.id)}
 			<div
 				class="rounded-lg px-4 py-3 text-sm font-medium shadow-md {toast.type === 'ok'

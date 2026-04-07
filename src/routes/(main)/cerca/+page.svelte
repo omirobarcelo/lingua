@@ -147,6 +147,27 @@
 	</div>
 </div>
 
+{#if data.words.length > 0}
+	<div class="mb-6 rounded-xl border border-border bg-surface-card p-5 shadow-sm sm:p-8">
+		<h3 class="mb-4 text-xl text-primary-800">Informaci&oacute; addicional</h3>
+		<ul class="space-y-4">
+			{#each data.words as word (word.id)}
+				<li>
+					<p class="font-semibold text-primary-800">{word.word}</p>
+					{#if word.notes}
+						<p class="mt-1 text-base">{word.notes}</p>
+					{/if}
+					{#if word.relatedWords}
+						<p class="mt-1 text-sm text-muted">
+							Paraules relacionades: {word.relatedWords}
+						</p>
+					{/if}
+				</li>
+			{/each}
+		</ul>
+	</div>
+{/if}
+
 {#if data.phrases.length > 0}
 	<div class="rounded-xl border border-border bg-surface-card p-5 shadow-sm sm:p-8">
 		<h3 class="mb-4 text-xl text-primary-800">
