@@ -4,7 +4,7 @@ Catalan phrase/idiom dictionary web application with full-text search and phrase
 
 ## Features
 
-- **Word Search** (`/cerca?paraula=X`): Search for a word, see definitions from DCVB and GDLC side by side, and related phrases
+- **Word Search** (`/cerca?paraula=X`): Search for a word, see definitions from DCVB and GDLC side by side, word metadata, and related phrases
 - **Phrase Browse** (`/expressions`): Browse Catalan phrases organized by categories, with detailed explanations and related phrases
 - **Catalan Full-Text Search**: PostgreSQL FTS with custom Catalan stemming configuration and accent-insensitive matching
 - **PWA**: Installable progressive web app with offline-first navigation caching
@@ -38,6 +38,8 @@ Catalan phrase/idiom dictionary web application with full-text search and phrase
 | `/admin`                | Admin panel (login required)                          |
 | `/admin/categories`     | Manage categories (create, edit, delete, bulk create) |
 | `/admin/frases`         | Manage phrases (create, edit, delete, bulk create)    |
+| `/admin/paraules`       | Manage words (create, edit, delete, bulk create)      |
+| `/admin/paraules/<id>`  | Edit word metadata                                    |
 | `/admin/frases/<id>`    | Edit phrase + manage related phrases                  |
 | `/design-system`        | Design system reference (English)                     |
 | `/sistema-disseny`      | Design system reference (Catalan)                     |
@@ -100,11 +102,12 @@ Both checks run automatically on every push to `main` and on pull requests via G
 
 ### Schema
 
-Three tables defined in `src/lib/server/db/schema.ts`:
+Four tables defined in `src/lib/server/db/schema.ts`:
 
 - **categories**: `id`, `name`, `slug` (unique), `description`
 - **phrases**: `id`, `category_id` (FK), `phrase_text`, `explanation`, `search_vector` (tsvector, auto-updated by DB trigger)
 - **phrase_relations**: `id`, `phrase_id` (FK), `related_phrase_id` (FK)
+- **words**: `id`, `word` (unique), `notes`, `related_words`, `search_vector` (tsvector, auto-updated by DB trigger)
 
 ### Full-Text Search Architecture
 

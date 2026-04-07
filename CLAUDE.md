@@ -41,9 +41,9 @@ The app language is Catalan (`lang="ca"` in `app.html`).
 - **Icons**: Source SVG at `static/icons/lingua.svg`. Regenerate all PNGs + favicon.ico via `npx tsx scripts/generate-icons.ts`.
 - **PostHog**: Initialized in `src/hooks.client.ts` via `init()` hook (NOT `+layout.ts`). Toggle with `PUBLIC_POSTHOG_ENABLED` env var. Client uses `opt_out_capturing_by_default` — no per-call guards needed in route files. Server-side (`posthog-node`) needs explicit guards. Reverse proxy at `/ingest` in `hooks.server.ts` for ad-blocker resilience.
 - **DB driver**: `src/lib/server/db/index.ts` uses `postgres` (postgres-js) in dev and `@neondatabase/serverless` (neon-http) in production, selected at runtime via `dev` flag.
-- **search_vector**: Auto-updated by the `phrases_fts_trigger` DB trigger — NEVER set it manually in inserts/updates.
+- **search_vector**: Auto-updated by DB triggers (`phrases_fts_trigger`, `words_fts_trigger`) — NEVER set it manually in inserts/updates.
 - **Admin panel**: Password-protected at `/admin`. Auth via HMAC session cookie (`src/lib/server/admin/auth.ts`). Guard in `hooks.server.ts` via `sequence()`. Admin env vars: `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`.
-- **Admin routes**: `/admin/categories` and `/admin/frases` for CRUD. Phrase relations are always bidirectional (insert/delete both A→B and B→A).
+- **Admin routes**: `/admin/categories`, `/admin/frases`, and `/admin/paraules` for CRUD. Phrase relations are always bidirectional (insert/delete both A→B and B→A).
 - **External definitions**: Fetched server-side via `src/lib/server/definitions/` (`dcvb.ts`, `gdlc.ts`). Parsed with `node-html-parser`. Both sources have malformed HTML requiring pre-processing (self-closing spans, broken nesting). Client-side reload via `/api/definitions/[source]?word=X`.
 - **Linting**: ESLint flat config (`eslint.config.js`) with `eslint-plugin-svelte` + `typescript-eslint`. `svelte/no-navigation-without-resolve` is off (no base path). `svelte/no-at-html-tags` is a warning (intentional use for definitions).
 - **Formatting**: Prettier with `prettier-plugin-svelte` + `prettier-plugin-tailwindcss`. `printWidth: 120`, `useTabs: true`, `singleQuote: true`. Run `npm run format` before committing.

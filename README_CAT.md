@@ -4,7 +4,7 @@ Diccionari d'expressions i frases fetes catalanes amb cerca de text complet i na
 
 ## Característiques
 
-- **Cerca de Paraules** (`/cerca?paraula=X`): Cerca una paraula, consulta les definicions del DCVB i GDLC en paral·lel, i les expressions que la contenen
+- **Cerca de Paraules** (`/cerca?paraula=X`): Cerca una paraula, consulta les definicions del DCVB i GDLC en paral·lel, metadades de la paraula, i les expressions que la contenen
 - **Consulta d'Expressions** (`/expressions`): Explora expressions catalanes organitzades per categories, amb explicacions detallades i expressions relacionades
 - **Cerca de Text Complet en Català**: PostgreSQL FTS amb configuració de stemming català i concordança insensible als accents
 - **PWA**: Aplicació web progressiva instal·lable amb navegació amb memòria cau
@@ -38,6 +38,8 @@ Diccionari d'expressions i frases fetes catalanes amb cerca de text complet i na
 | `/admin`                   | Panell d'administració (requereix autenticació)                 |
 | `/admin/categories`        | Gestió de categories (crear, editar, eliminar, creació massiva) |
 | `/admin/frases`            | Gestió d'expressions (crear, editar, eliminar, creació massiva) |
+| `/admin/paraules`          | Gestió de paraules (crear, editar, eliminar, creació massiva)   |
+| `/admin/paraules/<id>`     | Editar metadades d'una paraula                                  |
 | `/admin/frases/<id>`       | Editar expressió + gestionar expressions relacionades           |
 | `/design-system`           | Referència del sistema de disseny (anglès)                      |
 | `/sistema-disseny`         | Referència del sistema de disseny (català)                      |
@@ -100,11 +102,12 @@ Les dues comprovacions s'executen automàticament a cada push a `main` i a les p
 
 ### Esquema
 
-Tres taules definides a `src/lib/server/db/schema.ts`:
+Quatre taules definides a `src/lib/server/db/schema.ts`:
 
 - **categories**: `id`, `name`, `slug` (únic), `description`
 - **phrases**: `id`, `category_id` (FK), `phrase_text`, `explanation`, `search_vector` (tsvector, actualitzat automàticament per trigger)
 - **phrase_relations**: `id`, `phrase_id` (FK), `related_phrase_id` (FK)
+- **words**: `id`, `word` (únic), `notes`, `related_words`, `search_vector` (tsvector, actualitzat automàticament per trigger)
 
 ### Arquitectura de Cerca de Text Complet
 
