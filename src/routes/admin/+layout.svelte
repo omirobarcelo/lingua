@@ -26,7 +26,8 @@
 	const navItems = [
 		{ href: '/admin', label: 'Tauler' },
 		{ href: '/admin/categories', label: 'Categories' },
-		{ href: '/admin/frases', label: 'Frases' }
+		{ href: '/admin/frases', label: 'Frases' },
+		{ href: '/admin/paraules', label: 'Paraules' }
 	];
 
 	function isActive(href: string, pathname: string): boolean {
