@@ -21,7 +21,15 @@
 
 <!-- Edit form -->
 <div class="mb-6 rounded-xl border border-border bg-surface-card p-6 shadow-sm">
-	<form method="POST" action="?/update" use:enhance>
+	<form
+		method="POST"
+		action="?/update"
+		use:enhance={() => {
+			return async ({ update }) => {
+				await update({ reset: false });
+			};
+		}}
+	>
 		<AdminField label="Paraula" name="word" value={data.word.word} required error={form?.errors?.word} />
 		<AdminField
 			label="Notes"

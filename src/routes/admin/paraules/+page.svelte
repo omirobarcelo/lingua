@@ -75,6 +75,7 @@
 				<tr class="border-b border-border bg-neutral-50">
 					<th class="px-4 py-3 text-left font-medium text-muted">Paraula</th>
 					<th class="px-4 py-3 text-left font-medium text-muted">Notes</th>
+					<th class="px-4 py-3 text-left font-medium text-muted">Paraules relacionades</th>
 					<th class="px-4 py-3 text-right font-medium text-muted">Accions</th>
 				</tr>
 			</thead>
@@ -83,6 +84,7 @@
 					<tr class="border-b border-border last:border-0">
 						<td class="px-4 py-3 font-medium">{word.word}</td>
 						<td class="max-w-xs truncate px-4 py-3 text-muted">{word.notes ?? ''}</td>
+						<td class="max-w-xs truncate px-4 py-3 text-muted">{word.relatedWords ?? ''}</td>
 						<td class="px-4 py-3 text-right">
 							<div class="flex items-center justify-end gap-2">
 								<a
