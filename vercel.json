@@ -1,0 +1,3 @@
+{
+	"buildCommand": "npx drizzle-kit push && tsx src/lib/server/db/run-setup.ts trigger && npm run build"
+}
