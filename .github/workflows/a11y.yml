@@ -39,6 +39,11 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
+      - name: Push schema & triggers
+        env:
+          DATABASE_URL: ${{ steps.neon.outputs.db_url_pooled }}
+        run: npx drizzle-kit push && tsx src/lib/server/db/run-setup.ts trigger
+
       - name: Build
         env:
           DATABASE_URL: ${{ steps.neon.outputs.db_url_pooled }}
