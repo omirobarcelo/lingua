@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Building Lingua with Claude</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary-50: #fff4f0;
+    --primary-100: #ffe4d9;
+    --primary-200: #ffc5ad;
+    --primary-300: #ff9e7a;
+    --primary-400: #fd7347;
+    --primary-500: #fb542b;
+    --primary-600: #e03a12;
+    --primary-700: #ba2d0e;
+    --primary-800: #992714;
+    --primary-900: #7e2416;
+    --neutral-50: #fafaf9;
+    --neutral-100: #f4f4f3;
+    --neutral-200: #e6e6e4;
+    --neutral-300: #d0d0cd;
+    --neutral-500: #75756f;
+    --neutral-600: #56564f;
+    --neutral-800: #272722;
+    --neutral-900: #141410;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    color: var(--neutral-800);
+    background: var(--neutral-900);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: 'Lora', Georgia, serif;
+    line-height: 1.2;
+  }
+
+  /* Slide system */
+  .slide {
+    width: 100vw;
+    height: 100vh;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    padding: 4rem 6rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .slide.active { display: flex; }
+
+  .slide--light {
+    background: var(--neutral-50);
+    color: var(--neutral-800);
+  }
+
+  .slide--brand {
+    background: var(--primary-700);
+    color: white;
+  }
+
+  .slide--dark {
+    background: var(--neutral-900);
+    color: var(--neutral-50);
+  }
+
+  .slide--accent {
+    background: var(--primary-50);
+    color: var(--neutral-800);
+  }
+
+  /* Progress bar */
+  .progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 4px;
+    background: var(--primary-500);
+    transition: width 0.3s ease;
+    z-index: 100;
+  }
+
+  /* Slide number */
+  .slide-number {
+    position: absolute;
+    bottom: 1.5rem;
+    right: 2rem;
+    font-size: 0.85rem;
+    color: inherit;
+    opacity: 0.4;
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* Typography */
+  .title-xl {
+    font-size: 3.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+
+  .title-lg {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+  }
+
+  .title-md {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+
+  .subtitle {
+    font-size: 1.4rem;
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    opacity: 0.85;
+    margin-bottom: 0.5rem;
+  }
+
+  .body-lg {
+    font-size: 1.25rem;
+    line-height: 1.7;
+  }
+
+  .body {
+    font-size: 1.1rem;
+    line-height: 1.7;
+  }
+
+  .label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.6;
+    margin-bottom: 0.75rem;
+  }
+
+  /* Layout helpers */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: center;
+  }
+
+  .three-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+
+  .stack { display: flex; flex-direction: column; gap: 1rem; }
+  .stack-lg { display: flex; flex-direction: column; gap: 1.5rem; }
+
+  .center { text-align: center; align-items: center; }
+
+  /* Components */
+  ul.bullets {
+    list-style: none;
+    padding: 0;
+  }
+
+  ul.bullets li {
+    padding: 0.4rem 0;
+    padding-left: 1.5rem;
+    position: relative;
+    font-size: 1.15rem;
+  }
+
+  ul.bullets li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.85rem;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--primary-500);
+  }
+
+  .slide--brand ul.bullets li::before,
+  .slide--dark ul.bullets li::before {
+    background: var(--primary-300);
+  }
+
+  .card {
+    background: white;
+    border: 1px solid var(--neutral-200);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+
+  .card h3 {
+    color: var(--primary-700);
+    margin-bottom: 0.5rem;
+    font-size: 1.2rem;
+  }
+
+  .badge {
+    display: inline-block;
+    background: var(--primary-100);
+    color: var(--primary-800);
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+
+  .badge--dark {
+    background: rgba(255,255,255,0.15);
+    color: white;
+  }
+
+  .highlight {
+    color: var(--primary-600);
+    font-weight: 600;
+  }
+
+  .slide--brand .highlight,
+  .slide--dark .highlight {
+    color: var(--primary-300);
+  }
+
+  .screenshot {
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    max-height: 70vh;
+    object-fit: contain;
+  }
+
+  .screenshot-sm {
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    max-height: 55vh;
+    object-fit: contain;
+  }
+
+  .icon-logo {
+    width: 80px;
+    height: 80px;
+    background: var(--primary-500);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Inter', sans-serif;
+    font-size: 48px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 1.5rem;
+  }
+
+  .timeline {
+    position: relative;
+    padding-left: 2rem;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 0.5rem;
+    bottom: 0.5rem;
+    width: 3px;
+    background: var(--primary-200);
+    border-radius: 2px;
+  }
+
+  .timeline-item {
+    position: relative;
+    padding-bottom: 1.2rem;
+    padding-left: 1rem;
+  }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -1.65rem;
+    top: 0.55rem;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--primary-500);
+    border: 3px solid var(--primary-100);
+  }
+
+  .timeline-date {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--primary-700);
+    margin-bottom: 0.15rem;
+  }
+
+  .timeline-text {
+    font-size: 1.05rem;
+  }
+
+  .code-block {
+    background: var(--neutral-900);
+    color: #e2e8f0;
+    padding: 1.25rem 1.5rem;
+    border-radius: 8px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    overflow-x: auto;
+  }
+
+  .slide--dark .code-block {
+    background: rgba(255,255,255,0.08);
+  }
+
+  .pro-con-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+
+  .pro-con-grid h3 {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+  }
+
+  .pro-con-grid .pros h3 { color: #16a34a; }
+  .pro-con-grid .cons h3 { color: #dc2626; }
+
+  .pro-con-grid ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .pro-con-grid li {
+    padding: 0.35rem 0;
+    padding-left: 1.5rem;
+    position: relative;
+    font-size: 1.05rem;
+  }
+
+  .pros li::before { content: '+'; position: absolute; left: 0; color: #16a34a; font-weight: 700; font-size: 1.2rem; }
+  .cons li::before { content: '\2212'; position: absolute; left: 0; color: #dc2626; font-weight: 700; font-size: 1.2rem; }
+
+  .quote {
+    border-left: 4px solid var(--primary-500);
+    padding: 1rem 1.5rem;
+    font-style: italic;
+    font-family: 'Lora', serif;
+    font-size: 1.3rem;
+    background: rgba(251, 84, 43, 0.05);
+    border-radius: 0 8px 8px 0;
+  }
+
+  .slide--brand .quote {
+    border-left-color: rgba(255,255,255,0.4);
+    background: rgba(255,255,255,0.1);
+  }
+
+  .tech-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  .tech-pill {
+    background: white;
+    border: 1px solid var(--neutral-200);
+    padding: 0.4rem 1rem;
+    border-radius: 999px;
+    font-size: 0.95rem;
+    font-weight: 500;
+  }
+
+  .slide--dark .tech-pill {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.15);
+    color: var(--neutral-100);
+  }
+
+  /* Keyboard hints */
+  .nav-hint {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 2rem;
+    font-size: 0.75rem;
+    color: inherit;
+    opacity: 0.3;
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* Animations */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .slide.active .animate {
+    animation: fadeInUp 0.5s ease both;
+  }
+
+  .slide.active .animate-d1 { animation-delay: 0.1s; }
+  .slide.active .animate-d2 { animation-delay: 0.2s; }
+  .slide.active .animate-d3 { animation-delay: 0.3s; }
+  .slide.active .animate-d4 { animation-delay: 0.4s; }
+  .slide.active .animate-d5 { animation-delay: 0.5s; }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+
+<!-- ========== SLIDE 1: Title ========== -->
+<div class="slide slide--brand center" data-slide="1">
+  <div class="animate">
+    <div class="icon-logo" style="margin: 0 auto 1.5rem;">L</div>
+  </div>
+  <h1 class="title-xl animate animate-d1">Building Lingua with Claude</h1>
+  <p class="subtitle animate animate-d2">A Catalan phrase dictionary, built (almost) entirely by AI</p>
+  <div style="margin-top: 2rem;" class="animate animate-d3">
+    <span class="badge badge--dark">SvelteKit</span>
+    <span class="badge badge--dark">PostgreSQL</span>
+    <span class="badge badge--dark">Claude Code</span>
+  </div>
+  <div class="slide-number">1</div>
+</div>
+
+<!-- ========== SLIDE 2: What is Lingua? ========== -->
+<div class="slide slide--light" data-slide="2">
+  <div class="two-col">
+    <div>
+      <p class="label animate">The Project</p>
+      <h2 class="title-lg animate animate-d1">What is Lingua?</h2>
+      <div class="stack-lg animate animate-d2">
+        <p class="body-lg">A web app for exploring <span class="highlight">Catalan phrases and idioms</span> — with dictionary definitions, categories, and full-text search.</p>
+        <ul class="bullets">
+          <li><strong>Word Search:</strong> Look up any Catalan word, see definitions from two major dictionaries (DCVB & GDLC) side by side</li>
+          <li><strong>Phrase Browse:</strong> Explore expressions organized by categories, with explanations and related phrases</li>
+          <li><strong>Admin Panel:</strong> CRUD interface for managing all content</li>
+        </ul>
+      </div>
+    </div>
+    <div class="center animate animate-d3">
+      <img src="desktop.png" alt="Lingua homepage" class="screenshot" style="max-width: 100%;">
+    </div>
+  </div>
+  <div class="slide-number">2</div>
+</div>
+
+<!-- ========== SLIDE 3: LLM-Assisted Decisions ========== -->
+<div class="slide slide--dark" data-slide="3">
+  <p class="label animate">Before Writing Code</p>
+  <h2 class="title-lg animate animate-d1">LLM-Assisted Decision Making</h2>
+  <p class="body animate animate-d1" style="opacity: 0.7; margin-bottom: 1.5rem;">The stack wasn't chosen by one AI &mdash; it evolved through conversations with <span class="highlight">multiple LLMs</span>.</p>
+  <div class="two-col" style="margin-top: 0.5rem;">
+    <div class="stack-lg">
+      <div class="animate animate-d2">
+        <h3 class="title-md" style="font-size: 1.3rem; color: var(--primary-300);">Gemini: Stack Research</h3>
+        <p class="body">First conversation: described the project goals. Gemini recommended <strong>3 stack options</strong> &mdash; SvelteKit + PostgreSQL FTS, a dedicated search engine (Meilisearch), or a graph DB (Neo4j). Went with Option 1 for simplicity.</p>
+      </div>
+      <div class="animate animate-d3">
+        <h3 class="title-md" style="font-size: 1.3rem; color: var(--primary-300);">Gemini: PWA + Konsta UI</h3>
+        <p class="body">Second conversation: asked for a minimum PWA example with <strong>Konsta UI</strong> (mobile-native component library). Got a working scaffold &mdash; but later <strong>dropped Konsta UI</strong> in favor of a simpler custom Tailwind design system, since PWA already handles installability.</p>
+      </div>
+      <div class="animate animate-d4">
+        <h3 class="title-md" style="font-size: 1.3rem; color: var(--primary-300);">Claude: All Implementation</h3>
+        <p class="body">With the stack decided, Claude Code took over for the entire build &mdash; from design system to production deployment. Claude also researched within its domain: FTS config for Catalan, Neon driver setup, PostHog integration.</p>
+      </div>
+    </div>
+    <div class="animate animate-d5">
+      <div class="code-block" style="font-size: 0.85rem;">
+<span style="color: #94a3b8;">// Decision pipeline:</span>
+
+<span style="color: #fbbf24;">Gemini</span>  &rarr; "What stack for a Catalan dictionary?"
+         &rarr; PostgreSQL FTS + Drizzle + SvelteKit
+
+<span style="color: #fbbf24;">Gemini</span>  &rarr; "Scaffold PWA + Konsta UI"
+         &rarr; Got example, but dropped Konsta UI
+         &rarr; Custom Tailwind design system instead
+
+<span style="color: #fb9a7a;">Claude</span>  &rarr; All coding, plans, and implementation
+         &rarr; Researched specifics within each step
+      </div>
+      <div class="quote" style="margin-top: 1rem; font-size: 1.05rem;">
+        Using different LLMs for different strengths: Gemini for broad research and options, Claude Code for deep implementation and iteration.
+      </div>
+    </div>
+  </div>
+  <div class="slide-number">3</div>
+</div>
+
+<!-- ========== SLIDE 4: Tech Stack ========== -->
+<div class="slide slide--accent" data-slide="4">
+  <p class="label animate">Under the Hood</p>
+  <h2 class="title-lg animate animate-d1">Tech Stack</h2>
+  <div class="three-col" style="margin-top: 1rem;">
+    <div class="card animate animate-d2">
+      <h3>Frontend</h3>
+      <p class="body">SvelteKit 2 + Svelte 5 with runes, TailwindCSS v4 with a custom vermillion design system, PWA-installable</p>
+      <div class="tech-pills" style="margin-top: 0.75rem;">
+        <span class="tech-pill">Svelte 5</span>
+        <span class="tech-pill">Tailwind v4</span>
+        <span class="tech-pill">Vite 8</span>
+      </div>
+    </div>
+    <div class="card animate animate-d3">
+      <h3>Backend & Data</h3>
+      <p class="body">PostgreSQL 16 with Catalan full-text search, Drizzle ORM, dual-driver setup (Docker locally, Neon serverless in prod)</p>
+      <div class="tech-pills" style="margin-top: 0.75rem;">
+        <span class="tech-pill">PostgreSQL</span>
+        <span class="tech-pill">Drizzle</span>
+        <span class="tech-pill">Neon</span>
+      </div>
+    </div>
+    <div class="card animate animate-d4">
+      <h3>Infra & Quality</h3>
+      <p class="body">Vercel deployment, PostHog analytics, GitHub Actions CI with a11y testing (axe-core + Lighthouse)</p>
+      <div class="tech-pills" style="margin-top: 0.75rem;">
+        <span class="tech-pill">Vercel</span>
+        <span class="tech-pill">PostHog</span>
+        <span class="tech-pill">Playwright</span>
+      </div>
+    </div>
+  </div>
+  <p class="body animate animate-d5" style="margin-top: 1.5rem; color: var(--neutral-600);">Stack chosen via Gemini research conversations, then fully implemented by Claude Code. The Catalan language requirement drove key decisions &mdash; PostgreSQL FTS needed a custom config since no built-in Catalan dictionary exists.</p>
+  <div class="slide-number">4</div>
+</div>
+
+<!-- ========== SLIDE 5: How Claude Helped ========== -->
+<div class="slide slide--dark" data-slide="5">
+  <p class="label animate">The Workflow</p>
+  <h2 class="title-lg animate animate-d1">How I Used Claude</h2>
+  <div class="two-col" style="margin-top: 1rem;">
+    <div class="stack-lg">
+      <div class="animate animate-d2">
+        <h3 class="title-md" style="font-size: 1.3rem; color: var(--primary-300);">Coding Partner</h3>
+        <p class="body">Claude wrote most of the code: components, server routes, database schemas, seed scripts, build configs. I reviewed, tested, and directed.</p>
+      </div>
+      <div class="animate animate-d3">
+        <h3 class="title-md" style="font-size: 1.3rem; color: var(--primary-300);">Researcher</h3>
+        <p class="body">When multiple options existed (e.g., FTS approach, auth strategy, Neon driver setup), Claude researched trade-offs and presented recommendations with reasoning.</p>
+      </div>
+      <div class="animate animate-d4">
+        <h3 class="title-md" style="font-size: 1.3rem; color: var(--primary-300);">Planner</h3>
+        <p class="body">Every major feature started with a plan: Claude drafted step-by-step implementation plans that we refined together before writing any code.</p>
+      </div>
+    </div>
+    <div class="animate animate-d5">
+      <div class="code-block" style="font-size: 0.85rem;">
+<span style="color: #94a3b8;">// Typical session flow:</span>
+
+<span style="color: #fb9a7a;">1.</span> Describe the feature I want
+<span style="color: #fb9a7a;">2.</span> Claude drafts a plan (.claude/plans/)
+<span style="color: #fb9a7a;">3.</span> We refine scope together
+<span style="color: #fb9a7a;">4.</span> Claude implements step by step
+<span style="color: #fb9a7a;">5.</span> I review, test, and give feedback
+<span style="color: #fb9a7a;">6.</span> Claude commits each phase
+<span style="color: #fb9a7a;">7.</span> Update CLAUDE.md with learnings
+      </div>
+      <p style="margin-top: 1rem; font-size: 0.95rem; opacity: 0.7;">Plans act as living documentation &mdash; they capture decisions, deviations, and gotchas discovered during implementation.</p>
+    </div>
+  </div>
+  <div class="slide-number">5</div>
+</div>
+
+<!-- ========== SLIDE 6: The MVP Story ========== -->
+<div class="slide slide--light" data-slide="6">
+  <p class="label animate">From Zero to Production</p>
+  <h2 class="title-lg animate animate-d1">The MVP: One Plan, One Session</h2>
+  <div class="two-col" style="margin-top: 1rem;">
+    <div>
+      <div class="animate animate-d2">
+        <p class="body-lg" style="margin-bottom: 1.5rem;">The project started as a barebones SvelteKit app with <span class="highlight">hardcoded static data</span>, no styling, no database. Claude took it to a production-ready state in a single plan with 9 steps:</p>
+      </div>
+      <div class="timeline animate animate-d3">
+        <div class="timeline-item">
+          <div class="timeline-date">Step 1</div>
+          <div class="timeline-text">TailwindCSS v4 + full design system</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-date">Step 2</div>
+          <div class="timeline-text">PostgreSQL schema + Catalan FTS</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-date">Step 3</div>
+          <div class="timeline-text">Seed script (5 categories, 25 phrases)</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-date">Step 4</div>
+          <div class="timeline-text">Wire all routes to live DB queries</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-date">Step 5-6</div>
+          <div class="timeline-text">PWA + PostHog analytics</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-date">Step 7-9</div>
+          <div class="timeline-text">Vercel + Neon deploy, finalize</div>
+        </div>
+      </div>
+    </div>
+    <div class="stack animate animate-d4">
+      <div class="quote">
+        The initial SvelteKit scaffolding and static data were also done with Claude &mdash; no plan, just "give me something to start with."<br><br>Everything from the design system to production deployment was then driven through a single 9-step plan.<br><br><strong>Fun fact:</strong> Claude wrote the entire UI in Catalan from the start &mdash; without being asked. It simply inferred the language from the content being a Catalan dictionary.
+      </div>
+      <div class="card" style="margin-top: 0.5rem;">
+        <h3 style="font-size: 1rem;">What Claude researched for the MVP</h3>
+        <ul class="bullets" style="font-size: 0.95rem;">
+          <li style="font-size: 0.95rem;">PostgreSQL FTS config for Catalan (no built-in one exists)</li>
+          <li style="font-size: 0.95rem;">Neon serverless driver vs postgres.js trade-offs</li>
+          <li style="font-size: 0.95rem;">Vite-PWA plugin config with adapter-vercel</li>
+          <li style="font-size: 0.95rem;">PostHog reverse proxy for ad-blocker resilience</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="slide-number">6</div>
+</div>
+
+<!-- ========== SLIDE 7: Design System ========== -->
+<div class="slide slide--light" data-slide="7">
+  <p class="label animate">Guardrails for AI</p>
+  <h2 class="title-lg animate animate-d1">The Design System as a Contract</h2>
+  <div class="two-col" style="margin-top: 1rem;">
+    <div class="stack-lg">
+      <div class="animate animate-d2">
+        <p class="body-lg">One of the first things Claude built was a <span class="highlight">full design system</span> with dedicated pages (<code>/design-system</code> &amp; <code>/sistema-disseny</code>). This wasn't just documentation &mdash; it became a <strong>constraint system for the AI itself</strong>.</p>
+      </div>
+      <div class="animate animate-d3">
+        <h3 class="title-md" style="font-size: 1.2rem;">Why it matters for AI-driven development</h3>
+        <ul class="bullets">
+          <li><strong>Limits creative freedom:</strong> Without it, Claude would invent new styles per feature. The design system forces consistency &mdash; use <code>bg-brand</code>, not a random hex color</li>
+          <li><strong>Reference for composition:</strong> When Claude builds a new page, it checks the design system for how cards, buttons, badges, and forms should look</li>
+          <li><strong>Codified in CLAUDE.md:</strong> Conventions like "use semantic aliases, not raw palette" are in the project instructions &mdash; so every session follows the same rules</li>
+          <li><strong>Evolved with the project:</strong> When a11y audits required better contrast, the design system's brand color shifted from <code>primary-500</code> to <code>primary-700</code> &mdash; and everything updated automatically</li>
+        </ul>
+      </div>
+    </div>
+    <div class="animate animate-d4">
+      <div class="card" style="margin-bottom: 1rem;">
+        <h3 style="font-size: 1rem;">Color Palette</h3>
+        <div style="display: flex; gap: 4px; margin-top: 0.5rem; height: 40px; border-radius: 8px; overflow: hidden;">
+          <div style="flex:1; background: #fff4f0;"></div>
+          <div style="flex:1; background: #ffe4d9;"></div>
+          <div style="flex:1; background: #ffc5ad;"></div>
+          <div style="flex:1; background: #ff9e7a;"></div>
+          <div style="flex:1; background: #fd7347;"></div>
+          <div style="flex:1; background: #fb542b;"></div>
+          <div style="flex:1; background: #e03a12;"></div>
+          <div style="flex:1; background: #ba2d0e;"></div>
+          <div style="flex:1; background: #992714;"></div>
+          <div style="flex:1; background: #7e2416;"></div>
+        </div>
+        <p style="font-size: 0.8rem; color: var(--neutral-500); margin-top: 0.35rem;">Vermillion/terracotta &mdash; primary-50 through primary-900</p>
+      </div>
+      <div class="card" style="margin-bottom: 1rem;">
+        <h3 style="font-size: 1rem;">Typography</h3>
+        <p style="font-family: 'Lora', serif; font-size: 1.4rem; font-weight: 700; color: var(--primary-900); margin-bottom: 0.25rem;">Lora for headings</p>
+        <p style="font-family: 'Inter', sans-serif; font-size: 1rem; color: var(--neutral-600);">Inter for body text and UI elements</p>
+      </div>
+      <div class="card">
+        <h3 style="font-size: 1rem;">Semantic Aliases</h3>
+        <div class="code-block" style="font-size: 0.8rem; margin-top: 0.5rem; padding: 0.75rem 1rem;">
+--color-brand: primary-700  <span style="color:#94a3b8;">/* not a random color */</span>
+--color-surface: neutral-50
+--color-base: neutral-800
+--color-muted: neutral-600
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-number">7</div>
+</div>
+
+<!-- ========== SLIDE 8: Evolution ========== -->
+<div class="slide slide--accent" data-slide="8">
+  <p class="label animate">Project Timeline</p>
+  <h2 class="title-lg animate animate-d1">How Lingua Evolved</h2>
+  <p class="body animate animate-d1" style="margin-bottom: 1.5rem; color: var(--neutral-600);">Each milestone was a separate Claude conversation with its own plan.</p>
+  <div class="three-col" style="grid-template-columns: 1fr 1fr 1fr 1fr 1fr; gap: 1rem;" class="animate animate-d2">
+    <div class="card animate animate-d2">
+      <div class="badge" style="margin-bottom: 0.5rem;">Mar 12</div>
+      <h3 style="font-size: 1.05rem;">Production MVP</h3>
+      <p style="font-size: 0.9rem; color: var(--neutral-600);">Design system, DB, FTS, PWA, analytics, deploy</p>
+    </div>
+    <div class="card animate animate-d3">
+      <div class="badge" style="margin-bottom: 0.5rem;">Mar 27</div>
+      <h3 style="font-size: 1.05rem;">Admin Panel</h3>
+      <p style="font-size: 0.9rem; color: var(--neutral-600);">Password-protected CRUD for categories, phrases, relations</p>
+    </div>
+    <div class="card animate animate-d3">
+      <div class="badge" style="margin-bottom: 0.5rem;">Mar 31</div>
+      <h3 style="font-size: 1.05rem;">Code Quality</h3>
+      <p style="font-size: 0.9rem; color: var(--neutral-600);">ESLint, Prettier, a11y fixes, mobile responsiveness</p>
+    </div>
+    <div class="card animate animate-d4">
+      <div class="badge" style="margin-bottom: 0.5rem;">Apr 1</div>
+      <h3 style="font-size: 1.05rem;">SEO & A11y</h3>
+      <p style="font-size: 0.9rem; color: var(--neutral-600);">Meta tags, sitemap, JSON-LD, Lighthouse 100, CI pipeline</p>
+    </div>
+    <div class="card animate animate-d5">
+      <div class="badge" style="margin-bottom: 0.5rem;">Apr 6</div>
+      <h3 style="font-size: 1.05rem;">Word Metadata</h3>
+      <p style="font-size: 0.9rem; color: var(--neutral-600);">New entity, FTS integration, admin CRUD</p>
+    </div>
+  </div>
+  <p class="body animate animate-d5" style="margin-top: 1.5rem;"><span class="highlight">~4 weeks</span> from static prototype to a fully-featured, production-grade app &mdash; with one person and an AI assistant.</p>
+  <div class="slide-number">8</div>
+</div>
+
+<!-- ========== SLIDE 9: App Screenshots ========== -->
+<div class="slide slide--light" data-slide="9">
+  <p class="label animate">The App Today</p>
+  <h2 class="title-lg animate animate-d1">Lingua in Action</h2>
+  <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; margin-top: 1rem; align-items: start;">
+    <div class="center animate animate-d2">
+      <img src="cerca-with-word.png" alt="Search results with word metadata" class="screenshot-sm" style="max-width: 100%;">
+      <p style="margin-top: 0.75rem; font-size: 0.9rem; color: var(--neutral-600);">Word search with dictionary definitions + metadata</p>
+    </div>
+    <div class="center animate animate-d3">
+      <img src="cerca-dones.png" alt="Search with FTS stemming" class="screenshot-sm" style="max-width: 100%;">
+      <p style="margin-top: 0.75rem; font-size: 0.9rem; color: var(--neutral-600);">FTS stemming: "dones" matches "dona"</p>
+    </div>
+    <div class="center animate animate-d4">
+      <img src="admin-login-check.png" alt="Admin dashboard" class="screenshot-sm" style="max-width: 100%;">
+      <p style="margin-top: 0.75rem; font-size: 0.9rem; color: var(--neutral-600);">Admin panel dashboard</p>
+    </div>
+  </div>
+  <div class="slide-number">9</div>
+</div>
+
+<!-- ========== SLIDE 10: Admin Screenshots ========== -->
+<div class="slide slide--light" data-slide="10">
+  <p class="label animate">Content Management</p>
+  <h2 class="title-lg animate animate-d1">Admin Panel</h2>
+  <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; margin-top: 1rem; align-items: start;">
+    <div class="center animate animate-d2">
+      <img src="admin-with-nav.png" alt="Admin word creation form" class="screenshot-sm" style="max-width: 100%;">
+      <p style="margin-top: 0.75rem; font-size: 0.9rem; color: var(--neutral-600);">Word creation with related words</p>
+    </div>
+    <div class="center animate animate-d3">
+      <img src="admin-paraules-with-data.png" alt="Admin word list" class="screenshot-sm" style="max-width: 100%;">
+      <p style="margin-top: 0.75rem; font-size: 0.9rem; color: var(--neutral-600);">CRUD listing with actions</p>
+    </div>
+    <div class="center animate animate-d4">
+      <img src="admin-paraules-edit.png" alt="Admin edit word" class="screenshot-sm" style="max-width: 100%;">
+      <p style="margin-top: 0.75rem; font-size: 0.9rem; color: var(--neutral-600);">Edit form with danger zone</p>
+    </div>
+  </div>
+  <div class="slide-number">10</div>
+</div>
+
+<!-- ========== SLIDE 11: PWA & Live Testing ========== -->
+<div class="slide slide--accent" data-slide="11">
+  <p class="label animate">Mobile-First &amp; Beyond</p>
+  <h2 class="title-lg animate animate-d1">PWA, Icons & Live Browser Testing</h2>
+  <div class="two-col" style="margin-top: 1rem;">
+    <div class="stack-lg">
+      <div class="animate animate-d2">
+        <h3 class="title-md" style="font-size: 1.3rem; color: var(--primary-700);">PWA from Day One</h3>
+        <p class="body">The app was designed to work on mobile from the start. Instead of a native app wrapper like Konsta UI (initially considered), we went with a <span class="highlight">pure PWA approach</span> &mdash; installable, offline-capable, and lighter to maintain.</p>
+      </div>
+      <div class="animate animate-d3">
+        <h3 class="title-md" style="font-size: 1.3rem; color: var(--primary-700);">Icon Pipeline</h3>
+        <p class="body">Claude built a full icon generation pipeline: a single SVG source &rarr; <code>scripts/generate-icons.ts</code> produces all PNG sizes + favicon. Then we wrapped the entire flow (icons + screenshots) into a <span class="highlight">reusable Claude skill</span> (<code>/refresh-pwa-assets</code>) for one-command regeneration.</p>
+      </div>
+      <div class="animate animate-d4">
+        <h3 class="title-md" style="font-size: 1.3rem; color: var(--primary-700);">Live Testing with MCPs</h3>
+        <p class="body">Claude used a <span class="highlight">Puppeteer MCP server</span> to launch a real browser, navigate the running app, take screenshots, and verify changes visually &mdash; all within the same conversation. This closed the feedback loop: code &rarr; run &rarr; see &rarr; fix.</p>
+      </div>
+    </div>
+    <div class="stack animate animate-d5">
+      <div class="card">
+        <h3 style="font-size: 1rem;">What are MCPs?</h3>
+        <p style="font-size: 0.95rem;">Model Context Protocol servers extend Claude's capabilities. Instead of just reading/writing files, Claude can <strong>control a browser</strong>, interact with APIs, or use any custom tool &mdash; enabling real end-to-end testing during development.</p>
+      </div>
+      <div class="card" style="margin-top: 0.5rem;">
+        <h3 style="font-size: 1rem;">The /refresh-pwa-assets skill</h3>
+        <div class="code-block" style="font-size: 0.8rem; margin-top: 0.5rem;">
+<span style="color: #94a3b8;">// One command does it all:</span>
+<span style="color: #fb9a7a;">1.</span> Regenerate PNGs from SVG source
+<span style="color: #fb9a7a;">2.</span> Build the app
+<span style="color: #fb9a7a;">3.</span> Launch preview server
+<span style="color: #fb9a7a;">4.</span> Take desktop + mobile screenshots
+<span style="color: #fb9a7a;">5.</span> via Puppeteer MCP
+        </div>
+      </div>
+      <div style="display: flex; gap: 0.75rem; margin-top: 0.5rem;">
+        <img src="mobile.png" alt="Mobile PWA view" class="screenshot-sm" style="max-height: 22vh; border-radius: 8px;">
+        <img src="desktop.png" alt="Desktop PWA view" class="screenshot-sm" style="max-height: 22vh; border-radius: 8px;">
+      </div>
+    </div>
+  </div>
+  <div class="slide-number">11</div>
+</div>
+
+<!-- ========== SLIDE 12: Claude's Toolbox ========== -->
+<div class="slide slide--dark" data-slide="12">
+  <p class="label animate">The Ecosystem</p>
+  <h2 class="title-lg animate animate-d1">Claude's Toolbox</h2>
+  <p class="body animate animate-d1" style="opacity: 0.7; margin-bottom: 1.5rem;">Claude Code is more than a chat &mdash; it's an <span class="highlight">extensible agent</span> with plugins, tools, and custom automations.</p>
+  <div class="three-col" style="margin-top: 0.5rem;">
+    <div class="animate animate-d2">
+      <h3 style="color: var(--primary-300); font-size: 1.15rem; margin-bottom: 0.75rem;">MCP Servers</h3>
+      <div class="card" style="background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1);">
+        <p style="font-size: 0.95rem;"><strong style="color: var(--primary-300);">Puppeteer MCP</strong> &mdash; Launch browsers, navigate pages, click elements, take screenshots. Used for live visual testing and PWA screenshot generation.</p>
+      </div>
+      <div class="card" style="background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); margin-top: 0.5rem;">
+        <p style="font-size: 0.95rem;"><strong style="color: var(--primary-300);">PostHog, Linear, Datadog...</strong> &mdash; MCP servers can connect Claude to any external service via a standard protocol.</p>
+      </div>
+    </div>
+    <div class="animate animate-d3">
+      <h3 style="color: var(--primary-300); font-size: 1.15rem; margin-bottom: 0.75rem;">Skills</h3>
+      <div class="card" style="background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1);">
+        <p style="font-size: 0.95rem;"><strong style="color: var(--primary-300);">/refresh-pwa-assets</strong> &mdash; Custom skill: regenerate all icons from SVG + take desktop &amp; mobile screenshots via Puppeteer. One command, full pipeline.</p>
+      </div>
+      <div class="card" style="background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); margin-top: 0.5rem;">
+        <p style="font-size: 0.95rem;"><strong style="color: var(--primary-300);">/commit, /code-review</strong> &mdash; Built-in skills for git workflows. Claude drafts commit messages, reviews diffs, opens PRs.</p>
+      </div>
+    </div>
+    <div class="animate animate-d4">
+      <h3 style="color: var(--primary-300); font-size: 1.15rem; margin-bottom: 0.75rem;">Built-in Tools</h3>
+      <div class="card" style="background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1);">
+        <p style="font-size: 0.95rem;"><strong style="color: var(--primary-300);">Plans &amp; CLAUDE.md</strong> &mdash; Structured plans for multi-step features. Project instructions that persist context across sessions.</p>
+      </div>
+      <div class="card" style="background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); margin-top: 0.5rem;">
+        <p style="font-size: 0.95rem;"><strong style="color: var(--primary-300);">Web search &amp; fetch</strong> &mdash; Research docs, check APIs, read external content. Used for PostHog setup, Neon driver docs, Tailwind v4 migration.</p>
+      </div>
+    </div>
+  </div>
+  <p class="body animate animate-d5" style="margin-top: 1.5rem; opacity: 0.7;">The extensibility model means Claude can adapt to your workflow rather than the other way around.</p>
+  <div class="slide-number">12</div>
+</div>
+
+<!-- ========== SLIDE 13: VS Code vs Terminal ========== -->
+<div class="slide slide--dark" data-slide="13">
+  <p class="label animate">Developer Experience</p>
+  <h2 class="title-lg animate animate-d1">VS Code Extension vs Terminal</h2>
+  <p class="body animate animate-d1" style="opacity: 0.7; margin-bottom: 1.5rem;">Most of Lingua was built using the <span class="highlight">VS Code extension</span>. Here's how they compare.</p>
+  <div class="pro-con-grid animate animate-d2">
+    <div>
+      <h3 style="color: var(--primary-300); font-family: 'Lora', serif; font-size: 1.3rem; margin-bottom: 1rem;">VS Code Extension</h3>
+      <div class="pros" style="margin-bottom: 1rem;">
+        <h3>Advantages</h3>
+        <ul>
+          <li>See file changes in real time as Claude edits</li>
+          <li>Easy to review diffs inline before accepting</li>
+          <li>Integrated with your existing editor workflow</li>
+          <li>Can highlight code and ask questions in context</li>
+          <li>Side-by-side: code + Claude chat</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h3>Drawbacks</h3>
+        <ul>
+          <li>Feature releases lag behind the terminal CLI</li>
+          <li>Some commands not available (e.g. <code style="color: var(--primary-300);">//</code> shortcuts)</li>
+          <li>Can feel slower for rapid multi-file edits</li>
+          <li>UI can get cramped on smaller screens</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <h3 style="color: var(--primary-300); font-family: 'Lora', serif; font-size: 1.3rem; margin-bottom: 1rem;">Terminal CLI</h3>
+      <div class="pros" style="margin-bottom: 1rem;">
+        <h3>Advantages</h3>
+        <ul>
+          <li>Always has the latest features first</li>
+          <li>Full power: hooks, skills, slash commands</li>
+          <li>Better for long autonomous tasks</li>
+          <li>Lighter on system resources</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h3>Drawbacks</h3>
+        <ul>
+          <li>No real-time file diff preview</li>
+          <li>Have to switch between terminal and editor</li>
+          <li>Harder to point at specific code visually</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="slide-number">13</div>
+</div>
+
+<!-- ========== SLIDE 14: The Ralph Loop — Concept ========== -->
+<div class="slide slide--light" data-slide="14">
+  <p class="label animate">Developer Experience</p>
+  <h2 class="title-lg animate animate-d1">The Ralph Wiggum Loop</h2>
+  <div class="two-col" style="margin-top: 1rem;">
+    <div class="stack-lg">
+      <div class="animate animate-d2">
+        <p class="body-lg">An autonomous development loop: give Claude a prompt, let it work, and when it finishes &mdash; <span class="highlight">feed it the same prompt again</span>. It sees its own changes and iterates until done.</p>
+      </div>
+      <div class="animate animate-d3">
+        <div class="code-block" style="font-size: 0.85rem;">
+<span style="color: #94a3b8;">// The core idea:</span>
+<span style="color: #fbbf24;">while</span> (not done) {
+  feed prompt to Claude
+  Claude reads its previous work
+  Claude picks up where it left off
+  Claude commits when a step is complete
+}
+<span style="color: #94a3b8;">// Exits when &lt;promise&gt;TASK COMPLETE&lt;/promise&gt;</span>
+        </div>
+      </div>
+    </div>
+    <div class="stack-lg">
+      <div class="animate animate-d3">
+        <h3 class="title-md" style="font-size: 1.2rem;">Used for: Word Metadata Feature</h3>
+        <p class="body">A 6-commit plan &mdash; new DB table, FTS triggers, search integration, full admin CRUD, nav updates. The loop ran through all steps, committing after each phase.</p>
+      </div>
+      <div class="animate animate-d4">
+        <div class="card" style="border-left: 4px solid #16a34a;">
+          <h3 style="color: #16a34a; font-size: 1rem;">What went well</h3>
+          <ul class="bullets" style="font-size: 0.95rem;">
+            <li style="font-size: 0.95rem;"><strong>Pattern reuse:</strong> Admin pages mirrored existing phrases pages &mdash; consistent code</li>
+            <li style="font-size: 0.95rem;"><strong>Proper conventions:</strong> CLAUDE.md ensured Svelte 5 runes, design system tokens, FTS patterns</li>
+            <li style="font-size: 0.95rem;"><strong>Multi-step execution:</strong> 6 commits, each matching the plan</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-number">14</div>
+</div>
+
+<!-- ========== SLIDE 15: The Ralph Loop — Lessons ========== -->
+<div class="slide slide--light" data-slide="15">
+  <p class="label animate">Developer Experience</p>
+  <h2 class="title-lg animate animate-d1">Ralph Loop: What Went Wrong</h2>
+  <div class="two-col" style="margin-top: 1rem;">
+    <div class="stack-lg">
+      <div class="animate animate-d2">
+        <div class="card" style="border-left: 4px solid #dc2626;">
+          <h3 style="color: #dc2626; font-size: 1.1rem;">Skipped testing</h3>
+          <p class="body">Despite the prompt asking to test everything, the first steps were not properly verified before moving on. Had to stop the loop and intervene to ask Claude to actually test what it built.</p>
+        </div>
+      </div>
+      <div class="animate animate-d3">
+        <div class="card" style="border-left: 4px solid #dc2626;">
+          <h3 style="color: #dc2626; font-size: 1.1rem;">Permission mode reset</h3>
+          <p class="body">Was running in <strong>dangerous mode</strong> (auto-approve all). After stopping to fix testing, the mode silently reset. Left the loop running overnight &mdash; it got stuck waiting for an edit approval that never came.</p>
+        </div>
+      </div>
+      <div class="animate animate-d4">
+        <div class="card" style="border-left: 4px solid #dc2626;">
+          <h3 style="color: #dc2626; font-size: 1.1rem;">Post-loop cleanup</h3>
+          <p class="body">Small UI bugs remained: related words not showing in list, form not resetting after edit, toast position, CI workflow needed updating.</p>
+        </div>
+      </div>
+    </div>
+    <div class="stack-lg">
+      <div class="animate animate-d4">
+        <div class="quote">
+          The loop is powerful but not fire-and-forget. Think of it as a junior developer working overnight &mdash; you still need to review in the morning.
+        </div>
+      </div>
+      <div class="animate animate-d5">
+        <div class="card" style="border-left: 4px solid var(--primary-500);">
+          <h3 style="color: var(--primary-700); font-size: 1.1rem;">Lesson: Be explicit in the prompt</h3>
+          <p class="body">Don't say "test everything." Add <strong>explicit validation checkpoints per phase</strong> in the plan: what to verify, how to verify it, and what success looks like. Claude needs concrete criteria or it will rush to the next step.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-number">15</div>
+</div>
+
+<!-- ========== SLIDE 16: Key Takeaways ========== -->
+<div class="slide slide--light" data-slide="16">
+  <p class="label animate">Lessons Learned</p>
+  <h2 class="title-lg animate animate-d1">Key Takeaways</h2>
+  <div class="three-col" style="margin-top: 1rem;">
+    <div class="card animate animate-d2">
+      <h3>Plans Are Essential</h3>
+      <p class="body">Starting with a plan keeps Claude focused and gives you a shared reference. It also captures deviations and gotchas &mdash; invaluable for future sessions.</p>
+    </div>
+    <div class="card animate animate-d3">
+      <h3>CLAUDE.md Is Your Memory</h3>
+      <p class="body">The project instructions file (<code>CLAUDE.md</code>) is what makes Claude productive across sessions. Conventions, gotchas, and architecture decisions all live here.</p>
+    </div>
+    <div class="card animate animate-d4">
+      <h3>Review Everything</h3>
+      <p class="body">Claude is fast but not infallible. Code review is still necessary &mdash; especially for security (auth), edge cases, and making sure the generated code matches your mental model.</p>
+    </div>
+  </div>
+  <div class="three-col" style="margin-top: 1.5rem;">
+    <div class="card animate animate-d3">
+      <h3>Best for Greenfield</h3>
+      <p class="body">Claude shines at scaffolding new features end-to-end. It's less effective when debugging subtle issues in existing code it didn't write.</p>
+    </div>
+    <div class="card animate animate-d4">
+      <h3>Domain Knowledge Is Yours</h3>
+      <p class="body">I brought the idea, the language expertise, and the product vision. Claude brought the implementation speed. That combination is powerful.</p>
+    </div>
+    <div class="card animate animate-d5">
+      <h3>It Gets Better Over Time</h3>
+      <p class="body">As CLAUDE.md grew and conventions solidified, each session was more productive. Claude made fewer mistakes because it had more context.</p>
+    </div>
+  </div>
+  <div class="slide-number">16</div>
+</div>
+
+<!-- ========== SLIDE 17: Future Work ========== -->
+<div class="slide slide--accent" data-slide="17">
+  <p class="label animate">What's Next</p>
+  <h2 class="title-lg animate animate-d1">Future Work: Community Proposals</h2>
+  <p class="body-lg animate animate-d2" style="margin-bottom: 1.5rem;">The next feature opens Lingua to its users &mdash; allowing anyone to <span class="highlight">propose new phrases and word metadata</span>, with admin approval.</p>
+  <div class="two-col">
+    <div class="stack animate animate-d3">
+      <div class="card">
+        <h3>Public Side</h3>
+        <ul class="bullets">
+          <li style="font-size: 1rem;"><strong>Propose a phrase:</strong> Users can suggest new expressions with explanation, category, and related phrases</li>
+          <li style="font-size: 1rem;"><strong>Propose word metadata:</strong> Add notes and related words for entries that don't have them yet</li>
+          <li style="font-size: 1rem;"><strong>No account required:</strong> Low friction &mdash; just fill a form and submit</li>
+        </ul>
+      </div>
+    </div>
+    <div class="stack animate animate-d4">
+      <div class="card">
+        <h3>Admin Side</h3>
+        <ul class="bullets">
+          <li style="font-size: 1rem;"><strong>Proposal queue:</strong> New section in the admin panel to review pending submissions</li>
+          <li style="font-size: 1rem;"><strong>Approve / Edit / Reject:</strong> Admins can accept proposals as-is, modify before publishing, or discard</li>
+          <li style="font-size: 1rem;"><strong>Spam prevention:</strong> Rate limiting and basic moderation tools</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="quote animate animate-d5" style="margin-top: 1.5rem; font-size: 1.1rem;">
+    The goal: make Lingua a living, community-driven resource for Catalan expressions &mdash; not just a static dictionary managed by one person.
+  </div>
+  <div class="slide-number">17</div>
+</div>
+
+<!-- ========== SLIDE 18: Thank You ========== -->
+<div class="slide slide--brand center" data-slide="18">
+  <div class="animate">
+    <div class="icon-logo" style="margin: 0 auto 1.5rem;">L</div>
+  </div>
+  <h2 class="title-xl animate animate-d1">Thank You!</h2>
+  <p class="subtitle animate animate-d2">Questions?</p>
+  <div style="margin-top: 3rem;" class="animate animate-d3">
+    <div class="tech-pills" style="justify-content: center;">
+      <span class="badge badge--dark">SvelteKit</span>
+      <span class="badge badge--dark">PostgreSQL FTS</span>
+      <span class="badge badge--dark">Drizzle ORM</span>
+      <span class="badge badge--dark">TailwindCSS v4</span>
+      <span class="badge badge--dark">Claude Code</span>
+    </div>
+  </div>
+  <div class="slide-number">18</div>
+</div>
+
+<!-- Navigation hint -->
+<div class="nav-hint" id="nav-hint">Arrow keys or click to navigate</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const progress = document.getElementById('progress');
+  let current = 0;
+
+  function showSlide(n) {
+    if (n < 0 || n >= slides.length) return;
+    slides[current].classList.remove('active');
+    current = n;
+    slides[current].classList.add('active');
+    progress.style.width = ((current + 1) / slides.length * 100) + '%';
+
+    // Hide nav hint after first navigation
+    if (current > 0) {
+      document.getElementById('nav-hint').style.opacity = '0';
+    }
+  }
+
+  // Initialize
+  showSlide(0);
+
+  // Keyboard navigation
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+      e.preventDefault();
+      showSlide(current + 1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      showSlide(current - 1);
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      showSlide(0);
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      showSlide(slides.length - 1);
+    }
+  });
+
+  // Click navigation (left third = back, rest = forward)
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('a, button')) return;
+    const x = e.clientX / window.innerWidth;
+    if (x < 0.33) {
+      showSlide(current - 1);
+    } else {
+      showSlide(current + 1);
+    }
+  });
+</script>
+
+</body>
+</html>
