@@ -10,10 +10,11 @@ export async function init() {
 		capture_exceptions: true,
 		opt_out_capturing_by_default: PUBLIC_POSTHOG_ENABLED !== 'true',
 		session_recording: {
-			maskAllInputs: true,
+			maskAllInputs: false,
 			maskInputOptions: {
 				password: true,
-				search: false
+				search: false,
+				text: false
 			}
 		}
 	});
